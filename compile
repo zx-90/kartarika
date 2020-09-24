@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -x -e
+
+mkdir -p _build
+
+pushd _build
+
+cmake ..
+make
+
+popd
+
+./_build/bin/tester
