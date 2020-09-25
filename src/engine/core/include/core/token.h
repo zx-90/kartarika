@@ -24,10 +24,6 @@ typedef struct KStructToken {
 	struct KStructToken** children;
 } KToken;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 KToken* k_token_create();
 void k_token_free(KToken* token);
 
@@ -49,9 +45,5 @@ void k_token_print_level(const KToken* token, FILE* stream, size_t level);
 
 char* k_token_sprint(const KToken* token);
 char* k_token_sprint_level(const KToken* token, char* buffer, size_t level);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // TOKEN_H

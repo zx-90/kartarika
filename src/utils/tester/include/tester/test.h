@@ -49,10 +49,6 @@ typedef struct {
 	
 } KTest;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void k_path_element_init(KPathElement* element);
 bool k_path_element_set(KPathElement* element, const char* path);
 
@@ -60,9 +56,5 @@ KTest* k_test_create();
 void k_test_free(KTest* test);
 
 KError* k_test_run(KTest* test, const char* dir);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // TEST_H

@@ -9,14 +9,6 @@
 
 #include "tester/test.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 KError* k_test_suite_run(const char* path);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // TEST_SUITE_H

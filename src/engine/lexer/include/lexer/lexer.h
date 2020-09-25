@@ -10,14 +10,6 @@
 #include "core/stream.h"
 #include "core/module.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 bool k_lexer_run(KStream* stream, KModule* module);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // LEXER_H

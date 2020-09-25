@@ -14,18 +14,10 @@ typedef struct {
 	char* description;
 } KError;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 KError* k_error_register(size_t number, const char* format, ...);
 
 KError* k_error_get_last();
 size_t k_error_get_last_number();
 const char* k_error_get_last_description();
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // ERROR_H

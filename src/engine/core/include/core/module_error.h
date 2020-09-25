@@ -18,16 +18,8 @@ typedef struct {
 	const char* description;
 } KModuleError;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void k_module_error_set(KModule* module, KCursor* cursor, int code, const char* description);
 void k_module_error_register(KModuleError* error);
 size_t k_module_error_get_count();
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // MODULE_ERROR_H

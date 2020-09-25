@@ -16,10 +16,6 @@ typedef struct {
 	char* currentChar;
 } KStreamCursor;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 KStreamCursor* k_stream_cursor_create(KStream* stream);
 
 void k_stream_cursor_free(KStreamCursor* stream);
@@ -31,9 +27,5 @@ bool k_stream_cursor_is_eof(const KStreamCursor* stream);
 
 bool k_stream_cursor_next(KStreamCursor* stream);
 char* k_stream_cursor_get(KStreamCursor* stream);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // STREAM_CURSOR_H

@@ -14,15 +14,7 @@ typedef struct {
 	KToken* token;
 } KModule;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 KModule* k_module_create(const char* name);
 void k_module_free(KModule* module);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // MODULE_H

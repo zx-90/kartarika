@@ -28,17 +28,9 @@ typedef struct {
 	KToken* current;
 } KFirstLexer;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 KFirstLexer* k_first_lexer_create(KStream* stream, KModule* module);
 void k_first_lexer_free(KFirstLexer* lexer);
 
 bool k_first_lexer_run(KFirstLexer* lexer);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // FIRST_LEXER_H

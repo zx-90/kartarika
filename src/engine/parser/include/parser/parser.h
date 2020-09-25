@@ -11,14 +11,6 @@
 
 #include "core/module.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 bool k_parser_run(KModule* module);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // PARSER_H

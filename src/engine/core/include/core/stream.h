@@ -15,10 +15,6 @@ typedef struct {
 	bool good;
 } KStream;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 KStream* k_stream_create(const char* path);
 
 bool k_stream_good(KStream* stream);
@@ -26,9 +22,5 @@ bool k_stream_eof(KStream* stream);
 char k_stream_get(KStream* stream);
 
 void k_stream_free(KStream* stream);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // STREAM_H

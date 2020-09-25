@@ -9,14 +9,6 @@
 
 #include "core/module.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 bool k_second_lexer_run(KModule* module);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SECOND_LEXER_H
