@@ -13,8 +13,8 @@
 
 #define INIT_CAPACITY (size_t)16
 
-bool k_string_builder_init(KStringBuilder* builder) {
-	K_ALLOCS(builder->str, char, INIT_CAPACITY);
+bool kar_string_builder_init(KarStringBuilder* builder) {
+	KAR_ALLOCS(builder->str, char, INIT_CAPACITY);
 	if (!builder->str) {
 		return false;
 	}
@@ -24,8 +24,8 @@ bool k_string_builder_init(KStringBuilder* builder) {
 	return true;
 }
 
-bool k_string_builder_init_book(KStringBuilder* builder, size_t book) {
-	K_ALLOCS(builder->str, char, book);
+bool kar_string_builder_init_book(KarStringBuilder* builder, size_t book) {
+	KAR_ALLOCS(builder->str, char, book);
 	if (!builder->str) {
 		return false;
 	}
@@ -35,26 +35,26 @@ bool k_string_builder_init_book(KStringBuilder* builder, size_t book) {
 	return true;
 }
 
-void k_string_builder_final(KStringBuilder* builder) {
-	K_FREE(builder->str);
+void kar_string_builder_final(KarStringBuilder* builder) {
+	KAR_FREE(builder->str);
 }
 
-char* k_string_builder_final_get(KStringBuilder* builder) {
+char* kar_string_builder_final_get(KarStringBuilder* builder) {
 	// TODO: возможно надо применить realloc для уменьшения объема кода и обнуление значений полей структуры.
 	return builder->str;
 }
 
-bool k_string_builder_push_char(KStringBuilder* str, const char c) {
+bool kar_string_builder_push_char(KarStringBuilder* str, const char c) {
 	if (!str) {
 		return false;
 	}
 	if (str->length == str->capacity - 1) {
-		K_CREATES(new_str, char, str->capacity * 2);
+		KAR_CREATES(new_str, char, str->capacity * 2);
 		if (!new_str) {
 			return false;
 		}
 		strcpy(new_str, str->str);
-		K_FREE(str->str);
+		KAR_FREE(str->str);
 		str->str = new_str;
 		str->capacity *= 2;
 	}

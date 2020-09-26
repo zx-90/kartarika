@@ -8,9 +8,9 @@
 
 #include "core/token.h"
 
-bool k_parser_split_by_lines(KToken* token)
+bool kar_parser_split_by_lines(KarToken* token)
 {
-	if (token->children_count < 1 || token->children[0]->type != TOKEN_INDENT)
+	if (token->children_count < 1 || token->children[0]->type != KAR_TOKEN_INDENT)
 	{
 		return false;
 	}
@@ -19,14 +19,14 @@ bool k_parser_split_by_lines(KToken* token)
 	{
 		size_t j;
 		for (j = cursor + 1; j < token->children_count; ++j) {
-			if (token->children[j]->type == TOKEN_INDENT) {
+			if (token->children[j]->type == KAR_TOKEN_INDENT) {
 				break;
 			}
 		}
 		size_t k;
 		for (k = cursor + 1; k < j; ++k) {
-			KToken* child = k_token_tear_child(token, cursor + 1);
-			k_token_add_child(token->children[cursor], child);
+			KarToken* child = kar_token_tear_child(token, cursor + 1);
+			kar_token_add_child(token->children[cursor], child);
 		}
 		cursor++;
 	}

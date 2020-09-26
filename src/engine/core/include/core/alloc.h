@@ -4,47 +4,47 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#ifndef ALLOC_H
-#define ALLOC_H
+#ifndef KAR_ALLOC_H
+#define KAR_ALLOC_H
 
 #include <stdlib.h>
 
-// #define K_DEBUG
+// #define KAR_DEBUG
 
-#ifdef K_DEBUG
+#ifdef KAR_DEBUG
 
 #include <stdio.h>
 
-#define K_CREATE(var, type)\
+#define KAR_CREATE(var, type)\
     type* var = (type*)malloc(sizeof(type)); \
     fprintf( stderr, "ALLOC: %p, TYPE: %s,  AT: %s:%d\n", (void*)(var), #type, __FILE__, __LINE__);
 
-#define K_CREATES(var, type, count)\
+#define KAR_CREATES(var, type, count)\
     type* var = (type*)malloc(sizeof(type) * (count)); \
     fprintf( stderr, "ALLOC: %p, TYPE: %s x %ld,  AT: %s:%d\n", (void*)(var), #type, count, __FILE__, __LINE__);
 
-#define K_ALLOC(var, type)\
+#define KAR_ALLOC(var, type)\
     var = (type*)malloc(sizeof(type)); \
     fprintf( stderr, "ALLOC: %p, TYPE: %s,  AT: %s:%d\n", (void*)(var), #type, __FILE__, __LINE__);
 
-#define K_ALLOCS(var, type, count)\
+#define KAR_ALLOCS(var, type, count)\
     var = (type*)malloc(sizeof(type) * (count)); \
     fprintf( stderr, "ALLOC: %p, TYPE: %s x %ld,  AT: %s:%d\n", (void*)(var), #type, count, __FILE__, __LINE__);
 
-#define K_FREE(var) (fprintf(stderr, "FREE : %p\n", (void*)(var)), free(var))
+#define KAR_FREE(var) (fprintf(stderr, "FREE : %p\n", (void*)(var)), free(var))
 
 #else
 
-#define K_CREATE(var, type) type* var = (type*)malloc(sizeof(type));
+#define KAR_CREATE(var, type) type* var = (type*)malloc(sizeof(type));
 
-#define K_CREATES(var, type, count) type* var = ((type*)malloc(sizeof(type) * count));
+#define KAR_CREATES(var, type, count) type* var = ((type*)malloc(sizeof(type) * count));
 
-#define K_ALLOC(var, type) var = (type*)malloc(sizeof(type));
+#define KAR_ALLOC(var, type) var = (type*)malloc(sizeof(type));
 
-#define K_ALLOCS(var, type, count) var = ((type*)malloc(sizeof(type) * count));
+#define KAR_ALLOCS(var, type, count) var = ((type*)malloc(sizeof(type) * count));
 
-#define K_FREE(var) free(var);
+#define KAR_FREE(var) free(var);
 
-#endif // K_DEBUG_ON
+#endif // KAR_DEBUG_ON
 
-#endif // ALLOC_H
+#endif // KAR_ALLOC_H

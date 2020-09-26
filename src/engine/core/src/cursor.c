@@ -6,14 +6,14 @@
 
 #include "core/cursor.h"
 
-void k_cursor_init(KCursor* cursor) {
+void kar_cursor_init(KarCursor* cursor) {
 	cursor->line = 1;
 	cursor->column = 1;
 	cursor->newFile = true;
 	cursor->newLine = true;
 }
 
-void k_cursor_next(KCursor* cursor) {
+void kar_cursor_next(KarCursor* cursor) {
 	if (cursor->newFile) {
 		cursor->newFile = false;
 		cursor->newLine = false;
@@ -26,7 +26,7 @@ void k_cursor_next(KCursor* cursor) {
 	cursor->column++;
 }
 
-void k_cursor_next_line(KCursor* cursor) {
+void kar_cursor_next_line(KarCursor* cursor) {
 	cursor->line++;
 	cursor->column = 1;
 	cursor->newLine = true;

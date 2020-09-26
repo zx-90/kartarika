@@ -9,34 +9,34 @@
 #include "core/alloc.h"
 #include "core/token.h"
 
-static bool extern_bracket(KToken* token) {
-	K_CREATES(opens, size_t, token->children_count);
+static bool extern_bracket(KarToken* token) {
+	KAR_CREATES(opens, size_t, token->children_count);
 	size_t opens_cursor = 0;
 	for (size_t i = 0; i < token->children_count; ++i) {
-		if (token->children[i]->type == TOKEN_SIGN_OPEN_BRACES) {
+		if (token->children[i]->type == KAR_TOKEN_SIGN_OPEN_BRACES) {
 			opens[opens_cursor] = i;
 			opens_cursor++;
 		}
-		if (token->children[i]->type == TOKEN_SIGN_CLOSE_BRACES) {
+		if (token->children[i]->type == KAR_TOKEN_SIGN_CLOSE_BRACES) {
 			if (opens_cursor == 0) {
-				K_FREE(opens);
+				KAR_FREE(opens);
 				return false;
 			}
 			opens_cursor--;
 			size_t open = opens[opens_cursor];
 			for (size_t j = open + 1; j < i; ++j) {
-				KToken* child = k_token_tear_child(token, open + 1);
-				k_token_add_child(token->children[open], child);
+				KarToken* child = kar_token_tear_child(token, open + 1);
+				kar_token_add_child(token->children[open], child);
 			}
-			k_token_erase_child(token, open + 1);
+			kar_token_erase_child(token, open + 1);
 			i = open + 1;
 		}
 	}
-	K_FREE(opens);
+	KAR_FREE(opens);
 	return opens_cursor == 0;
 }
 
-bool k_parser_extern_brackets(KToken* token)
+bool kar_parser_extern_brackets(KarToken* token)
 {
-	return k_token_foreach(token, extern_bracket);
+	return kar_token_foreach(token, extern_bracket);
 }

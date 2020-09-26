@@ -10,21 +10,21 @@
 
 #include "core/alloc.h"
 
-KModule* k_module_create(const char* name) {
-	K_CREATE(module, KModule);
+KarModule* kar_module_create(const char* name) {
+	KAR_CREATE(module, KarModule);
 	
 	size_t len = strlen(name);
-	K_ALLOCS(module->name, char, len + 1);
+	KAR_ALLOCS(module->name, char, len + 1);
 	strcpy(module->name, name);
 	module->name[len] = 0;
 	
-	module->token = k_token_create();
-	module->token->type = TOKEN_MODULE;
+	module->token = kar_token_create();
+	module->token->type = KAR_TOKEN_MODULE;
 	
 	return module;
 }
 
-void k_module_free(KModule* module) {
-	K_FREE(module->name);
-	K_FREE(module);
+void kar_module_free(KarModule* module) {
+	KAR_FREE(module->name);
+	KAR_FREE(module);
 }

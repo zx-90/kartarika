@@ -8,17 +8,17 @@
 
 #include "parser/elements/_elements.h"
 
-bool k_parser_run(KModule* module) {
-	KToken* token = module->token;
+bool kar_parser_run(KarModule* module) {
+	KarToken* token = module->token;
 	bool b = true;
-	b = b && k_parser_split_by_lines(token);
-	b = b && k_parser_split_by_blocks(token);
-	b = b && k_parser_extern_brackets(token);
-	b = b && k_parser_make_path(token);
+	b = b && kar_parser_split_by_lines(token);
+	b = b && kar_parser_split_by_blocks(token);
+	b = b && kar_parser_extern_brackets(token);
+	b = b && kar_parser_make_path(token);
 	
-	b = b && k_parser_remove_spaces(token);
+	b = b && kar_parser_remove_spaces(token);
 	
-	b = b && k_parser_make_return(token);
-	b = b && k_parser_make_function(token);
+	b = b && kar_parser_make_return(token);
+	b = b && kar_parser_make_function(token);
 	return b;
 }

@@ -8,18 +8,18 @@
 
 #include "core/token.h"
 
-static bool remove_space(KToken* token) {
+static bool remove_space(KarToken* token) {
 	size_t i;
 	for (i = 0; i < token->children_count; ++i) {
-		if ( (token->children[i]->type == TOKEN_SPACE) || (token->children[i]->type == TOKEN_INDENT && (token->children[i]->children_count == 0) ) ) {
-			k_token_erase_child(token, i);
+		if ( (token->children[i]->type == KAR_TOKEN_SPACE) || (token->children[i]->type == KAR_TOKEN_INDENT && (token->children[i]->children_count == 0) ) ) {
+			kar_token_erase_child(token, i);
 			i--;
 		}
 	}
 	return true;
 }
 
-bool k_parser_remove_spaces(KToken* token)
+bool kar_parser_remove_spaces(KarToken* token)
 {
-	return k_token_foreach(token, remove_space);
+	return kar_token_foreach(token, remove_space);
 }

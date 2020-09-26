@@ -16,28 +16,28 @@
 
 #include <llvm-c/BitWriter.h>
 
-static bool generate_identifier(const KToken* token, LLVMModuleRef module, LLVMBuilderRef builder) {
-	if (token->type != TOKEN_INDENT) {
+static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder) {
+	if (token->type != KAR_TOKEN_INDENT) {
 		return false;
 	}
-	const KToken* child1 = token->children[0];
-	if (!k_token_check_type_name(child1, TOKEN_IDENTIFIER, "Кар")) {
+	const KarToken* child1 = token->children[0];
+	if (!kar_token_check_type_name(child1, KAR_TOKEN_IDENTIFIER, "Кар")) {
 		return false;
 	}
-	const KToken* child2 = child1->children[0];
-	if (!k_token_check_type(child2, TOKEN_SIGN_GET_FIELD)) {
+	const KarToken* child2 = child1->children[0];
+	if (!kar_token_check_type(child2, KAR_TOKEN_SIGN_GET_FIELD)) {
 		return false;
 	}
-	const KToken* child3 = child2->children[0];
-	if (!k_token_check_type_name(child3, TOKEN_IDENTIFIER, "Печатать")) {
+	const KarToken* child3 = child2->children[0];
+	if (!kar_token_check_type_name(child3, KAR_TOKEN_IDENTIFIER, "Печатать")) {
 		return false;
 	}
-	const KToken* child4 = child3->children[0];
-	if (!k_token_check_type(child4, TOKEN_SIGN_OPEN_BRACES)) {
+	const KarToken* child4 = child3->children[0];
+	if (!kar_token_check_type(child4, KAR_TOKEN_SIGN_OPEN_BRACES)) {
 		return false;
 	}
-	const KToken* child5 = child4->children[0];
-	if (!k_token_check_type(child5, TOKEN_VAL_STRING)) {
+	const KarToken* child5 = child4->children[0];
+	if (!kar_token_check_type(child5, KAR_TOKEN_VAL_STRING)) {
 		return false;
 	}
 	
@@ -51,8 +51,8 @@ static bool generate_identifier(const KToken* token, LLVMModuleRef module, LLVMB
 	return true;
 }
 	
-static bool generate_function(KToken* token, LLVMModuleRef module, LLVMBuilderRef builder) {
-	if (token->type != TOKEN_FUNCTION) {
+static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder) {
+	if (token->type != KAR_TOKEN_FUNCTION) {
 		return false;
 	}
 	if (!strcmp(token->str, "запустить")) {
@@ -72,12 +72,12 @@ static bool generate_function(KToken* token, LLVMModuleRef module, LLVMBuilderRe
 	return true;
 }
 	
-static bool generate_module(const KToken* token, LLVMModuleRef module, LLVMBuilderRef builder) {
-	if (token->type != TOKEN_MODULE) {
+static bool generate_module(const KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder) {
+	if (token->type != KAR_TOKEN_MODULE) {
 		return false;
 	}
 	for (size_t i = 0; i < token->children_count; ++i) {
-		if (token->children[i]->type == TOKEN_FUNCTION) {
+		if (token->children[i]->type == KAR_TOKEN_FUNCTION) {
 			generate_function(token->children[i], module, builder);
 		} else {
 			return false;
@@ -102,7 +102,7 @@ static bool generate_module(const KToken* token, LLVMModuleRef module, LLVMBuild
 	LLVMBuildRetVoid(builder);
 }*/
 
-bool k_generator_run(KModule* mod) {
+bool kar_generator_run(KarModule* mod) {
 	// TODO: обработка ошибок. Добавить.
 	LLVMContextRef context = LLVMContextCreate();
 	LLVMModuleRef module = LLVMModuleCreateWithNameInContext("asdf", context);

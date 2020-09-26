@@ -4,8 +4,8 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#ifndef TOKEN_H
-#define TOKEN_H
+#ifndef KAR_TOKEN_H
+#define KAR_TOKEN_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -14,36 +14,36 @@
 #include "cursor.h"
 #include "token_type.h"
 
-typedef struct KStructToken {
-	KTokenType type;
-	KCursor cursor;
+typedef struct KarStructToken {
+	KarTokenType type;
+	KarCursor cursor;
 	char* str;
 
 	size_t children_count;
 	size_t children_capacity;
-	struct KStructToken** children;
-} KToken;
+	struct KarStructToken** children;
+} KarToken;
 
-KToken* k_token_create();
-void k_token_free(KToken* token);
+KarToken* kar_token_create();
+void kar_token_free(KarToken* token);
 
-bool k_token_check_type(const KToken* token, const KTokenType type);
-bool k_token_check_type_name(const KToken* token, const KTokenType type, const char* string);
+bool kar_token_check_type(const KarToken* token, const KarTokenType type);
+bool kar_token_check_type_name(const KarToken* token, const KarTokenType type, const char* string);
 
-void k_token_set_str(KToken* token, const char* str);
-void k_token_add_str(KToken* token, const char* str);
+void kar_token_set_str(KarToken* token, const char* str);
+void kar_token_add_str(KarToken* token, const char* str);
 
-void k_token_add_child(KToken* token, KToken* child);
-void k_token_insert_child(KToken* token, KToken* child, size_t num);
-KToken* k_token_tear_child(KToken* token, size_t num);
-void k_token_erase_child(KToken* token, size_t num);
+void kar_token_add_child(KarToken* token, KarToken* child);
+void kar_token_insert_child(KarToken* token, KarToken* child, size_t num);
+KarToken* kar_token_tear_child(KarToken* token, size_t num);
+void kar_token_erase_child(KarToken* token, size_t num);
 
-bool k_token_foreach(KToken* token, bool(*fn)(KToken* token));
+bool kar_token_foreach(KarToken* token, bool(*fn)(KarToken* token));
 
-void k_token_print(const KToken* token, FILE* stream);
-void k_token_print_level(const KToken* token, FILE* stream, size_t level);
+void kar_token_print(const KarToken* token, FILE* stream);
+void kar_token_print_level(const KarToken* token, FILE* stream, size_t level);
 
-char* k_token_sprint(const KToken* token);
-char* k_token_sprint_level(const KToken* token, char* buffer, size_t level);
+char* kar_token_sprint(const KarToken* token);
+char* kar_token_sprint_level(const KarToken* token, char* buffer, size_t level);
 
-#endif // TOKEN_H
+#endif // KAR_TOKEN_H

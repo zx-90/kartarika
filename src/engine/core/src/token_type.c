@@ -6,9 +6,9 @@
 
 #include "core/token_type.h"
 
-const char* k_token_type_get_name(const KTokenType type)
+const char* kar_token_type_get_name(const KarTokenType type)
 {
-#define PROCESS_VAL(p) case(TOKEN_##p): return #p;
+#define PROCESS_VAL(p) case(KAR_TOKEN_##p): return #p;
 	switch(type){
 		PROCESS_VAL(UNKNOWN);
 		// Первоначальные

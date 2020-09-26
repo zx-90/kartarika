@@ -4,8 +4,8 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#ifndef FIRST_LEXER_H
-#define FIRST_LEXER_H
+#ifndef KAR_FIRST_LEXER_H
+#define KAR_FIRST_LEXER_H
 
 #include "core/module.h"
 #include "core/stream_cursor.h"
@@ -13,24 +13,24 @@
 // #include <string>
 
 typedef enum {
-	STATUS_UNKNOWN,
-	STATUS_INDENT,
+	KAR_LEXER_STATUS_UNKNOWN,
+	KAR_LEXER_STATUS_INDENT,
 
-	STATUS_SPACE,
-	STATUS_IDENTIFIER,
-	STATUS_SIGN,
-} KLexerStatus;
+	KAR_LEXER_STATUS_SPACE,
+	KAR_LEXER_STATUS_IDENTIFIER,
+	KAR_LEXER_STATUS_SIGN,
+} KarLexerStatus;
 
 typedef struct {
-	KStreamCursor* streamCursor;
-	KLexerStatus status;
-	KModule* module;
-	KToken* current;
-} KFirstLexer;
+	KarStreamCursor* streamCursor;
+	KarLexerStatus status;
+	KarModule* module;
+	KarToken* current;
+} KarFirstLexer;
 
-KFirstLexer* k_first_lexer_create(KStream* stream, KModule* module);
-void k_first_lexer_free(KFirstLexer* lexer);
+KarFirstLexer* kar_first_lexer_create(KarStream* stream, KarModule* module);
+void kar_first_lexer_free(KarFirstLexer* lexer);
 
-bool k_first_lexer_run(KFirstLexer* lexer);
+bool kar_first_lexer_run(KarFirstLexer* lexer);
 
-#endif // FIRST_LEXER_H
+#endif // KAR_FIRST_LEXER_H

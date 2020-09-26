@@ -4,17 +4,17 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#ifndef MODULE_H
-#define MODULE_H
+#ifndef KAR_MODULE_H
+#define KAR_MODULE_H
 
 #include "token.h"
 
 typedef struct {
 	char* name;
-	KToken* token;
-} KModule;
+	KarToken* token;
+} KarModule;
 
-KModule* k_module_create(const char* name);
-void k_module_free(KModule* module);
+KarModule* kar_module_create(const char* name);
+void kar_module_free(KarModule* module);
 
-#endif // MODULE_H
+#endif // KAR_MODULE_H

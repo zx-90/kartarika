@@ -4,11 +4,11 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#ifndef GENERATOR_H
-#define GENERATOR_H
+#ifndef KAR_GENERATOR_H
+#define KAR_GENERATOR_H
 
 #include "core/module.h"
 
-bool k_generator_run(KModule* module);
+bool kar_generator_run(KarModule* module);
 
-#endif // GENERATOR_H
+#endif // KAR_GENERATOR_H

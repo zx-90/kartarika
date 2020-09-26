@@ -4,11 +4,11 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#ifndef TEST_SUITE_H
-#define TEST_SUITE_H
+#ifndef KAR_TEST_SUITE_H
+#define KAR_TEST_SUITE_H
 
 #include "tester/test.h"
 
-KError* k_test_suite_run(const char* path);
+KarError* kar_test_suite_run(const char* path);
 
-#endif // TEST_SUITE_H
+#endif // KAR_TEST_SUITE_H

@@ -4,8 +4,8 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#ifndef STREAM_H
-#define STREAM_H
+#ifndef KAR_STREAM_H
+#define KAR_STREAM_H
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -13,14 +13,14 @@
 typedef struct {
 	FILE* data;
 	bool good;
-} KStream;
+} KarStream;
 
-KStream* k_stream_create(const char* path);
+KarStream* kar_stream_create(const char* path);
 
-bool k_stream_good(KStream* stream);
-bool k_stream_eof(KStream* stream);
-char k_stream_get(KStream* stream);
+bool kar_stream_good(KarStream* stream);
+bool kar_stream_eof(KarStream* stream);
+char kar_stream_get(KarStream* stream);
 
-void k_stream_free(KStream* stream);
+void kar_stream_free(KarStream* stream);
 
-#endif // STREAM_H
+#endif // KAR_STREAM_H

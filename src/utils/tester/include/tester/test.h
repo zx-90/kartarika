@@ -4,57 +4,57 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#ifndef TEST_H
-#define TEST_H
+#ifndef KAR_TEST_H
+#define KAR_TEST_H
 
 #include <stdbool.h>
 
 #include "core/error.h"
 
-#define PROJECT_FILENAME "проект.кар"
-#define LEXER_ERROR_FILENAME "лексер.ошибка"
-#define LEXER_FILENAME "лексер"
-#define PARSER_ERROR_FILENAME "парсер.ошибка"
-#define PARSER_FILENAME "парсер"
-#define ANALYZER_ERROR_FILENAME "анализатор.ошибка"
-#define ANALYZER_FILENAME "анализатор"
-#define COMPILER_ERROR_FILENAME "компилятор.ошибка"
-#define OUT_ERROR_FILENAME "выход.ошибка"
-#define OUT_FILENAME "выход"
-#define COMMENT_FILENAME "коммент"
+#define KAR_PROJECT_FILENAME "проект.кар"
+#define KAR_LEXER_ERROR_FILENAME "лексер.ошибка"
+#define KAR_LEXER_FILENAME "лексер"
+#define KAR_PARSER_ERROR_FILENAME "парсер.ошибка"
+#define KAR_PARSER_FILENAME "парсер"
+#define KAR_ANALYZER_ERROR_FILENAME "анализатор.ошибка"
+#define KAR_ANALYZER_FILENAME "анализатор"
+#define KAR_COMPILER_ERROR_FILENAME "компилятор.ошибка"
+#define KAR_OUT_ERROR_FILENAME "выход.ошибка"
+#define KAR_OUT_FILENAME "выход"
+#define KAR_COMMENT_FILENAME "коммент"
 
 typedef struct {
 	bool is;
 	char* path;
-} KPathElement;
+} KarPathElement;
 
 typedef struct {
-	KPathElement project_file;
+	KarPathElement project_file;
 	
-	KPathElement lexer_error_file;
-	KPathElement lexer_file;
+	KarPathElement lexer_error_file;
+	KarPathElement lexer_file;
 	
-	KPathElement parser_error_file;
-	KPathElement parser_file;
+	KarPathElement parser_error_file;
+	KarPathElement parser_file;
 	
-	KPathElement analyzer_error_file;
-	KPathElement analyzer_file;
+	KarPathElement analyzer_error_file;
+	KarPathElement analyzer_file;
 	
-	KPathElement compiler_error_file;
+	KarPathElement compiler_error_file;
 
-	KPathElement out_error_file;
-	KPathElement out_file;
+	KarPathElement out_error_file;
+	KarPathElement out_file;
 	
-	KPathElement comment_file;
+	KarPathElement comment_file;
 	
-} KTest;
+} KarTest;
 
-void k_path_element_init(KPathElement* element);
-bool k_path_element_set(KPathElement* element, const char* path);
+void kar_path_element_init(KarPathElement* element);
+bool kar_path_element_set(KarPathElement* element, const char* path);
 
-KTest* k_test_create();
-void k_test_free(KTest* test);
+KarTest* kar_test_create();
+void kar_test_free(KarTest* test);
 
-KError* k_test_run(KTest* test, const char* dir);
+KarError* kar_test_run(KarTest* test, const char* dir);
 
-#endif // TEST_H
+#endif // KAR_TEST_H

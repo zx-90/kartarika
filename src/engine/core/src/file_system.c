@@ -18,13 +18,13 @@
 #include "core/alloc.h"
 #include "core/string.h"
 
-bool k_file_system_is_file(const char* path) {
+bool kar_file_system_is_file(const char* path) {
 	struct stat sts;
 	errno = ENOENT;
 	return (stat(path, &sts) == -1 && errno == ENOENT);
 }
 
-bool k_file_system_is_directory(const char* path) {
+bool kar_file_system_is_directory(const char* path) {
 	errno = ENOENT;
 	DIR* dir = opendir(path);
 	bool result = dir && errno == ENOENT;
@@ -32,7 +32,7 @@ bool k_file_system_is_directory(const char* path) {
 	return result;
 }
 
-char** k_file_create_directory_list(const char* path, size_t* count) {
+char** kar_file_create_directory_list(const char* path, size_t* count) {
 	DIR *dir = opendir(path);
 	if (!dir) {
 		return NULL;
@@ -44,7 +44,7 @@ char** k_file_create_directory_list(const char* path, size_t* count) {
 		(*count)++;
 	}
 	
-	K_CREATES(result, char*, *count);
+	KAR_CREATES(result, char*, *count);
 	if (!result) {
 		return NULL;
 	}
@@ -57,12 +57,12 @@ char** k_file_create_directory_list(const char* path, size_t* count) {
 			(*count)--;
 			continue;
 		}
-		K_CREATES(element, char, strlen(ent->d_name) + 1);
+		KAR_CREATES(element, char, strlen(ent->d_name) + 1);
 		if (!element) {
 			while (i--) {
-				K_FREE(result[i]);
+				KAR_FREE(result[i]);
 			}
-			K_FREE(result);
+			KAR_FREE(result);
 			return NULL;
 		}
 		strcpy(element, ent->d_name);
@@ -74,16 +74,16 @@ char** k_file_create_directory_list(const char* path, size_t* count) {
 	return result;
 }
 
-char** k_file_create_absolute_directory_list(const char* path, size_t* count) {
-	char** result = k_file_create_directory_list(path, count);
+char** kar_file_create_absolute_directory_list(const char* path, size_t* count) {
+	char** result = kar_file_create_directory_list(path, count);
 	if (!result) {
 		return NULL;
 	}
 	
 	// TODO: Здесь надо скачивать это соединение "/" через функции ОС.
-	const char* path2 = k_string_concat(path, "/");
+	const char* path2 = kar_string_concat(path, "/");
 	if (!path2) {
-		k_string_list_free(result, *count);
+		kar_string_list_free(result, *count);
 		*count = 0;
 		return NULL;
 	}
@@ -91,14 +91,14 @@ char** k_file_create_absolute_directory_list(const char* path, size_t* count) {
 	size_t i;
 	for (i = 0; i < *count; i++) {
 		char* file_name = result[i];
-		char* absolute_file_name = k_string_concat(path2, file_name);
-		K_FREE(result[i]);
+		char* absolute_file_name = kar_string_concat(path2, file_name);
+		KAR_FREE(result[i]);
 		result[i] = absolute_file_name;
 	}
 	return result;
 }
 
-char* k_file_load(const char* path) {
+char* kar_file_load(const char* path) {
 	FILE *f = fopen(path, "rb");
 	if (f == NULL) {
 		return NULL;
@@ -108,9 +108,9 @@ char* k_file_load(const char* path) {
 	size_t size = (size_t)ftell(f);
 	
 	fseek(f, 0, SEEK_SET);
-	K_CREATES(result, char, size + 1);
+	KAR_CREATES(result, char, size + 1);
 	if (size != fread(result, sizeof(char), size, f)) {
-		K_FREE(result);
+		KAR_FREE(result);
 		return NULL;
 	}
 	
@@ -122,7 +122,7 @@ char* k_file_load(const char* path) {
 
 static char* working_dir = NULL;
 
-const char* k_file_get_working_dir() {
+const char* kar_file_get_working_dir() {
 	if (working_dir) {
 		return working_dir;
 	}

@@ -8,17 +8,17 @@
 
 #include "core/token.h"
 
-static bool is_empty_line(KToken* token) {
+static bool is_empty_line(KarToken* token) {
 	for (size_t i = 0; i < token->children_count; ++i) {
-		if (token->children[i]->type != TOKEN_SPACE && token->children[i]->type != TOKEN_COMMENT) {
+		if (token->children[i]->type != KAR_TOKEN_SPACE && token->children[i]->type != KAR_TOKEN_COMMENT) {
 			return false;
 		}
 	}
 	return true;
 }
 
-static int get_token_indent(KToken* token) {
-	if (token->type != TOKEN_INDENT) {
+static int get_token_indent(KarToken* token) {
+	if (token->type != KAR_TOKEN_INDENT) {
 		return -1;
 	}
 	int indent = 0;
@@ -35,17 +35,17 @@ static int get_token_indent(KToken* token) {
 }
 
 static bool fill_block(
-	KToken* rootToken,
+	KarToken* rootToken,
 	size_t* num,
-	KToken* parentToken,
+	KarToken* parentToken,
 	int parentIndent)
 {
 	int indent = get_token_indent(rootToken->children[*num]);
 	int currentIndent = indent;
 	size_t current = *num;
 	while (true) {
-		KToken* line = k_token_tear_child(rootToken, current);
-		k_token_add_child(parentToken, line);
+		KarToken* line = kar_token_tear_child(rootToken, current);
+		kar_token_add_child(parentToken, line);
 
 		if (current == rootToken->children_count) {
 			*num = current;
@@ -54,7 +54,7 @@ static bool fill_block(
 		currentIndent = get_token_indent(rootToken->children[current]);
 
 		if (currentIndent > indent) {
-			KToken* parent = parentToken->children[parentToken->children_count - 1];
+			KarToken* parent = parentToken->children[parentToken->children_count - 1];
 			if (!fill_block(rootToken, &current, parent, indent)) {
 				return false;
 			}
@@ -73,7 +73,7 @@ static bool fill_block(
 	return true;
 }
 
-bool k_parser_split_by_blocks(KToken* token) {
+bool kar_parser_split_by_blocks(KarToken* token) {
 	for (size_t i = 0; i < token->children_count; ++i) {
 		if (!is_empty_line(token->children[i])) {
 			if (get_token_indent(token->children[i]) != 0) {

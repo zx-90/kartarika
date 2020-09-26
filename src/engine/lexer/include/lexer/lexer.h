@@ -4,12 +4,12 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#ifndef LEXER_H
-#define LEXER_H
+#ifndef KAR_LEXER_H
+#define KAR_LEXER_H
 
 #include "core/stream.h"
 #include "core/module.h"
 
-bool k_lexer_run(KStream* stream, KModule* module);
+bool kar_lexer_run(KarStream* stream, KarModule* module);
 
-#endif // LEXER_H
+#endif // KAR_LEXER_H

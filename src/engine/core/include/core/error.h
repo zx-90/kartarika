@@ -4,20 +4,20 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#ifndef ERROR_H
-#define ERROR_H
+#ifndef KAR_ERROR_H
+#define KAR_ERROR_H
 
 #include <stddef.h>
 
 typedef struct {
 	size_t number;
 	char* description;
-} KError;
+} KarError;
 
-KError* k_error_register(size_t number, const char* format, ...);
+KarError* kar_error_register(size_t number, const char* format, ...);
 
-KError* k_error_get_last();
-size_t k_error_get_last_number();
-const char* k_error_get_last_description();
+KarError* kar_error_get_last();
+size_t kar_error_get_last_number();
+const char* kar_error_get_last_description();
 
-#endif // ERROR_H
+#endif // KAR_ERROR_H

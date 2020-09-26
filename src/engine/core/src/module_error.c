@@ -8,12 +8,12 @@
 
 static size_t ERROR_COUNT = 0;
 
-void k_module_error_set(KModule* module, KCursor* cursor, int code, const char* description) {
-	KModuleError error = { module, *cursor, code, description };
-	k_module_error_register(&error);
+void kar_module_error_set(KarModule* module, KarCursor* cursor, int code, const char* description) {
+	KarModuleError error = { module, *cursor, code, description };
+	kar_module_error_register(&error);
 }
 
-void k_module_error_register(KModuleError* error) {
+void kar_module_error_register(KarModuleError* error) {
 	fprintf(stderr, "Ошибка номер %d\n", error->code);
 	fprintf(stderr, "\tМодуль: %s\n", error->module->name);
 	fprintf(stderr, "\tСтрока %d, столбец %d\n", error->cursor.line, error->cursor.column);
@@ -21,6 +21,6 @@ void k_module_error_register(KModuleError* error) {
 	ERROR_COUNT++;
 }
 
-size_t k_module_error_get_count() {
+size_t kar_module_error_get_count() {
 	return ERROR_COUNT;
 }

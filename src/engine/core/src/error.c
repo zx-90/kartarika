@@ -11,35 +11,35 @@
 #include "core/alloc.h"
 #include "core/string.h"
 
-KError error = {0, NULL};
+KarError error = {0, NULL};
 
-KError* k_error_register(size_t number, const char* format, ...) {
+KarError* kar_error_register(size_t number, const char* format, ...) {
 	error.number = number;
 	if (error.description) {
-		K_FREE(error.description);
+		KAR_FREE(error.description);
 	}
 	
 	va_list args;
 	
 	va_start(args, format);
-	size_t size = k_string_format_args_size(format, args);
+	size_t size = kar_string_format_args_size(format, args);
 	va_end(args);
 	
 	va_start(args, format);
-	error.description = k_string_format_args(format, size, args);
+	error.description = kar_string_format_args(format, size, args);
 	va_end(args);
 	
 	return &error;
 }
 
-KError* k_error_get_last() {
+KarError* kar_error_get_last() {
 	return &error;
 }
 
-size_t k_error_get_last_number() {
+size_t kar_error_get_last_number() {
 	return error.number;
 }
 
-const char* k_error_get_last_description() {
+const char* kar_error_get_last_description() {
 	return error.description;
 }

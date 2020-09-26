@@ -18,24 +18,24 @@ int main(int argc, char** argv) {
 	}
 	printf("%s\n", argv[1]);
 	
-	KStream* file = k_stream_create(argv[1]);
-	KModule* module = k_module_create(argv[1]);
+	KarStream* file = kar_stream_create(argv[1]);
+	KarModule* module = kar_module_create(argv[1]);
 	
-	if (!k_lexer_run(file, module)) {
+	if (!kar_lexer_run(file, module)) {
 		fprintf(stderr, "Ошибка при парсинге файла в лексере.\n");
 		return 1;
 	}
 	
-	if (!k_parser_run(module)) {
+	if (!kar_parser_run(module)) {
 		fprintf(stderr, "Ошибка при парсинге файла в парсере.\n");
 		return 1;
 	}
-	k_token_print(module->token, stdout);
+	kar_token_print(module->token, stdout);
 	
-	k_generator_run(module);
+	kar_generator_run(module);
 	
-	k_module_free(module);
-	k_stream_free(file);
+	kar_module_free(module);
+	kar_stream_free(file);
 
 	return 0;
 

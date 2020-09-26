@@ -4,13 +4,13 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#ifndef PARSER_H
-#define PARSER_H
+#ifndef KAR_PARSER_H
+#define KAR_PARSER_H
 
 #include <stdbool.h>
 
 #include "core/module.h"
 
-bool k_parser_run(KModule* module);
+bool kar_parser_run(KarModule* module);
 
-#endif // PARSER_H
+#endif // KAR_PARSER_H

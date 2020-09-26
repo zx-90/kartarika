@@ -4,8 +4,8 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#ifndef STRING_BUILDER_H
-#define STRING_BUILDER_H
+#ifndef KAR_STRING_BUILDER_H
+#define KAR_STRING_BUILDER_H
 
 #include <stddef.h>
 #include <stdbool.h>
@@ -14,13 +14,13 @@ typedef struct {
 	char* str;
 	size_t length;
 	size_t capacity;
-} KStringBuilder;
+} KarStringBuilder;
 
-bool k_string_builder_init(KStringBuilder* builder);
-bool k_string_builder_init_book(KStringBuilder* builder, size_t book);
-void k_string_builder_final(KStringBuilder* builder);
-char* k_string_builder_final_get(KStringBuilder* builder);
+bool kar_string_builder_init(KarStringBuilder* builder);
+bool kar_string_builder_init_book(KarStringBuilder* builder, size_t book);
+void kar_string_builder_final(KarStringBuilder* builder);
+char* kar_string_builder_final_get(KarStringBuilder* builder);
 
-bool k_string_builder_push_char(KStringBuilder* str, const char c);
+bool kar_string_builder_push_char(KarStringBuilder* str, const char c);
 
-#endif // STRING_BUILDER_H
+#endif // KAR_STRING_BUILDER_H

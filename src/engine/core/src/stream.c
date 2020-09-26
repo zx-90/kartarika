@@ -12,14 +12,14 @@
 
 // TODO: Добавить логирование сообщений об ошибках.
 
-KStream* k_stream_create(const char* path) {
+KarStream* kar_stream_create(const char* path) {
 	FILE* file = fopen(path, "r");
 	// TODO: Сообщение об ошибке (но ещё перевод нужен): printf("Error: %d (%s)\n", errno, strerror(errno))
 	if (file == NULL) {
 		return NULL;
 	}
 	
-	K_CREATE(result, KStream);
+	KAR_CREATE(result, KarStream);
 	if (result == NULL) {
 		return NULL;
 	}
@@ -30,21 +30,21 @@ KStream* k_stream_create(const char* path) {
 	return result;
 }
 
-bool k_stream_good(KStream* stream) {
+bool kar_stream_good(KarStream* stream) {
 	if (stream == NULL) {
 		return false;
 	}
 	return stream->good;
 }
 
-bool k_stream_eof(KStream* stream) {
+bool kar_stream_eof(KarStream* stream) {
 	if (stream == NULL) {
 		return false;
 	}
 	return feof(stream->data);
 }
 
-char k_stream_get(KStream* stream) {
+char kar_stream_get(KarStream* stream) {
 	if (stream == NULL) {
 		return 0;
 	}
@@ -55,11 +55,11 @@ char k_stream_get(KStream* stream) {
 	return (char)result;
 }
 
-void k_stream_free(KStream* stream) {
+void kar_stream_free(KarStream* stream) {
 	if (stream == NULL) {
 		return;
 	}
 	// TODO: проверять возвращаемое значение функции fclose.
 	fclose(stream->data);
-	K_FREE(stream);
+	KAR_FREE(stream);
 }

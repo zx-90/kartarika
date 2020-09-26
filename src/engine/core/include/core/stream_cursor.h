@@ -4,28 +4,28 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#ifndef STREAM_CURSOR_H
-#define STREAM_CURSOR_H
+#ifndef KAR_STREAM_CURSOR_H
+#define KAR_STREAM_CURSOR_H
 
 #include "stream.h"
 #include "cursor.h"
 
 typedef struct {
-	KStream* stream;
-	KCursor cursor;
+	KarStream* stream;
+	KarCursor cursor;
 	char* currentChar;
-} KStreamCursor;
+} KarStreamCursor;
 
-KStreamCursor* k_stream_cursor_create(KStream* stream);
+KarStreamCursor* kar_stream_cursor_create(KarStream* stream);
 
-void k_stream_cursor_free(KStreamCursor* stream);
+void kar_stream_cursor_free(KarStreamCursor* stream);
 
-bool k_stream_cursor_is_good(const KStreamCursor* stream);
-bool k_stream_cursor_is_equal(const KStreamCursor* stream, const char* stamp);
-bool k_stream_cursor_is_one_of(const KStreamCursor* stream, const char** stamps, size_t stamp_count);
-bool k_stream_cursor_is_eof(const KStreamCursor* stream);
+bool kar_stream_cursor_is_good(const KarStreamCursor* stream);
+bool kar_stream_cursor_is_equal(const KarStreamCursor* stream, const char* stamp);
+bool kar_stream_cursor_is_one_of(const KarStreamCursor* stream, const char** stamps, size_t stamp_count);
+bool kar_stream_cursor_is_eof(const KarStreamCursor* stream);
 
-bool k_stream_cursor_next(KStreamCursor* stream);
-char* k_stream_cursor_get(KStreamCursor* stream);
+bool kar_stream_cursor_next(KarStreamCursor* stream);
+char* kar_stream_cursor_get(KarStreamCursor* stream);
 
-#endif // STREAM_CURSOR_H
+#endif // KAR_STREAM_CURSOR_H

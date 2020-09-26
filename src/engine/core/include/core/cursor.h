@@ -4,8 +4,8 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#ifndef CURSOR_H
-#define CURSOR_H
+#ifndef KAR_CURSOR_H
+#define KAR_CURSOR_H
 
 #include <stdbool.h>
 
@@ -14,10 +14,10 @@ typedef struct {
 	int column;
 	bool newFile;
 	bool newLine;
-} KCursor;
+} KarCursor;
 
-void k_cursor_init(KCursor* cursor);
-void k_cursor_next(KCursor* cursor);
-void k_cursor_next_line(KCursor* cursor);
+void kar_cursor_init(KarCursor* cursor);
+void kar_cursor_next(KarCursor* cursor);
+void kar_cursor_next_line(KarCursor* cursor);
 
-#endif // CURSOR_H
+#endif // KAR_CURSOR_H

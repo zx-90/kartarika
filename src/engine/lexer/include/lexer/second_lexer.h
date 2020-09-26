@@ -4,11 +4,11 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#ifndef SECOND_LEXER_H
-#define SECOND_LEXER_H
+#ifndef KAR_SECOND_LEXER_H
+#define KAR_SECOND_LEXER_H
 
 #include "core/module.h"
 
-bool k_second_lexer_run(KModule* module);
+bool kar_second_lexer_run(KarModule* module);
 
-#endif // SECOND_LEXER_H
+#endif // KAR_SECOND_LEXER_H

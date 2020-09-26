@@ -4,17 +4,17 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#ifndef PARSER_ELEMENTS_H
-#define PARSER_ELEMENTS_H
+#ifndef KAR_PARSER_ELEMENTS_H
+#define KAR_PARSER_ELEMENTS_H
 
-bool k_parser_split_by_lines(KToken* token);
-bool k_parser_split_by_blocks(KToken* token);
-bool k_parser_extern_brackets(KToken* token);
-bool k_parser_make_path(KToken* token);
+bool kar_parser_split_by_lines(KarToken* token);
+bool kar_parser_split_by_blocks(KarToken* token);
+bool kar_parser_extern_brackets(KarToken* token);
+bool kar_parser_make_path(KarToken* token);
 
-bool k_parser_remove_spaces(KToken* token);
+bool kar_parser_remove_spaces(KarToken* token);
 
-bool k_parser_make_return(KToken* token);
-bool k_parser_make_function(KToken* token);
+bool kar_parser_make_return(KarToken* token);
+bool kar_parser_make_function(KarToken* token);
 
-#endif // PARSER_ELEMENTS_H
+#endif // KAR_PARSER_ELEMENTS_H
