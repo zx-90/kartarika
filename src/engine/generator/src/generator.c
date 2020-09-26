@@ -6,9 +6,9 @@
 
 #include "generator/generator.h"
 
+#include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <stdlib.h>
 
 #include <llvm-c/Core.h>
 #include <llvm-c/Target.h>

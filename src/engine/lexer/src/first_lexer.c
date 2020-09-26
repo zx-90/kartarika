@@ -6,7 +6,6 @@
 
 #include "lexer/first_lexer.h"
 
-#include <stdlib.h>
 #include <string.h>
 
 #include "core/alloc.h"

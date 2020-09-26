@@ -5,7 +5,6 @@
 */
 
 #include <stdbool.h>
-#include <stdlib.h>
 
 #include "core/alloc.h"
 #include "core/token.h"

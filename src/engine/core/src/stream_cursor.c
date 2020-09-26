@@ -6,7 +6,6 @@
 
 #include "core/stream_cursor.h"
 
-#include <stdlib.h>
 #include <string.h>
 
 #include "core/alloc.h"

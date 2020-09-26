@@ -8,11 +8,12 @@
 #define ALLOC_H
 
 #include <stdlib.h>
-#include <stdio.h>
 
 // #define K_DEBUG
 
 #ifdef K_DEBUG
+
+#include <stdio.h>
 
 #define K_CREATE(var, type)\
     type* var = (type*)malloc(sizeof(type)); \

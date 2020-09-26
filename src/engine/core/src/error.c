@@ -7,7 +7,6 @@
 #include "core/error.h"
 
 #include <stddef.h>
-#include <stdlib.h>
 
 #include "core/alloc.h"
 #include "core/string.h"
