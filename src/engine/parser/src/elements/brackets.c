@@ -7,10 +7,11 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "core/alloc.h"
 #include "core/token.h"
 
 static bool extern_bracket(KToken* token) {
-	size_t* opens = (size_t*)malloc(sizeof(size_t) * token->children_count);
+	K_CREATES(opens, size_t, token->children_count);
 	size_t opens_cursor = 0;
 	for (size_t i = 0; i < token->children_count; ++i) {
 		if (token->children[i]->type == TOKEN_SIGN_OPEN_BRACES) {
@@ -19,7 +20,7 @@ static bool extern_bracket(KToken* token) {
 		}
 		if (token->children[i]->type == TOKEN_SIGN_CLOSE_BRACES) {
 			if (opens_cursor == 0) {
-				free(opens);
+				K_FREE(opens);
 				return false;
 			}
 			opens_cursor--;
@@ -32,7 +33,7 @@ static bool extern_bracket(KToken* token) {
 			i = open + 1;
 		}
 	}
-	free(opens);
+	K_FREE(opens);
 	return opens_cursor == 0;
 }
 

@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "core/alloc.h"
 #include "core/string_builder.h"
 
 static bool get_utf8_symbol(KStream* stream, char** res) {
@@ -62,7 +63,7 @@ static bool get_utf8_symbol(KStream* stream, char** res) {
 }
 
 KStreamCursor* k_stream_cursor_create(KStream* stream) {
-	KStreamCursor* cursor = (KStreamCursor*)malloc(sizeof(KStreamCursor));
+	K_CREATE(cursor, KStreamCursor);
 	if (!cursor) {
 		return NULL;
 	}
@@ -76,9 +77,9 @@ KStreamCursor* k_stream_cursor_create(KStream* stream) {
 
 void k_stream_cursor_free(KStreamCursor* stream) {
 	if (stream->currentChar) {
-		free(stream->currentChar);
+		K_FREE(stream->currentChar);
 	}
-	free(stream);
+	K_FREE(stream);
 }
 
 bool k_stream_cursor_is_good(const KStreamCursor* stream) {
@@ -107,7 +108,7 @@ bool k_stream_cursor_is_eof(const KStreamCursor* stream) {
 
 bool k_stream_cursor_next(KStreamCursor* stream) {
 	if (stream->currentChar) {
-		free(stream->currentChar);
+		K_FREE(stream->currentChar);
 		stream->currentChar = NULL;
 	}
 	bool b = get_utf8_symbol(stream->stream, &stream->currentChar);

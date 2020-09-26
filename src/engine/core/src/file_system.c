@@ -16,6 +16,7 @@
 #include <errno.h>
 #include <unistd.h>
 
+#include "core/alloc.h"
 #include "core/string.h"
 
 bool k_file_system_is_file(const char* path) {
@@ -44,7 +45,7 @@ char** k_file_create_directory_list(const char* path, size_t* count) {
 		(*count)++;
 	}
 	
-	char** result = (char**)malloc(sizeof(char*) * (*count));
+	K_CREATES(result, char*, *count);
 	if (!result) {
 		return NULL;
 	}
@@ -57,12 +58,12 @@ char** k_file_create_directory_list(const char* path, size_t* count) {
 			(*count)--;
 			continue;
 		}
-		char* element = (char*)malloc(sizeof(char) * (strlen(ent->d_name) + 1));
+		K_CREATES(element, char, strlen(ent->d_name) + 1);
 		if (!element) {
 			while (i--) {
-				free(result[i]);
+				K_FREE(result[i]);
 			}
-			free(result);
+			K_FREE(result);
 			return NULL;
 		}
 		strcpy(element, ent->d_name);
@@ -92,7 +93,7 @@ char** k_file_create_absolute_directory_list(const char* path, size_t* count) {
 	for (i = 0; i < *count; i++) {
 		char* file_name = result[i];
 		char* absolute_file_name = k_string_concat(path2, file_name);
-		free(result[i]);
+		K_FREE(result[i]);
 		result[i] = absolute_file_name;
 	}
 	return result;
@@ -108,9 +109,9 @@ char* k_file_load(const char* path) {
 	size_t size = (size_t)ftell(f);
 	
 	fseek(f, 0, SEEK_SET);
-	char* result = (char*)malloc(sizeof(char) * (size + 1));
+	K_CREATES(result, char, size + 1);
 	if (size != fread(result, sizeof(char), size, f)) {
-		free(result);
+		K_FREE(result);
 		return NULL;
 	}
 	

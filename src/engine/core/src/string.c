@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "core/alloc.h"
+
 char* k_string_format(const char* format, ...) {
 	va_list args;
 	
@@ -17,7 +19,7 @@ char* k_string_format(const char* format, ...) {
 	size_t size = (size_t)vsnprintf(NULL, 0, format, args);
 	va_end(args);
 	
-	char* result = (char*)malloc(sizeof(char) * (size + 1));
+	K_CREATES(result, char, size + 1);
 	if (!result) {
 		return NULL;
 	}
@@ -34,7 +36,7 @@ size_t k_string_format_args_size(const char* format, va_list args) {
 }
 
 char* k_string_format_args(const char* format, size_t size, va_list args) {
-	char* result = (char*)malloc(sizeof(char) * (size + 1));
+	K_CREATES(result, char, size + 1);
 	if (!result) {
 		return NULL;
 	}
@@ -49,7 +51,7 @@ char* k_string_concat(const char* str1, const char* str2)
 	size_t len1 = strlen(str1);
 	size_t len2 = strlen(str2);
 	size_t len = len1 + len2;
-	char* str = (char*)malloc(sizeof(char) * (len + 1));
+	K_CREATES(str, char, len + 1);
 	strcpy(str, str1);
 	strcpy(str + len1, str2);
 	str[len] = 0;
@@ -58,7 +60,7 @@ char* k_string_concat(const char* str1, const char* str2)
 
 void k_string_list_free(char** list, size_t count) {
 	while(count--) {
-		free(list[count]);
+		K_FREE(list[count]);
 	}
-	free(list);
+	K_FREE(list);
 }

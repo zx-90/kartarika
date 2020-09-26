@@ -7,7 +7,8 @@
 #include "core/stream.h"
 
 #include <stdio.h>
-#include <stdlib.h>
+
+#include "core/alloc.h"
 
 // TODO: Добавить логирование сообщений об ошибках.
 
@@ -18,7 +19,7 @@ KStream* k_stream_create(const char* path) {
 		return NULL;
 	}
 	
-	KStream* result = (KStream*)malloc(sizeof(KStream));
+	K_CREATE(result, KStream);
 	if (result == NULL) {
 		return NULL;
 	}
@@ -60,5 +61,5 @@ void k_stream_free(KStream* stream) {
 	}
 	// TODO: проверять возвращаемое значение функции fclose.
 	fclose(stream->data);
-	free(stream);
+	K_FREE(stream);
 }

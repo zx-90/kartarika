@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include "core/alloc.h"
 #include "core/string.h"
 
 KError error = {0, NULL};
@@ -16,7 +17,7 @@ KError error = {0, NULL};
 KError* k_error_register(size_t number, const char* format, ...) {
 	error.number = number;
 	if (error.description) {
-		free(error.description);
+		K_FREE(error.description);
 	}
 	
 	va_list args;

@@ -10,10 +10,12 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define INIT_CAPACITY 16
+#include "core/alloc.h"
+
+#define INIT_CAPACITY (size_t)16
 
 bool k_string_builder_init(KStringBuilder* builder) {
-	builder->str = (char*)malloc(sizeof(char) * INIT_CAPACITY);
+	K_ALLOCS(builder->str, char, INIT_CAPACITY);
 	if (!builder->str) {
 		return false;
 	}
@@ -24,7 +26,7 @@ bool k_string_builder_init(KStringBuilder* builder) {
 }
 
 bool k_string_builder_init_book(KStringBuilder* builder, size_t book) {
-	builder->str = (char*)malloc(sizeof(char) * book);
+	K_ALLOCS(builder->str, char, book);
 	if (!builder->str) {
 		return false;
 	}
@@ -35,7 +37,7 @@ bool k_string_builder_init_book(KStringBuilder* builder, size_t book) {
 }
 
 void k_string_builder_final(KStringBuilder* builder) {
-	free(builder->str);
+	K_FREE(builder->str);
 }
 
 char* k_string_builder_final_get(KStringBuilder* builder) {
@@ -48,12 +50,12 @@ bool k_string_builder_push_char(KStringBuilder* str, const char c) {
 		return false;
 	}
 	if (str->length == str->capacity - 1) {
-		char* new_str = (char*)malloc(sizeof(char) * (str->capacity * 2));
+		K_CREATES(new_str, char, str->capacity * 2);
 		if (!new_str) {
 			return false;
 		}
 		strcpy(new_str, str->str);
-		free(str->str);
+		K_FREE(str->str);
 		str->str = new_str;
 		str->capacity *= 2;
 	}

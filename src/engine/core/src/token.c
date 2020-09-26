@@ -11,11 +11,12 @@
 #include <stdio.h>
 #include <stddef.h>
 
+#include "core/alloc.h"
 #include "core/string.h"
 
 KToken* k_token_create()
 {
-	KToken* token = (KToken*)malloc(sizeof(KToken));
+	K_CREATE(token, KToken);
 	
 	token->type = TOKEN_UNKNOWN;
 	k_cursor_init(&token->cursor);
@@ -31,16 +32,16 @@ KToken* k_token_create()
 void k_token_free(KToken* token)
 {
 	if (token->str) {
-		free(token->str);
+		K_FREE(token->str);
 	}
 	size_t n = token->children_count;
 	while(n) {
 		k_token_free(token->children[n]);
 	}
 	if (token->children) {
-		free(token->children);
+		K_FREE(token->children);
 	}
-	free(token);
+	K_FREE(token);
 }
 
 bool k_token_check_type(const KToken* token, const KTokenType type) {
@@ -53,14 +54,14 @@ bool k_token_check_type_name(const KToken* token, const KTokenType type, const c
 
 void k_token_set_str(KToken* token, const char* str) {
 	if (token->str) {
-		free(token->str);
+		K_FREE(token->str);
 	}
 	if (!str) {
 		token->str = NULL;
 		return;
 	}
 	size_t length = strlen(str);
-	token->str = malloc(length + 1);
+	K_ALLOCS(token->str, char, length + 1);
 	strcpy(token->str, str);
 }
 
@@ -70,7 +71,7 @@ void k_token_add_str(KToken* token, const char* str) {
 		return;
 	}
 	char* new_string = k_string_concat(token->str, str);
-	free(token->str);
+	K_FREE(token->str);
 	token->str = new_string;
 }
 
@@ -81,14 +82,14 @@ static void k_token_wide_capacity(KToken* token) {
 	} else {
 		new_children_capacity = token->children_capacity * 2;
 	}
-	KToken** new_children = (KToken**)malloc(sizeof(KToken*) * new_children_capacity);
+	K_CREATES(new_children, KToken*, new_children_capacity);
 	if (token->children) {
 		size_t n = token->children_count;
 		while (n) {
 			n--;
 			new_children[n] = token->children[n];
 		}
-		free(token->children);
+		K_FREE(token->children);
 	}
 	token->children_capacity = new_children_capacity;
 	token->children = new_children;
@@ -185,7 +186,7 @@ int k_token_snprint_level(const KToken* token, size_t level) {
 
 char* k_token_sprint(const KToken* token) {
 	size_t size = (size_t)k_token_snprint_level(token, 0);
-	char* result = (char*)malloc(size * sizeof(char));
+	K_CREATES(result, char, size);
 	k_token_sprint_level(token, result, 0);
 	return result;
 }

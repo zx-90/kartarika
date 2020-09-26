@@ -9,11 +9,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "core/alloc.h"
+
 KModule* k_module_create(const char* name) {
-	KModule* module = (KModule*)malloc(sizeof(KModule));
+	K_CREATE(module, KModule);
 	
 	size_t len = strlen(name);
-	module->name = (char*)malloc((len + 1) * sizeof(char));
+	K_ALLOCS(module->name, char, len + 1);
 	strcpy(module->name, name);
 	module->name[len] = 0;
 	
@@ -24,6 +26,6 @@ KModule* k_module_create(const char* name) {
 }
 
 void k_module_free(KModule* module) {
-	free(module->name);
-	free(module);
+	K_FREE(module->name);
+	K_FREE(module);
 }

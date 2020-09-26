@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "core/alloc.h"
 #include "core/file_system.h"
 #include "core/stream.h"
 #include "core/string.h"
@@ -25,11 +26,11 @@ void k_path_element_init(KPathElement* element) {
 
 bool k_path_element_set(KPathElement* element, const char* path) {
 	if (element->path != NULL) {
-		free(element->path);
+		K_FREE(element->path);
 	}
 	
 	size_t len = strlen(path);
-	element->path = (char*)malloc(sizeof(char) * (len + 1));
+	K_ALLOCS(element->path, char, len + 1);
 	if (!element->path) {
 		return false;
 	}
@@ -41,7 +42,7 @@ bool k_path_element_set(KPathElement* element, const char* path) {
 }
 
 KTest* k_test_create() {
-	KTest* result = (KTest*)malloc(sizeof(KTest));
+	K_CREATE(result, KTest);
 	if (!result) {
 		return NULL;
 	}
@@ -62,7 +63,7 @@ KTest* k_test_create() {
 }
 
 void k_test_free(KTest* test) {
-	free(test);
+	K_FREE(test);
 }
 
 static KError* check_file_object(const char* path, bool checkIsFile, KPathElement* result) {
@@ -242,7 +243,7 @@ KError* k_test_run(KTest* test, const char* dir) {
 	char* path2 = k_string_concat(dir, "/");
 	char* project_path = k_string_concat(path2, test->project_file.path);
 	KStream* file = k_stream_create(project_path);
-	free(project_path);
+	K_FREE(project_path);
 	KModule* module = k_module_create(test->project_file.path);
 	
 	{
@@ -255,7 +256,7 @@ KError* k_test_run(KTest* test, const char* dir) {
 			char* testResult = k_token_sprint(module->token);
 			char* gold_path = k_string_concat(path2, test->lexer_file.path);
 			char* gold = k_file_load(gold_path);
-			free(gold_path);
+			K_FREE(gold_path);
 			
 			// TODO: Сделать сравнение более подробно хотя бы номер первой строки, в которой не сопадает исходный файл с тестом.
 			if (strcmp(testResult, gold)) {
@@ -292,7 +293,7 @@ KError* k_test_run(KTest* test, const char* dir) {
 			char* testResult = k_token_sprint(module->token);
 			char* gold_path = k_string_concat(path2, test->parser_file.path);
 			char* gold = k_file_load(gold_path);
-			free(gold_path);
+			K_FREE(gold_path);
 			
 			// TODO: Сделать сравнение более подробно хотя бы номер первой строки, в которой не сопадает исходный файл с тестом.
 			if (testResult != gold) {

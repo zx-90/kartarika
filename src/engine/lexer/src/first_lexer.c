@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "core/alloc.h"
 #include "core/module_error.h"
 
 const char* ERROR_READ_STREAM = "Не могу прочитать модуль. Нет доступа к модулю, он повреждён или удалён.";
@@ -18,20 +19,20 @@ const char* ERROR_END_OF_FILE_PARSING_STRING = "Неожиданный коне�
 const char* ERROR_END_OF_FILE_PARSING_COMMENT = "Неожиданный конец файла при разборе многострочного комментария. Возможно забыт символ \"!\" для завершения комментария в конце файла.";
 
 KFirstLexer* k_first_lexer_create(KStream* stream, KModule* module) {
-	KFirstLexer* lexer = (KFirstLexer*)malloc(sizeof(KFirstLexer));
+	K_CREATE(lexer, KFirstLexer);
 	if (!lexer) {
 		return NULL;
 	}
 	
 	lexer->streamCursor = k_stream_cursor_create(stream);
 	if (!lexer->streamCursor) {
-		free(lexer);
+		K_FREE(lexer);
 		return NULL;
 	}
 	
 	lexer->current = k_token_create();
 	if (!lexer->current) {
-		free(lexer);
+		K_FREE(lexer);
 		return NULL;
 	}
 	lexer->current->cursor = lexer->streamCursor->cursor;
@@ -45,9 +46,9 @@ KFirstLexer* k_first_lexer_create(KStream* stream, KModule* module) {
 }
 
 void k_first_lexer_free(KFirstLexer* lexer) {
-	free(lexer->current);
-	free(lexer->streamCursor);
-	free(lexer);
+	K_FREE(lexer->current);
+	K_FREE(lexer->streamCursor);
+	K_FREE(lexer);
 }
 
 // -----------------------------------
@@ -56,7 +57,7 @@ static char* string_to_hex(const char* input)
     static const char* const lut = "0123456789ABCDEF";
     size_t len = strlen(input);
 
-    char* output = (char*)malloc(sizeof(char) * len * 2 + 1);
+	K_CREATES(output, char, len * 2 + 1);
 	char* cur = output;
 	while(!*input) {
 		*cur++ = lut[*input >> 4];
