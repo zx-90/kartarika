@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "core/alloc.h"
+#include "core/keyword.h"
 #include "core/module_error.h"
 
 const char* ERROR_READ_STREAM = "Не могу прочитать модуль. Нет доступа к модулю, он повреждён или удалён.";
@@ -67,8 +68,26 @@ static char* string_to_hex(const char* input)
     return output;
 }
 
-static const char* SPACES[] = {" ", "\t", "\r"};
-static const char* SIGNS[] = {"(", ")", ".", "+", "-", "*", "/", "%", ",", "=", ":", "?"};
+static const char* SPACES[] = {
+	KAR_KEYWORD_SPACE,
+	KAR_KEYWORD_SPACE_TAB,
+	KAR_KEYWORD_SPACE_CARRIAGE_RETURN
+};
+
+static const char* SIGNS[] = {
+	KAR_KEYWORD_SIGN_OPEN_BRACES,
+	KAR_KEYWORD_SIGN_CLOSE_BRACES,
+	KAR_KEYWORD_SIGN_NULLABLE,
+	KAR_KEYWORD_SIGN_GET_FIELD,
+	KAR_KEYWORD_SIGN_COMMA,
+	KAR_KEYWORD_SIGN_COLON,
+	KAR_KEYWORD_SIGN_ASSIGN,
+	KAR_KEYWORD_SIGN_PLUS,
+	KAR_KEYWORD_SIGN_MINUS,
+	KAR_KEYWORD_SIGN_MUL,
+	KAR_KEYWORD_SIGN_DIV,
+	KAR_KEYWORD_SIGN_MOD
+};
 
 static bool is_space(KarFirstLexer* lexer) {
 	return kar_stream_cursor_is_one_of(lexer->streamCursor, SPACES, sizeof(SPACES) / sizeof(char*));
@@ -156,11 +175,11 @@ static void parse_string(KarFirstLexer* lexer) {
 		if (!kar_stream_cursor_next(lexer->streamCursor)) {
 			kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 		}
-		if (kar_stream_cursor_is_equal(lexer->streamCursor, "\"")) {
+		if (kar_stream_cursor_is_equal(lexer->streamCursor, KAR_KEYWORD_STRING_END)) {
 			next_token_default(lexer, KAR_LEXER_STATUS_UNKNOWN);
 			return;
 		}
-		if (kar_stream_cursor_is_equal(lexer->streamCursor, "%")) {
+		if (kar_stream_cursor_is_equal(lexer->streamCursor, KAR_KEYWORD_STRING_ESCAPE)) {
 			kar_token_add_str(lexer->current, kar_stream_cursor_get(lexer->streamCursor));
 			if (!kar_stream_cursor_next(lexer->streamCursor)) {
 				kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
@@ -179,7 +198,7 @@ static void parse_singleline_comment(KarFirstLexer* lexer) {
 		if (!kar_stream_cursor_next(lexer->streamCursor)) {
 			kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 		}
-		if (kar_stream_cursor_is_equal(lexer->streamCursor, "\n")) {
+		if (kar_stream_cursor_is_equal(lexer->streamCursor, KAR_KEYWORD_SPACE_NEW_LINE)) {
 			next_token_default(lexer, KAR_LEXER_STATUS_UNKNOWN);
 			return;
 		}
@@ -197,7 +216,7 @@ static void parse_multiline_comment(KarFirstLexer* lexer) {
 		if (!kar_stream_cursor_next(lexer->streamCursor)) {
 			kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 		}
-		if (kar_stream_cursor_is_equal(lexer->streamCursor, "!")) {
+		if (kar_stream_cursor_is_equal(lexer->streamCursor, KAR_KEYWORD_MULTILINE_COMMENT_END)) {
 			next_token_default(lexer, KAR_LEXER_STATUS_UNKNOWN);
 			return;
 		}
@@ -220,22 +239,22 @@ bool kar_first_lexer_run(KarFirstLexer* lexer) {
 		if (kar_stream_cursor_is_eof(streamCursor)) {
 			break;
 		}
-		if (kar_stream_cursor_is_equal(streamCursor, "\"")) {
+		if (kar_stream_cursor_is_equal(streamCursor, KAR_KEYWORD_STRING_START)) {
 			next_token(lexer, KAR_TOKEN_VAL_STRING, KAR_LEXER_STATUS_UNKNOWN);
 			parse_string(lexer);
 			continue;
 		}
-		if (kar_stream_cursor_is_equal(streamCursor, "№")) {
+		if (kar_stream_cursor_is_equal(streamCursor, KAR_KEYWORD_COMMENT_START)) {
 			next_token(lexer, KAR_TOKEN_COMMENT, KAR_LEXER_STATUS_UNKNOWN);
 			parse_singleline_comment(lexer);
 			continue;
 		}
-		if (kar_stream_cursor_is_equal(streamCursor, "!")) {
+		if (kar_stream_cursor_is_equal(streamCursor, KAR_KEYWORD_MULTILINE_COMMENT_START)) {
 			next_token(lexer, KAR_TOKEN_COMMENT, KAR_LEXER_STATUS_UNKNOWN);
 			parse_multiline_comment(lexer);
 			continue;
 		}
-		if (kar_stream_cursor_is_equal(streamCursor, "\n")) {
+		if (kar_stream_cursor_is_equal(streamCursor, KAR_KEYWORD_SPACE_NEW_LINE)) {
 			add_new_line(lexer);
 			continue;
 		}
@@ -270,5 +289,4 @@ bool kar_first_lexer_run(KarFirstLexer* lexer) {
 	}
 	push_token(lexer);
 	return kar_module_error_get_count() == 0;
-	
 }
