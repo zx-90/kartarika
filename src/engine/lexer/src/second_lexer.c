@@ -8,7 +8,7 @@
 
 #include <string.h>
 
-#include "core/keyword.h"
+#include "lexer/keyword.h"
 
 static void retype_if_check(KarToken* token, KarTokenType checkType, const char* str, KarTokenType newType) {
 	if (token->type == checkType && !strcmp(token->str, str)) {

@@ -9,8 +9,8 @@
 #include <string.h>
 
 #include "core/alloc.h"
-#include "core/keyword.h"
 #include "core/module_error.h"
+#include "lexer/keyword.h"
 
 const char* ERROR_READ_STREAM = "Не могу прочитать модуль. Нет доступа к модулю, он повреждён или удалён.";
 const char* ERROR_SYMBOL_STRING = "Ошибочный символ. Возможно файл повреждён или сохранён не в кодировке UTF-8.";
