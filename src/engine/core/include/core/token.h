@@ -11,6 +11,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#include "array.h"
 #include "cursor.h"
 #include "token_type.h"
 
@@ -18,11 +19,10 @@ typedef struct KarStructToken {
 	KarTokenType type;
 	KarCursor cursor;
 	char* str;
-
-	size_t children_count;
-	size_t children_capacity;
-	struct KarStructToken** children;
+	KarArray children;
 } KarToken;
+
+#define kar_token_child(token, num) ((KarToken*)(token)->children.items[(num)])
 
 KarToken* kar_token_create();
 void kar_token_free(KarToken* token);
@@ -33,12 +33,7 @@ bool kar_token_check_type_name(const KarToken* token, const KarTokenType type, c
 void kar_token_set_str(KarToken* token, const char* str);
 void kar_token_add_str(KarToken* token, const char* str);
 
-void kar_token_add_child(KarToken* token, KarToken* child);
-void kar_token_insert_child(KarToken* token, KarToken* child, size_t num);
-KarToken* kar_token_tear_child(KarToken* token, size_t num);
-void kar_token_erase_child(KarToken* token, size_t num);
-
-bool kar_token_foreach(KarToken* token, bool(*fn)(KarToken* token));
+KAR_ARRAY_HEADER(token_child, KarToken);
 
 void kar_token_print(const KarToken* token, FILE* stream);
 void kar_token_print_level(const KarToken* token, FILE* stream, size_t level);

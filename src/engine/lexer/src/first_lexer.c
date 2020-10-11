@@ -134,7 +134,7 @@ static void new_token(KarFirstLexer* lexer, KarTokenType type) {
 
 static void push_token(KarFirstLexer* lexer) {
 	if (strcmp(lexer->current->str, "") || lexer->current->type != KAR_TOKEN_UNKNOWN) {
-		kar_token_add_child(lexer->module->token, lexer->current);
+		kar_token_child_add(lexer->module->token, lexer->current);
 	}
 	new_token(lexer, KAR_TOKEN_UNKNOWN);
 }

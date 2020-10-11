@@ -20,23 +20,23 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 	if (token->type != KAR_TOKEN_INDENT) {
 		return false;
 	}
-	const KarToken* child1 = token->children[0];
+	const KarToken* child1 = kar_token_child(token, 0);
 	if (!kar_token_check_type_name(child1, KAR_TOKEN_IDENTIFIER, "Кар")) {
 		return false;
 	}
-	const KarToken* child2 = child1->children[0];
+	const KarToken* child2 = kar_token_child(child1, 0);
 	if (!kar_token_check_type(child2, KAR_TOKEN_SIGN_GET_FIELD)) {
 		return false;
 	}
-	const KarToken* child3 = child2->children[0];
+	const KarToken* child3 = kar_token_child(child2, 0);
 	if (!kar_token_check_type_name(child3, KAR_TOKEN_IDENTIFIER, "Печатать")) {
 		return false;
 	}
-	const KarToken* child4 = child3->children[0];
+	const KarToken* child4 = kar_token_child(child3, 0);
 	if (!kar_token_check_type(child4, KAR_TOKEN_SIGN_OPEN_BRACES)) {
 		return false;
 	}
-	const KarToken* child5 = child4->children[0];
+	const KarToken* child5 = kar_token_child(child4, 0);
 	if (!kar_token_check_type(child5, KAR_TOKEN_VAL_STRING)) {
 		return false;
 	}
@@ -61,8 +61,8 @@ static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilder
 		LLVMBasicBlockRef entry = LLVMAppendBasicBlock(main_func, "entry");
 		LLVMPositionBuilderAtEnd(builder, entry);
 	
-		for (size_t i = 0; i < token->children_count; ++i) {
-			generate_identifier(token->children[i], module, builder);
+		for (size_t i = 0; i < token->children.count; ++i) {
+			generate_identifier(kar_token_child(token, i), module, builder);
 		}
 		LLVMBuildRetVoid(builder);
 	} else {
@@ -76,9 +76,9 @@ static bool generate_module(const KarToken* token, LLVMModuleRef module, LLVMBui
 	if (token->type != KAR_TOKEN_MODULE) {
 		return false;
 	}
-	for (size_t i = 0; i < token->children_count; ++i) {
-		if (token->children[i]->type == KAR_TOKEN_FUNCTION) {
-			generate_function(token->children[i], module, builder);
+	for (size_t i = 0; i < token->children.count; ++i) {
+		if (kar_token_child(token, i)->type == KAR_TOKEN_FUNCTION) {
+			generate_function(kar_token_child(token, i), module, builder);
 		} else {
 			return false;
 		}

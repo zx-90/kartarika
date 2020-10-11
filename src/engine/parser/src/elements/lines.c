@@ -10,24 +10,20 @@
 
 bool kar_parser_split_by_lines(KarToken* token)
 {
-	if (token->children_count < 1 || token->children[0]->type != KAR_TOKEN_INDENT)
+	if (token->children.count < 1 || kar_token_child(token, 0)->type != KAR_TOKEN_INDENT)
 	{
 		return false;
 	}
 	size_t cursor = 0;
-	while (cursor != token->children_count)
+	while (cursor != token->children.count)
 	{
 		size_t j;
-		for (j = cursor + 1; j < token->children_count; ++j) {
-			if (token->children[j]->type == KAR_TOKEN_INDENT) {
+		for (j = cursor + 1; j < token->children.count; ++j) {
+			if (kar_token_child(token, j)->type == KAR_TOKEN_INDENT) {
 				break;
 			}
 		}
-		size_t k;
-		for (k = cursor + 1; k < j; ++k) {
-			KarToken* child = kar_token_tear_child(token, cursor + 1);
-			kar_token_add_child(token->children[cursor], child);
-		}
+		kar_token_child_move_to_end(token, kar_token_child(token, cursor), cursor + 1, j - cursor - 1);
 		cursor++;
 	}
 	return true;

@@ -133,6 +133,6 @@ static bool retype_all(KarToken* token) {
 }
 
 bool kar_second_lexer_run(KarModule* module) {
-	kar_token_foreach(module->token, retype_all);
+	kar_token_child_foreach_bool(module->token, retype_all);
 	return true;
 }

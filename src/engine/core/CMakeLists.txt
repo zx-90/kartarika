@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 
 set(lib_core_SRC
 
+src/array.c
 src/string_builder.c
 src/stream.c
 src/string.c

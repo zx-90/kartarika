@@ -9,17 +9,13 @@
 #include "core/token.h"
 
 static bool make_return(KarToken* token) {
-	if (token->type == KAR_TOKEN_INDENT && (token->children_count > 0) && token->children[0]->type == KAR_TOKEN_FUNC_RETURN) {
-		size_t i;
-		for (i = 1; i < token->children_count; ++i) {
-			KarToken* child = kar_token_tear_child(token, 1);
-			kar_token_add_child(token->children[0], child);
-		}
+	if (token->type == KAR_TOKEN_INDENT && (token->children.count > 0) && kar_token_child(token, 0)->type == KAR_TOKEN_FUNC_RETURN) {
+		kar_token_child_move_to_end(token, kar_token_child(token, 0), 1, token->children.count - 1);
 	}
 	return true;
 }
 
 bool kar_parser_make_return(KarToken* token)
 {
-	return kar_token_foreach(token, make_return);
+	return kar_token_child_foreach_bool(token, make_return);
 }

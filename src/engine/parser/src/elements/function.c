@@ -10,65 +10,62 @@
 
 bool kar_parser_make_function(KarToken* token)
 {
-	for (size_t i = 0; i < token->children_count; ++i) {
-		KarToken* child = token->children[i];
+	for (size_t i = 0; i < token->children.count; ++i) {
+		KarToken* child = kar_token_child(token, i);
 		size_t func;
-		for (func = 0; func < child->children_count; ++func) {
-			if (child->children[func]->type == KAR_TOKEN_FUNCTION) {
+		for (func = 0; func < child->children.count; ++func) {
+			if (kar_token_child(child, func)->type == KAR_TOKEN_FUNCTION) {
 				break;
 			}
 		}
-		if (func == child->children_count) {
+		if (func == child->children.count) {
 			continue;
 		}
 
 		KarToken* modifiers = kar_token_create();
 		modifiers->type = KAR_TOKEN_FUNC_MODIFIER;
-		modifiers->cursor = child->children[0]->cursor;
-		kar_token_insert_child(child, modifiers, 0);
-		for (size_t i = 1; i < func + 1; ++i) {
-			KarToken* modifier = kar_token_tear_child(child, 1);
-			kar_token_add_child(modifiers, modifier);
-		}
+		modifiers->cursor = kar_token_child(child, 0)->cursor;
+		kar_token_child_insert(child, modifiers, 0);
+		kar_token_child_move_to_end(child, modifiers, 1, func);
 		func = 1;
 
 		size_t funcName = func + 1;
-		if (funcName == child->children_count) {
+		if (funcName == child->children.count) {
 			continue;
 		}
-		if ( child->children[funcName]->type != KAR_TOKEN_IDENTIFIER ) {
+		if (kar_token_child(child, funcName)->type != KAR_TOKEN_IDENTIFIER ) {
 			continue;
 		}
 		
 		child->type = KAR_TOKEN_FUNCTION;
-		child->str = child->children[funcName]->str;
-		kar_token_erase_child(child, func);
+		child->str = kar_token_child(child, funcName)->str;
+		kar_token_child_erase(child, func);
 		
 		size_t signColon = func + 1;
 		size_t returnKeyword = func + 1;
-		if (returnKeyword != child->children_count) {
-			if (child->children[returnKeyword]->type != KAR_TOKEN_FUNC_RETURN_TYPE) {
+		if (returnKeyword != child->children.count) {
+			if (kar_token_child(child, returnKeyword)->type != KAR_TOKEN_FUNC_RETURN_TYPE) {
 				return false;
 			}
 			size_t returnType = returnKeyword + 1;
-			if (returnType == child->children_count) {
+			if (returnType == child->children.count) {
 				return false;
 			}
-			KarToken* returnTypeToken = kar_token_tear_child(child, returnType);
-			kar_token_add_child(child->children[returnKeyword], returnTypeToken);
+			KarToken* returnTypeToken = kar_token_child_tear(child, returnType);
+			kar_token_child_add(kar_token_child(child, returnKeyword), returnTypeToken);
 			signColon += 1;
 		}
 		
-		if ( signColon == child->children_count ) {
+		if ( signColon == child->children.count ) {
 			return false;
 		}
-		if (child->children[signColon]->type != KAR_TOKEN_SIGN_COLON) { // проверить есть ли тело функции.
+		if (kar_token_child(child, signColon)->type != KAR_TOKEN_SIGN_COLON) { // проверить есть ли тело функции.
 			return false;
 		}
-		if ((signColon + 1) == child->children_count) {
+		if ((signColon + 1) == child->children.count) {
 			return false;
 		}
-		kar_token_erase_child(child, signColon);
+		kar_token_child_erase(child, signColon);
 	}
 	return true;
 }

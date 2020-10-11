@@ -10,25 +10,22 @@
 #include "core/token.h"
 
 static bool extern_bracket(KarToken* token) {
-	KAR_CREATES(opens, size_t, token->children_count);
+	KAR_CREATES(opens, size_t, token->children.count);
 	size_t opens_cursor = 0;
-	for (size_t i = 0; i < token->children_count; ++i) {
-		if (token->children[i]->type == KAR_TOKEN_SIGN_OPEN_BRACES) {
+	for (size_t i = 0; i < token->children.count; ++i) {
+		if (kar_token_child(token, i)->type == KAR_TOKEN_SIGN_OPEN_BRACES) {
 			opens[opens_cursor] = i;
 			opens_cursor++;
 		}
-		if (token->children[i]->type == KAR_TOKEN_SIGN_CLOSE_BRACES) {
+		if (kar_token_child(token, i)->type == KAR_TOKEN_SIGN_CLOSE_BRACES) {
 			if (opens_cursor == 0) {
 				KAR_FREE(opens);
 				return false;
 			}
 			opens_cursor--;
 			size_t open = opens[opens_cursor];
-			for (size_t j = open + 1; j < i; ++j) {
-				KarToken* child = kar_token_tear_child(token, open + 1);
-				kar_token_add_child(token->children[open], child);
-			}
-			kar_token_erase_child(token, open + 1);
+			kar_token_child_move_to_end(token, kar_token_child(token, open), open + 1, i - open - 1);
+			kar_token_child_erase(token, open + 1);
 			i = open + 1;
 		}
 	}
@@ -38,5 +35,5 @@ static bool extern_bracket(KarToken* token) {
 
 bool kar_parser_extern_brackets(KarToken* token)
 {
-	return kar_token_foreach(token, extern_bracket);
+	return kar_token_child_foreach_bool(token, extern_bracket);
 }

@@ -10,9 +10,10 @@
 
 static bool remove_space(KarToken* token) {
 	size_t i;
-	for (i = 0; i < token->children_count; ++i) {
-		if ( (token->children[i]->type == KAR_TOKEN_SPACE) || (token->children[i]->type == KAR_TOKEN_INDENT && (token->children[i]->children_count == 0) ) ) {
-			kar_token_erase_child(token, i);
+	for (i = 0; i < token->children.count; ++i) {
+		KarToken* child = kar_token_child(token, i);
+		if ( (child->type == KAR_TOKEN_SPACE) || (child->type == KAR_TOKEN_INDENT && (child->children.count == 0) ) ) {
+			kar_token_child_erase(token, i);
 			i--;
 		}
 	}
@@ -21,5 +22,5 @@ static bool remove_space(KarToken* token) {
 
 bool kar_parser_remove_spaces(KarToken* token)
 {
-	return kar_token_foreach(token, remove_space);
+	return kar_token_child_foreach_bool(token, remove_space);
 }
