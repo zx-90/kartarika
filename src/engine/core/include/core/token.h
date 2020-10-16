@@ -36,9 +36,6 @@ void kar_token_add_str(KarToken* token, const char* str);
 KAR_ARRAY_HEADER(token_child, KarToken);
 
 void kar_token_print(const KarToken* token, FILE* stream);
-void kar_token_print_level(const KarToken* token, FILE* stream, size_t level);
-
-char* kar_token_sprint(const KarToken* token);
-char* kar_token_sprint_level(const KarToken* token, char* buffer, size_t level);
+char* kar_token_create_print(const KarToken* token);
 
 #endif // KAR_TOKEN_H

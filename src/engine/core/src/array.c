@@ -16,37 +16,23 @@ void kar_array_init(KarArray* array) {
 	array->items = NULL;
 }
 
-void kar_array_free(KarArray* array, KarArrayFreeFn* fn) {
-	size_t n = array->count;
-	while(n) {
-		n--;
-		fn(array->items[n]);
+void kar_array_clear(KarArray* array, KarArrayFreeFn* fn) {
+	while(array->count--) {
+		fn(array->items[array->count]);
 	}
 	if (array->items) {
 		KAR_FREE(array->items);
-		array->items = NULL;
 	}
 	kar_array_init(array);
 }
 
 static void kar_array_wide_capacity(KarArray* array) {
-	size_t new_capacity;
 	if (!array->capacity) {
-		new_capacity = 1;
+		array->capacity = 1;
 	} else {
-		new_capacity = array->capacity * 2;
+		array->capacity *= 2;
 	}
-	KAR_CREATES(new_items, void*, new_capacity);
-	if (array->items) {
-		size_t n = array->count;
-		while (n) {
-			n--;
-			new_items[n] = array->items[n];
-		}
-		KAR_FREE(array->items);
-	}
-	array->capacity = new_capacity;
-	array->items = new_items;
+	KAR_REALLOC(array->items, void*, array->capacity);
 }
 
 void kar_array_add(KarArray* array, void* child) {
@@ -65,8 +51,7 @@ void kar_array_insert(KarArray* array, void* child, size_t num) {
 	if (array->count == array->capacity) {
 		kar_array_wide_capacity(array);
 	}
-	size_t i;
-	for (i = array->count; i > num; --i) {
+	for (size_t i = array->count; i > num; --i) {
 		array->items[i] = array->items[i - 1];
 	}
 	array->items[num] = child;

@@ -14,10 +14,10 @@ typedef const char* KarString;
 
 void kar_string_list_free(char** list, size_t count);
 
-char* kar_string_format(const char* format, ...);
-
+char* kar_string_create_format(const char* format, ...);
 size_t kar_string_format_args_size(const char* format, va_list args);
-char* kar_string_format_args(const char* format, size_t size, va_list args);
-char* kar_string_concat(const char* str1, const char* str2);
+char* kar_string_create_format_args(const char* format, size_t size, va_list args);
+
+char* kar_string_create_concat(const char* str1, const char* str2);
 
 #endif // KAR_STRING_H

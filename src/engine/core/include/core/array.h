@@ -18,7 +18,7 @@ typedef struct {
 typedef void(KarArrayFreeFn)(void* item);
 
 void kar_array_init(KarArray* array);
-void kar_array_free(KarArray* array, KarArrayFreeFn* fn);
+void kar_array_clear(KarArray* array, KarArrayFreeFn* fn);
 
 void kar_array_add(KarArray* array, void* child);
 void kar_array_insert(KarArray* array, void* child, size_t num);

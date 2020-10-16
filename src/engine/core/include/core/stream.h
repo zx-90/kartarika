@@ -16,11 +16,10 @@ typedef struct {
 } KarStream;
 
 KarStream* kar_stream_create(const char* path);
+void kar_stream_free(KarStream* stream);
 
 bool kar_stream_good(KarStream* stream);
 bool kar_stream_eof(KarStream* stream);
 char kar_stream_get(KarStream* stream);
-
-void kar_stream_free(KarStream* stream);
 
 #endif // KAR_STREAM_H

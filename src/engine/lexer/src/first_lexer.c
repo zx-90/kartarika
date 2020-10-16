@@ -26,12 +26,15 @@ KarFirstLexer* kar_first_lexer_create(KarStream* stream, KarModule* module) {
 	
 	lexer->streamCursor = kar_stream_cursor_create(stream);
 	if (!lexer->streamCursor) {
+		kar_stream_cursor_free(lexer->streamCursor);
 		KAR_FREE(lexer);
 		return NULL;
 	}
 	
 	lexer->current = kar_token_create();
 	if (!lexer->current) {
+		kar_stream_cursor_free(lexer->streamCursor);
+		kar_token_free(lexer->current);
 		KAR_FREE(lexer);
 		return NULL;
 	}

@@ -239,8 +239,8 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 	}
 	
 	// TODO: "/" Получать через ОС, и вообще перенести в file_system или куда-то туда.
-	char* path2 = kar_string_concat(dir, "/");
-	char* project_path = kar_string_concat(path2, test->project_file.path);
+	char* path2 = kar_string_create_concat(dir, "/");
+	char* project_path = kar_string_create_concat(path2, test->project_file.path);
 	KarStream* file = kar_stream_create(project_path);
 	KAR_FREE(project_path);
 	KarModule* module = kar_module_create(test->project_file.path);
@@ -249,16 +249,18 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 		bool lexerResult = kar_lexer_run(file, module);
 		if (test->lexer_file.is) {
 			if (!lexerResult) {
+				kar_module_free(module);
 				return kar_error_register(1, "Ошибка в лексере. Ожидалось, что лексер отработает нормально.");
 			}
 			
-			char* testResult = kar_token_sprint(module->token);
-			char* gold_path = kar_string_concat(path2, test->lexer_file.path);
+			char* testResult = kar_token_create_print(module->token);
+			char* gold_path = kar_string_create_concat(path2, test->lexer_file.path);
 			char* gold = kar_file_load(gold_path);
 			KAR_FREE(gold_path);
 			
 			// TODO: Сделать сравнение более подробно хотя бы номер первой строки, в которой не сопадает исходный файл с тестом.
 			if (strcmp(testResult, gold)) {
+				kar_module_free(module);
 				return kar_error_register(1, "Ошибка в лексере. Выход теста не совпадает с ожидаемым.\n"
 					"Эталон:\n%s\nВывод программы:\n%s",
 					gold, testResult
@@ -289,8 +291,8 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 				return kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер отработает нормально.");
 			}
 		
-			char* testResult = kar_token_sprint(module->token);
-			char* gold_path = kar_string_concat(path2, test->parser_file.path);
+			char* testResult = kar_token_create_print(module->token);
+			char* gold_path = kar_string_create_concat(path2, test->parser_file.path);
 			char* gold = kar_file_load(gold_path);
 			KAR_FREE(gold_path);
 			

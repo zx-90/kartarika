@@ -20,14 +20,20 @@ KarStream* kar_stream_create(const char* path) {
 	}
 	
 	KAR_CREATE(result, KarStream);
-	if (result == NULL) {
-		return NULL;
-	}
 	
 	result->data = file;
 	result->good = true;
 	
 	return result;
+}
+
+void kar_stream_free(KarStream* stream) {
+	if (stream == NULL) {
+		return;
+	}
+	// TODO: проверять возвращаемое значение функции fclose.
+	fclose(stream->data);
+	KAR_FREE(stream);
 }
 
 bool kar_stream_good(KarStream* stream) {
@@ -53,13 +59,4 @@ char kar_stream_get(KarStream* stream) {
 		return 0;
 	}
 	return (char)result;
-}
-
-void kar_stream_free(KarStream* stream) {
-	if (stream == NULL) {
-		return;
-	}
-	// TODO: проверять возвращаемое значение функции fclose.
-	fclose(stream->data);
-	KAR_FREE(stream);
 }

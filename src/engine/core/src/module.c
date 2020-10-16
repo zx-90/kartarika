@@ -26,5 +26,6 @@ KarModule* kar_module_create(const char* name) {
 
 void kar_module_free(KarModule* module) {
 	KAR_FREE(module->name);
+	kar_token_free(module->token);
 	KAR_FREE(module);
 }

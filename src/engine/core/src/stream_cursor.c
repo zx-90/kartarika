@@ -18,6 +18,7 @@ static bool get_utf8_symbol(KarStream* stream, char** res) {
 	}
 	
 	if (kar_stream_eof(stream)) {
+		*res = kar_string_builder_clear_get(&builder);
 		return false;
 	}
 	
@@ -25,13 +26,13 @@ static bool get_utf8_symbol(KarStream* stream, char** res) {
 	
 	if ((byte & 0x80) == 0) {
 		kar_string_builder_push_char(&builder, byte);
-		*res = kar_string_builder_final_get(&builder);
+		*res = kar_string_builder_clear_get(&builder);
 		return true;
 	}
 	
 	if (((byte ^ 0x80) & 0xC0) == 0) {
 		kar_string_builder_push_char(&builder, byte);
-		*res = kar_string_builder_final_get(&builder);
+		*res = kar_string_builder_clear_get(&builder);
 		return false;
 	}
 
@@ -43,7 +44,7 @@ static bool get_utf8_symbol(KarStream* stream, char** res) {
 	} else if (((byte ^ 0xF0) & 0xF8) == 0) {
 		count = 4;
 	} else {
-		*res = kar_string_builder_final_get(&builder);
+		*res = kar_string_builder_clear_get(&builder);
 		return false;
 	}
 
@@ -52,20 +53,17 @@ static bool get_utf8_symbol(KarStream* stream, char** res) {
 		byte = kar_stream_get(stream);
 		kar_string_builder_push_char(&builder, byte);
 		if (((byte ^ 0x80) & 0xC0) != 0) {
-			*res = kar_string_builder_final_get(&builder);
+			*res = kar_string_builder_clear_get(&builder);
 			return false;
 		}
 	}
 	
-	*res = kar_string_builder_final_get(&builder);
+	*res = kar_string_builder_clear_get(&builder);
 	return true;
 }
 
 KarStreamCursor* kar_stream_cursor_create(KarStream* stream) {
 	KAR_CREATE(cursor, KarStreamCursor);
-	if (!cursor) {
-		return NULL;
-	}
 	
 	cursor->stream = stream;
 	kar_cursor_init(&cursor->cursor);

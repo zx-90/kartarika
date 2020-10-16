@@ -32,7 +32,7 @@ void kar_token_free(KarToken* token)
 	if (token->str) {
 		KAR_FREE(token->str);
 	}
-	kar_array_free(&token->children, (KarArrayFreeFn*)&kar_token_free);
+	kar_array_clear(&token->children, (KarArrayFreeFn*)&kar_token_free);
 	KAR_FREE(token);
 }
 
@@ -62,16 +62,12 @@ void kar_token_add_str(KarToken* token, const char* str) {
 		kar_token_set_str(token, str);
 		return;
 	}
-	char* new_string = kar_string_concat(token->str, str);
+	char* new_string = kar_string_create_concat(token->str, str);
 	KAR_FREE(token->str);
 	token->str = new_string;
 }
 
-void kar_token_print(const KarToken* token, FILE* stream) {
-	kar_token_print_level(token, stream, 0);
-}
-
-void kar_token_print_level(const KarToken* token, FILE* stream, size_t level) {
+static void print_level(const KarToken* token, FILE* stream, size_t level) {
 	size_t n;
 	
 	n = level;
@@ -83,11 +79,15 @@ void kar_token_print_level(const KarToken* token, FILE* stream, size_t level) {
 	fprintf(stream, "%s(%d, %d): [%s]\n", kar_token_type_get_name(token->type), token->cursor.line, token->cursor.column, token->str);
 	
 	for (n = 0; n < token->children.count; ++n) {
-		kar_token_print_level(kar_token_child(token, n), stream, level + 1);
+		print_level(kar_token_child(token, n), stream, level + 1);
 	}
 }
 
-int kar_token_snprint_level(const KarToken* token, size_t level) {
+void kar_token_print(const KarToken* token, FILE* stream) {
+	print_level(token, stream, 0);
+}
+
+static int get_print_level_size(const KarToken* token, size_t level) {
 	int result = 0;
 	result += (int)(level * sizeof(char));
 	
@@ -95,19 +95,12 @@ int kar_token_snprint_level(const KarToken* token, size_t level) {
 	
 	size_t n;
 	for (n = 0; n < token->children.count; ++n) {
-		result += kar_token_snprint_level(kar_token_child(token, n), level + 1);
+		result += get_print_level_size(kar_token_child(token, n), level + 1);
 	}
 	return result;
 }
 
-char* kar_token_sprint(const KarToken* token) {
-	size_t size = (size_t)kar_token_snprint_level(token, 0);
-	KAR_CREATES(result, char, size);
-	kar_token_sprint_level(token, result, 0);
-	return result;
-}
-
-char* kar_token_sprint_level(const KarToken* token, char* buffer, size_t level) {
+static char* create_print_level(const KarToken* token, char* buffer, size_t level) {
 	size_t n;
 	
 	n = level;
@@ -119,7 +112,14 @@ char* kar_token_sprint_level(const KarToken* token, char* buffer, size_t level) 
 	buffer += sprintf(buffer, "%s(%d, %d): [%s]\n", kar_token_type_get_name(token->type), token->cursor.line, token->cursor.column, token->str);
 	
 	for (n = 0; n < token->children.count; ++n) {
-		buffer = kar_token_sprint_level(kar_token_child(token, n), buffer, level + 1);
+		buffer = create_print_level(kar_token_child(token, n), buffer, level + 1);
 	}
 	return buffer;
+}
+
+char* kar_token_create_print(const KarToken* token) {
+	size_t size = (size_t)get_print_level_size(token, 0);
+	KAR_CREATES(result, char, size);
+	create_print_level(token, result, 0);
+	return result;
 }

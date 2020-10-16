@@ -18,8 +18,8 @@ typedef struct {
 
 bool kar_string_builder_init(KarStringBuilder* builder);
 bool kar_string_builder_init_book(KarStringBuilder* builder, size_t book);
-void kar_string_builder_final(KarStringBuilder* builder);
-char* kar_string_builder_final_get(KarStringBuilder* builder);
+void kar_string_builder_clear(KarStringBuilder* builder);
+char* kar_string_builder_clear_get(KarStringBuilder* builder);
 
 bool kar_string_builder_push_char(KarStringBuilder* str, const char c);
 

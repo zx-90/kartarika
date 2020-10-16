@@ -13,7 +13,7 @@
 
 int main() {
 	// TODO: Здесь объединение подкаталогов надо вынести в отдельный модуль работы с файловой системой.
-	char* test_path = kar_string_concat(kar_file_get_working_dir(), "/тесты");
+	char* test_path = kar_string_create_concat(kar_file_get_working_dir(), "/тесты");
 	printf("Запуск каталога с тестами: %s\n", test_path);
 	
 	KarError* error = kar_test_suite_run(test_path);

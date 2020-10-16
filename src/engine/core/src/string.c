@@ -11,7 +11,14 @@
 
 #include "core/alloc.h"
 
-char* kar_string_format(const char* format, ...) {
+void kar_string_list_free(char** list, size_t count) {
+	while(count--) {
+		KAR_FREE(list[count]);
+	}
+	KAR_FREE(list);
+}
+
+char* kar_string_create_format(const char* format, ...) {
 	va_list args;
 	
 	va_start(args, format);
@@ -19,9 +26,6 @@ char* kar_string_format(const char* format, ...) {
 	va_end(args);
 	
 	KAR_CREATES(result, char, size + 1);
-	if (!result) {
-		return NULL;
-	}
 	
 	va_start(args, format);
 	vsnprintf(result, size, format, args);
@@ -34,18 +38,15 @@ size_t kar_string_format_args_size(const char* format, va_list args) {
 	return (size_t)vsnprintf(NULL, 0, format, args);
 }
 
-char* kar_string_format_args(const char* format, size_t size, va_list args) {
+char* kar_string_create_format_args(const char* format, size_t size, va_list args) {
 	KAR_CREATES(result, char, size + 1);
-	if (!result) {
-		return NULL;
-	}
 	
 	vsnprintf(result, size, format, args);
 	
 	return result;
 }
 
-char* kar_string_concat(const char* str1, const char* str2)
+char* kar_string_create_concat(const char* str1, const char* str2)
 {
 	size_t len1 = strlen(str1);
 	size_t len2 = strlen(str2);
@@ -55,11 +56,4 @@ char* kar_string_concat(const char* str1, const char* str2)
 	strcpy(str + len1, str2);
 	str[len] = 0;
 	return str;
-}
-
-void kar_string_list_free(char** list, size_t count) {
-	while(count--) {
-		KAR_FREE(list[count]);
-	}
-	KAR_FREE(list);
 }

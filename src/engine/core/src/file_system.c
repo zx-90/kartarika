@@ -43,11 +43,7 @@ char** kar_file_create_directory_list(const char* path, size_t* count) {
 	while ((ent = readdir(dir)) != NULL) {
 		(*count)++;
 	}
-	
 	KAR_CREATES(result, char*, *count);
-	if (!result) {
-		return NULL;
-	}
 	
 	rewinddir(dir);
 	
@@ -58,19 +54,12 @@ char** kar_file_create_directory_list(const char* path, size_t* count) {
 			continue;
 		}
 		KAR_CREATES(element, char, strlen(ent->d_name) + 1);
-		if (!element) {
-			while (i--) {
-				KAR_FREE(result[i]);
-			}
-			KAR_FREE(result);
-			return NULL;
-		}
 		strcpy(element, ent->d_name);
 		result[i] = element;
 		i++;
 	}
 	
-	closedir (dir);
+	closedir(dir);
 	return result;
 }
 
@@ -81,7 +70,7 @@ char** kar_file_create_absolute_directory_list(const char* path, size_t* count) 
 	}
 	
 	// TODO: Здесь надо скачивать это соединение "/" через функции ОС.
-	const char* path2 = kar_string_concat(path, "/");
+	char* path2 = kar_string_create_concat(path, "/");
 	if (!path2) {
 		kar_string_list_free(result, *count);
 		*count = 0;
@@ -91,10 +80,11 @@ char** kar_file_create_absolute_directory_list(const char* path, size_t* count) 
 	size_t i;
 	for (i = 0; i < *count; i++) {
 		char* file_name = result[i];
-		char* absolute_file_name = kar_string_concat(path2, file_name);
+		char* absolute_file_name = kar_string_create_concat(path2, file_name);
 		KAR_FREE(result[i]);
 		result[i] = absolute_file_name;
 	}
+	KAR_FREE(path2);
 	return result;
 }
 
@@ -111,6 +101,7 @@ char* kar_file_load(const char* path) {
 	KAR_CREATES(result, char, size + 1);
 	if (size != fread(result, sizeof(char), size, f)) {
 		KAR_FREE(result);
+		fclose(f);
 		return NULL;
 	}
 	

@@ -11,7 +11,7 @@
 #include "core/alloc.h"
 #include "core/string.h"
 
-KarError error = {0, NULL};
+static KarError error = {0, NULL};
 
 KarError* kar_error_register(size_t number, const char* format, ...) {
 	error.number = number;
@@ -26,7 +26,7 @@ KarError* kar_error_register(size_t number, const char* format, ...) {
 	va_end(args);
 	
 	va_start(args, format);
-	error.description = kar_string_format_args(format, size, args);
+	error.description = kar_string_create_format_args(format, size, args);
 	va_end(args);
 	
 	return &error;
