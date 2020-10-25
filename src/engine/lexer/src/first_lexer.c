@@ -20,24 +20,10 @@ const char* ERROR_END_OF_FILE_PARSING_COMMENT = "Неожиданный коне
 
 KarFirstLexer* kar_first_lexer_create(KarStream* stream, KarModule* module) {
 	KAR_CREATE(lexer, KarFirstLexer);
-	if (!lexer) {
-		return NULL;
-	}
 	
 	lexer->streamCursor = kar_stream_cursor_create(stream);
-	if (!lexer->streamCursor) {
-		kar_stream_cursor_free(lexer->streamCursor);
-		KAR_FREE(lexer);
-		return NULL;
-	}
 	
 	lexer->current = kar_token_create();
-	if (!lexer->current) {
-		kar_stream_cursor_free(lexer->streamCursor);
-		kar_token_free(lexer->current);
-		KAR_FREE(lexer);
-		return NULL;
-	}
 	lexer->current->cursor = lexer->streamCursor->cursor;
 	lexer->current->type = KAR_TOKEN_INDENT;
 	kar_token_set_str(lexer->current, "");
@@ -55,7 +41,7 @@ void kar_first_lexer_free(KarFirstLexer* lexer) {
 }
 
 // -----------------------------------
-static char* string_to_hex(const char* input)
+static char* create_string_to_hex(const char* input)
 {
     static const char* const lut = "0123456789ABCDEF";
     size_t len = strlen(input);
@@ -122,7 +108,9 @@ static KarLexerStatus get_status_by_symbol(KarFirstLexer* lexer) {
 		return KAR_LEXER_STATUS_SIGN;
 	}
 	char buff[1024];
-	snprintf(buff, sizeof(buff), "%s: %s (код %s).", ERROR_UNKNOWN_SYMBOL, kar_stream_cursor_get(lexer->streamCursor), string_to_hex(kar_stream_cursor_get(lexer->streamCursor)));
+	char* hex_code = create_string_to_hex(kar_stream_cursor_get(lexer->streamCursor));
+	snprintf(buff, sizeof(buff), "%s: %s (код %s).", ERROR_UNKNOWN_SYMBOL, kar_stream_cursor_get(lexer->streamCursor), hex_code);
+	KAR_FREE(hex_code);
 	kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, buff);
 	return KAR_LEXER_STATUS_UNKNOWN;
 }
@@ -138,8 +126,10 @@ static void new_token(KarFirstLexer* lexer, KarTokenType type) {
 static void push_token(KarFirstLexer* lexer) {
 	if (strcmp(lexer->current->str, "") || lexer->current->type != KAR_TOKEN_UNKNOWN) {
 		kar_token_child_add(lexer->module->token, lexer->current);
+	} else {
+		kar_token_free(lexer->current);
 	}
-	new_token(lexer, KAR_TOKEN_UNKNOWN);
+	lexer->current = NULL;
 }
 
 static void next_token(KarFirstLexer* lexer, KarTokenType type, KarLexerStatus st) {
@@ -187,7 +177,6 @@ static void parse_string(KarFirstLexer* lexer) {
 			if (!kar_stream_cursor_next(lexer->streamCursor)) {
 				kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 			}
-			kar_token_add_str(lexer->current, kar_stream_cursor_get(lexer->streamCursor));
 		}
 		kar_token_add_str(lexer->current, kar_stream_cursor_get(lexer->streamCursor));
 	}

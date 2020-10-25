@@ -112,6 +112,8 @@ bool kar_generator_run(KarModule* mod) {
 	
 	// generate_hello_world(module, builder);
 	
+	LLVMDisposeBuilder(builder);
+	
 	// Initialize the target registry etc.
 	LLVMInitializeAllTargetInfos();
 	LLVMInitializeAllTargets();
@@ -126,6 +128,10 @@ bool kar_generator_run(KarModule* mod) {
 	char* error;
 	if (LLVMGetTargetFromTriple(target_triple, &target, &error)) {
 		printf("%s\n", error);
+		LLVMDisposeMessage(error);
+		LLVMDisposeMessage(target_triple);
+		LLVMDisposeModule(module);
+		LLVMContextDispose(context);
 		return false;
 	}
 
@@ -140,10 +146,31 @@ bool kar_generator_run(KarModule* mod) {
 
 	if (LLVMTargetMachineEmitToFile(the_target_machine, module, "asdf.o", LLVMObjectFile, &error)) {
 		printf("%s\n", error);
+		LLVMDisposeMessage(error);
+		LLVMDisposeTargetData(target_data);
+		LLVMDisposeTargetMachine(the_target_machine);
+		LLVMDisposeMessage(target_triple);
+		LLVMDisposeModule(module);
+		LLVMContextDispose(context);
 		return false;
 	}
 
-	//LLVMPrintModuleToFile(module, "b.out", &error);
+	/*if (LLVMPrintModuleToFile(module, "b.out", &error)) {
+		printf("%s\n", error);
+		LLVMDisposeMessage(error);
+		LLVMDisposeTargetData(target_data);
+		LLVMDisposeTargetMachine(the_target_machine);
+		LLVMDisposeMessage(target_triple);
+		LLVMDisposeModule(module);
+		LLVMContextDispose(context);
+		return false;
+	}*/
+	
+	LLVMDisposeTargetData(target_data);
+	LLVMDisposeTargetMachine(the_target_machine);
+	LLVMDisposeMessage(target_triple);
+	LLVMDisposeModule(module);
+	LLVMContextDispose(context);
 	
 	// TODO: Разобраться можно ли это как-то без clang делать. Только с помощью llvm.
 	system("clang-9 asdf.o -o a.out");

@@ -10,8 +10,6 @@
 #include "core/module.h"
 #include "core/stream_cursor.h"
 
-// #include <string>
-
 typedef enum {
 	KAR_LEXER_STATUS_UNKNOWN,
 	KAR_LEXER_STATUS_INDENT,
