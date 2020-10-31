@@ -18,7 +18,6 @@ KarStream* kar_stream_create(const char* path) {
 	if (file == NULL) {
 		return NULL;
 	}
-	
 	KAR_CREATE(result, KarStream);
 	
 	result->data = file;
@@ -31,8 +30,9 @@ void kar_stream_free(KarStream* stream) {
 	if (stream == NULL) {
 		return;
 	}
+	// TODO: Почему-то программа рушится при попытке закрыть файл. Скорее всего где-то идет работа за границей памяти.
 	// TODO: проверять возвращаемое значение функции fclose.
-	fclose(stream->data);
+	//fclose(stream->data);
 	KAR_FREE(stream);
 }
 

@@ -14,6 +14,7 @@
 static bool get_utf8_symbol(KarStream* stream, char** res) {
 	KarStringBuilder builder;
 	if (!kar_string_builder_init_book(&builder, 5)) {
+		kar_string_builder_clear(&builder);
 		return false;
 	}
 	

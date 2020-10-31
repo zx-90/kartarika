@@ -23,11 +23,15 @@ int main(int argc, char** argv) {
 	
 	if (!kar_lexer_run(file, module)) {
 		fprintf(stderr, "Ошибка при парсинге файла в лексере.\n");
+		kar_module_free(module);
+		kar_stream_free(file);
 		return 1;
 	}
 	
 	if (!kar_parser_run(module)) {
 		fprintf(stderr, "Ошибка при парсинге файла в парсере.\n");
+		kar_module_free(module);
+		kar_stream_free(file);
 		return 1;
 	}
 	kar_token_print(module->token, stdout);

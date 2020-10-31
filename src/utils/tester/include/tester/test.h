@@ -50,6 +50,7 @@ typedef struct {
 } KarTest;
 
 void kar_path_element_init(KarPathElement* element);
+void kar_path_element_clear(KarPathElement* element);
 bool kar_path_element_set(KarPathElement* element, const char* path);
 
 KarTest* kar_test_create();

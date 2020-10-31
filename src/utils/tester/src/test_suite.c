@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "core/string.h"
 #include "core/file_system.h"
 
 static KarError* check_for_subdirs(char** files, size_t count) {
@@ -32,10 +33,12 @@ static KarError* run_dir(const char* path) {
 	size_t count;
 	char** files = kar_file_create_absolute_directory_list(path, &count);
 	if (!files) {
+		kar_string_list_free(files, count);
 		return kar_error_get_last();
 	}
 	if (count == 0) {
 		printf("Предупреждение. Каталог пуст.\n");
+		kar_string_list_free(files, count);
 		return NULL;
 	}
 	
@@ -46,6 +49,7 @@ static KarError* run_dir(const char* path) {
 			if (kar_file_system_is_directory(files[i])) {
 				error = run_dir(files[i]);
 				if (error) {
+					kar_string_list_free(files, count);
 					return error;
 				}
 			}
@@ -54,10 +58,11 @@ static KarError* run_dir(const char* path) {
 		KarTest* tf = kar_test_create();
 		KarError* result = kar_test_run(tf, path);
 		kar_test_free(tf);
+		kar_string_list_free(files, count);
 		return result;
 	}
 	
-	
+	kar_string_list_free(files, count);
 	return NULL;
 }
 

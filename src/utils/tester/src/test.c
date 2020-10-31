@@ -23,6 +23,13 @@ void kar_path_element_init(KarPathElement* element) {
 	element->path = NULL;
 }
 
+void kar_path_element_clear(KarPathElement* element) {
+	if (element->path) {
+		KAR_FREE(element->path);
+	}
+	element->is = false;
+}
+
 bool kar_path_element_set(KarPathElement* element, const char* path) {
 	if (element->path != NULL) {
 		KAR_FREE(element->path);
@@ -30,9 +37,6 @@ bool kar_path_element_set(KarPathElement* element, const char* path) {
 	
 	size_t len = strlen(path);
 	KAR_ALLOCS(element->path, char, len + 1);
-	if (!element->path) {
-		return false;
-	}
 	strcpy(element->path, path);
 	
 	element->is = true;
@@ -42,9 +46,6 @@ bool kar_path_element_set(KarPathElement* element, const char* path) {
 
 KarTest* kar_test_create() {
 	KAR_CREATE(result, KarTest);
-	if (!result) {
-		return NULL;
-	}
 	
 	kar_path_element_init(&result->project_file);
 	kar_path_element_init(&result->lexer_error_file);
@@ -62,6 +63,18 @@ KarTest* kar_test_create() {
 }
 
 void kar_test_free(KarTest* test) {
+	kar_path_element_clear(&test->project_file);
+	kar_path_element_clear(&test->lexer_error_file);
+	kar_path_element_clear(&test->lexer_file);
+	kar_path_element_clear(&test->parser_error_file);
+	kar_path_element_clear(&test->parser_file);
+	kar_path_element_clear(&test->analyzer_error_file);
+	kar_path_element_clear(&test->analyzer_file);
+	kar_path_element_clear(&test->compiler_error_file);
+	kar_path_element_clear(&test->out_error_file);
+	kar_path_element_clear(&test->out_file);
+	kar_path_element_clear(&test->comment_file);
+	
 	KAR_FREE(test);
 }
 
@@ -224,32 +237,45 @@ static KarError* check_for_integrity(KarTest* test) {
 	return NULL;
 }
 
-KarError* kar_test_run(KarTest* test, const char* dir) {
+static KarError* fill_test(KarTest* test, const char* dir) {
 	size_t file_count = 0;
 	char** files = kar_file_create_directory_list(dir, &file_count);
 	KarError* error;
 	error = check_for_test_directory(test, files, file_count);
+	kar_string_list_free(files, file_count);
+	
 	if (error) {
 		return error;
 	}
 	
-	error = check_for_integrity(test);
+	return check_for_integrity(test);
+}
+
+static KarStream* create_file_stream(char* path, char* path2) {
+	char* project_path = kar_string_create_concat(path, path2);
+	KarStream* file_stream = kar_stream_create(project_path);
+	KAR_FREE(project_path);
+	return file_stream;
+}
+
+KarError* kar_test_run(KarTest* test, const char* dir) {
+	KarError* error = fill_test(test, dir);
 	if (error) {
 		return error;
 	}
 	
 	// TODO: "/" Получать через ОС, и вообще перенести в file_system или куда-то туда.
 	char* path2 = kar_string_create_concat(dir, "/");
-	char* project_path = kar_string_create_concat(path2, test->project_file.path);
-	KarStream* file = kar_stream_create(project_path);
-	KAR_FREE(project_path);
 	KarModule* module = kar_module_create(test->project_file.path);
 	
 	{
+		KarStream* file = create_file_stream(path2, test->project_file.path);
 		bool lexerResult = kar_lexer_run(file, module);
+		kar_stream_free(file);
 		if (test->lexer_file.is) {
 			if (!lexerResult) {
 				kar_module_free(module);
+				KAR_FREE(path2);
 				return kar_error_register(1, "Ошибка в лексере. Ожидалось, что лексер отработает нормально.");
 			}
 			
@@ -261,16 +287,24 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 			// TODO: Сделать сравнение более подробно хотя бы номер первой строки, в которой не сопадает исходный файл с тестом.
 			if (strcmp(testResult, gold)) {
 				kar_module_free(module);
-				return kar_error_register(1, "Ошибка в лексере. Выход теста не совпадает с ожидаемым.\n"
+				KAR_FREE(path2);
+				KarError* result = kar_error_register(1, "Ошибка в лексере. Выход теста не совпадает с ожидаемым.\n"
 					"Эталон:\n%s\nВывод программы:\n%s",
 					gold, testResult
 				);
+				KAR_FREE(testResult);
+				KAR_FREE(gold);
+				return result;
 			}
 		} else if (test->lexer_error_file.is) {
 			if (!lexerResult) {
 				// TODO: Возможно в файле сообщения об ошибке можно добавить формат для сравнения результатов.
+				kar_module_free(module);
+				KAR_FREE(path2);
 				return NULL;
 			} else {
+				kar_module_free(module);
+				KAR_FREE(path2);
 				return kar_error_register(1, "Ошибка в лексере. Ожидалось, что лексер вернет ошибку, но он отработал нормально.");
 			}
 		}
@@ -288,6 +322,8 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 		bool parserResult = kar_parser_run(module);
 		if (test->parser_file.is) {
 			if (!parserResult) {
+				kar_module_free(module);
+				KAR_FREE(path2);
 				return kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер отработает нормально.");
 			}
 		
@@ -298,14 +334,22 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 			
 			// TODO: Сделать сравнение более подробно хотя бы номер первой строки, в которой не сопадает исходный файл с тестом.
 			if (testResult != gold) {
+				kar_module_free(module);
+				KAR_FREE(path2);
+				KAR_FREE(testResult);
+				KAR_FREE(gold);
 				return kar_error_register(1, "Ошибка в парсере. Выход теста не совпадает с ожидаемым.");
 			}
 			
 		} else if (test->parser_error_file.is) {
 			if (!parserResult) {
 				// TODO: Возможно в файле сообщения об ошибке можно добавить формат для сравнения результатов.
+				kar_module_free(module);
+				KAR_FREE(path2);
 				return NULL;
 			} else {
+				kar_module_free(module);
+				KAR_FREE(path2);
 				return kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер вернет ошибку, но он отработал нормально.");
 			}
 		}
@@ -331,8 +375,12 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 		if (test->compiler_error_file.is) {
 			if (!generatorResult) {
 				// TODO: Возможно в файле сообщения об ошибке можно добавить формат для сравнения результатов.
+				kar_module_free(module);
+				KAR_FREE(path2);
 				return NULL;
 			} else {
+				kar_module_free(module);
+				KAR_FREE(path2);
 				return kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер вернет ошибку, но он отработал нормально.");
 			}
 		}
@@ -349,5 +397,7 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 		}
 	}
 
+	kar_module_free(module);
+	KAR_FREE(path2);
 	return NULL;
 }

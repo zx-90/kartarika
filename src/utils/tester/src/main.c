@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 
+#include "core/alloc.h"
 #include "core/string.h"
 #include "core/file_system.h"
 
@@ -18,10 +19,12 @@ int main() {
 	
 	KarError* error = kar_test_suite_run(test_path);
 	if (error) {
+		KAR_FREE(test_path);
 		printf("Ошибка %ld: %s\n", error->number, error->description);
 		return 1;
 	}
 	
+	KAR_FREE(test_path);
 	return 0;
 
 }

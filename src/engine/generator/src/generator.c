@@ -114,6 +114,7 @@ bool kar_generator_run(KarModule* mod) {
 	
 	LLVMDisposeBuilder(builder);
 	
+	// TODO: Инициализации в отдельную функцию надо будет выделить.
 	// Initialize the target registry etc.
 	LLVMInitializeAllTargetInfos();
 	LLVMInitializeAllTargets();
