@@ -4,13 +4,11 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#include "analyzer/analyzer.h"
+#ifndef KAR_ANALYZER_H
+#define KAR_ANALYZER_H
 
-#include "core/token.h"
+#include "core/module.h"
 
-bool kar_analyze(KarModule* module) {
-	if (!module) {
-		return false;
-	}
-	return true;
-}
+bool kar_analyze(KarModule* module);
+
+#endif // KAR_ANALYZER_H
