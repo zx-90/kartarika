@@ -42,6 +42,7 @@ char* kar_string_create_format_args(const char* format, size_t size, va_list arg
 	KAR_CREATES(result, char, size + 1);
 	
 	vsnprintf(result, size, format, args);
+	result[size] = 0;
 	
 	return result;
 }

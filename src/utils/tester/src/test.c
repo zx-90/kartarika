@@ -258,6 +258,31 @@ static KarStream* create_file_stream(char* path, char* path2) {
 	return file_stream;
 }
 
+static KarCursor* compare_strings(char* str1, char* str2) {
+	KAR_CREATE(result, KarCursor);
+	kar_cursor_init(result);
+	if (*str1 != *str2) {
+		return result;
+	}
+	
+	while(*str1) {
+		if (*str1 == '\n') {
+			kar_cursor_next_line(result);
+		} else {
+			kar_cursor_next(result);
+		}
+		str1++;
+		str2++;
+		if (*str1 != *str2) {
+			printf("[%c][%c]", *str1, *str2);
+			return result;
+		}
+	}
+	
+	KAR_FREE(result);
+	return NULL;
+}
+
 KarError* kar_test_run(KarTest* test, const char* dir) {
 	KarError* error = fill_test(test, dir);
 	if (error) {
@@ -285,15 +310,17 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 			KAR_FREE(gold_path);
 			
 			// TODO: Сделать сравнение более подробно хотя бы номер первой строки, в которой не сопадает исходный файл с тестом.
-			if (strcmp(testResult, gold)) {
+			KarCursor* cursor = compare_strings(testResult, gold);
+			if (cursor) {
 				kar_module_free(module);
 				KAR_FREE(path2);
-				KarError* result = kar_error_register(1, "Ошибка в лексере. Выход теста не совпадает с ожидаемым.\n"
+				KarError* result = kar_error_register(1, "Ошибка в лексере. Выход теста не совпадает с ожидаемым [%d;%d].\n"
 					"Эталон:\n%s\nВывод программы:\n%s",
-					gold, testResult
+					cursor->line, cursor->column, gold, testResult
 				);
 				KAR_FREE(testResult);
 				KAR_FREE(gold);
+				KAR_FREE(cursor);
 				return result;
 			}
 		} else if (test->lexer_error_file.is) {

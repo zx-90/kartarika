@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define KAR_ALLOC_DEBUG
+// #define KAR_ALLOC_DEBUG
 
 #ifdef KAR_ALLOC_DEBUG
 

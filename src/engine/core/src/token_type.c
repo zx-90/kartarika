@@ -131,5 +131,5 @@ const char* kar_token_type_get_name(const KarTokenType type)
 		PROCESS_VAL(CHECK);
 	}
 #undef PROCESS_VAL
-	return "";
+	return "[UNKNOWN]";
 }

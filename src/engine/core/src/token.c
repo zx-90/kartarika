@@ -119,7 +119,8 @@ static char* create_print_level(const KarToken* token, char* buffer, size_t leve
 
 char* kar_token_create_print(const KarToken* token) {
 	size_t size = (size_t)get_print_level_size(token, 0);
-	KAR_CREATES(result, char, size);
+	KAR_CREATES(result, char, size + 1);
 	create_print_level(token, result, 0);
+	result[size] = 0;
 	return result;
 }
