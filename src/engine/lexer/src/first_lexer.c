@@ -218,66 +218,69 @@ static void parse_multiline_comment(KarFirstLexer* lexer) {
 
 bool kar_first_lexer_run(KarFirstLexer* lexer) {
 	KarStreamCursor* streamCursor = lexer->streamCursor;
+	if (!kar_stream_cursor_is_eof(streamCursor) && kar_stream_cursor_is_good(streamCursor)) {
+		if (!kar_stream_cursor_next(streamCursor)) {
+			kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
+		} else if (kar_stream_cursor_is_equal(streamCursor, "\xEF\xBB\xBF")) {
+			kar_cursor_init(&streamCursor->cursor);
+			if (!kar_stream_cursor_next(streamCursor)) {
+				kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
+			}
+		}
+	}
 	while (!kar_stream_cursor_is_eof(streamCursor)) {
+		//printf("333\n");
 		if (!kar_stream_cursor_is_good(streamCursor)) {
 			kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_READ_STREAM);
 			return false;
 		}
+		if (kar_stream_cursor_is_equal(streamCursor, KAR_KEYWORD_STRING_START)) {
+			next_token(lexer, KAR_TOKEN_VAL_STRING, KAR_LEXER_STATUS_UNKNOWN);
+			parse_string(lexer);
+		} else if (kar_stream_cursor_is_equal(streamCursor, KAR_KEYWORD_COMMENT_START)) {
+			next_token(lexer, KAR_TOKEN_COMMENT, KAR_LEXER_STATUS_UNKNOWN);
+			parse_singleline_comment(lexer);
+		} else if (kar_stream_cursor_is_equal(streamCursor, KAR_KEYWORD_MULTILINE_COMMENT_START)) {
+			next_token(lexer, KAR_TOKEN_COMMENT, KAR_LEXER_STATUS_UNKNOWN);
+			parse_multiline_comment(lexer);
+		} else if (kar_stream_cursor_is_equal(streamCursor, KAR_KEYWORD_SPACE_NEW_LINE)) {
+			add_new_line(lexer);
+		} else {
+			if (lexer->status == KAR_LEXER_STATUS_INDENT) {
+				KarLexerStatus st = get_status_by_symbol(lexer);
+				if (st != KAR_LEXER_STATUS_SPACE) {
+					next_token_default(lexer, st);
+				}
+			} else if (lexer->status == KAR_LEXER_STATUS_SPACE) {
+				KarLexerStatus st = get_status_by_symbol(lexer);
+				if (st != KAR_LEXER_STATUS_SPACE) {
+					next_token_default(lexer, st);
+				}
+			} else if (lexer->status == KAR_LEXER_STATUS_IDENTIFIER) {
+				KarLexerStatus st = get_status_by_symbol(lexer);
+				if (st != KAR_LEXER_STATUS_IDENTIFIER) {
+					next_token_default(lexer, st);
+				}
+			} else if (lexer->status == KAR_LEXER_STATUS_SIGN) {
+				KarLexerStatus st = get_status_by_symbol(lexer);
+				next_token_default(lexer, st);
+			} else if (lexer->status == KAR_LEXER_STATUS_UNKNOWN) {
+				if (is_space(lexer)) {
+					next_token_default(lexer, KAR_LEXER_STATUS_SPACE);
+				}
+				if (is_sign(lexer)) {
+					next_token_default(lexer, KAR_LEXER_STATUS_SIGN);
+				}
+			}
+
+			kar_token_add_str(lexer->current, kar_stream_cursor_get(streamCursor));
+		}
+		
 		if (!kar_stream_cursor_next(streamCursor)) {
 			next_token(lexer, KAR_TOKEN_UNKNOWN, KAR_LEXER_STATUS_UNKNOWN);
 			kar_token_set_str(lexer->current, kar_stream_cursor_get(streamCursor));
 			kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 		}
-		if (kar_stream_cursor_is_eof(streamCursor)) {
-			break;
-		}
-		if (kar_stream_cursor_is_equal(streamCursor, KAR_KEYWORD_STRING_START)) {
-			next_token(lexer, KAR_TOKEN_VAL_STRING, KAR_LEXER_STATUS_UNKNOWN);
-			parse_string(lexer);
-			continue;
-		}
-		if (kar_stream_cursor_is_equal(streamCursor, KAR_KEYWORD_COMMENT_START)) {
-			next_token(lexer, KAR_TOKEN_COMMENT, KAR_LEXER_STATUS_UNKNOWN);
-			parse_singleline_comment(lexer);
-			continue;
-		}
-		if (kar_stream_cursor_is_equal(streamCursor, KAR_KEYWORD_MULTILINE_COMMENT_START)) {
-			next_token(lexer, KAR_TOKEN_COMMENT, KAR_LEXER_STATUS_UNKNOWN);
-			parse_multiline_comment(lexer);
-			continue;
-		}
-		if (kar_stream_cursor_is_equal(streamCursor, KAR_KEYWORD_SPACE_NEW_LINE)) {
-			add_new_line(lexer);
-			continue;
-		}
-		if (lexer->status == KAR_LEXER_STATUS_INDENT) {
-			KarLexerStatus st = get_status_by_symbol(lexer);
-			if (st != KAR_LEXER_STATUS_SPACE) {
-				next_token_default(lexer, st);
-			}
-		} else if (lexer->status == KAR_LEXER_STATUS_SPACE) {
-			KarLexerStatus st = get_status_by_symbol(lexer);
-			if (st != KAR_LEXER_STATUS_SPACE) {
-				next_token_default(lexer, st);
-			}
-		} else if (lexer->status == KAR_LEXER_STATUS_IDENTIFIER) {
-			KarLexerStatus st = get_status_by_symbol(lexer);
-			if (st != KAR_LEXER_STATUS_IDENTIFIER) {
-				next_token_default(lexer, st);
-			}
-		} else if (lexer->status == KAR_LEXER_STATUS_SIGN) {
-			KarLexerStatus st = get_status_by_symbol(lexer);
-			next_token_default(lexer, st);
-		} else if (lexer->status == KAR_LEXER_STATUS_UNKNOWN) {
-			if (is_space(lexer)) {
-				next_token_default(lexer, KAR_LEXER_STATUS_SPACE);
-			}
-			if (is_sign(lexer)) {
-				next_token_default(lexer, KAR_LEXER_STATUS_SIGN);
-			}
-		}
-
-		kar_token_add_str(lexer->current, kar_stream_cursor_get(streamCursor));
 	}
 	push_token(lexer);
 	return kar_module_error_get_count() == 0;
