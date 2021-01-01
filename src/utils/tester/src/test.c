@@ -426,5 +426,6 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 
 	kar_module_free(module);
 	KAR_FREE(path2);
+	printf("OK\n");
 	return NULL;
 }
