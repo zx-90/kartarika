@@ -14,22 +14,25 @@
 #include <dirent.h>
 #include <errno.h>
 #include <unistd.h>
+#include <libgen.h>
 
 #include "core/alloc.h"
 #include "core/string.h"
 
 bool kar_file_system_is_file(const char* path) {
 	struct stat sts;
-	errno = ENOENT;
-	return (stat(path, &sts) == -1 && errno == ENOENT);
+	return (stat(path, &sts) == 0);
 }
 
 bool kar_file_system_is_directory(const char* path) {
-	errno = ENOENT;
 	DIR* dir = opendir(path);
-	bool result = dir && errno == ENOENT;
+	bool result = (dir != NULL);
 	closedir(dir);
 	return result;
+}
+
+char* kar_file_system_get_basaename(char* path) {
+	return basename(path);
 }
 
 char** kar_file_create_directory_list(const char* path, size_t* count) {
