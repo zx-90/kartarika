@@ -101,29 +101,30 @@ static KarError* check_for_test_directory(KarTest* test, char** files, size_t fi
 	KarError* error = NULL;
 	size_t i;
 	for (i = 0; i < file_count; ++i) {
-		const char* filename = files[i];
+		char* file = files[i];
+		const char* filename = kar_file_system_get_basename(file);
 		if (!strcmp(filename, KAR_PROJECT_FILENAME)) {
-			error = check_file_object(filename, true, &test->project_file);
+			error = check_file_object(file, true, &test->project_file);
 		} else if (!strcmp(filename, KAR_LEXER_ERROR_FILENAME)) {
-			error = check_file_object(filename, true, &test->lexer_error_file);
+			error = check_file_object(file, true, &test->lexer_error_file);
 		} else if (!strcmp(filename, KAR_LEXER_FILENAME)) {
-			error = check_file_object(filename, true, &test->lexer_file);
+			error = check_file_object(file, true, &test->lexer_file);
 		} else if (!strcmp(filename, KAR_PARSER_ERROR_FILENAME)) {
-			error = check_file_object(filename, true, &test->parser_error_file);
+			error = check_file_object(file, true, &test->parser_error_file);
 		} else if (!strcmp(filename, KAR_PARSER_FILENAME)) {
-			error = check_file_object(filename, true, &test->parser_file);
+			error = check_file_object(file, true, &test->parser_file);
 		} else if (!strcmp(filename, KAR_ANALYZER_ERROR_FILENAME)) {
-			error = check_file_object(filename, true, &test->analyzer_error_file);
+			error = check_file_object(file, true, &test->analyzer_error_file);
 		} else if (!strcmp(filename, KAR_ANALYZER_FILENAME)) {
-			error = check_file_object(filename, true, &test->analyzer_file);
+			error = check_file_object(file, true, &test->analyzer_file);
 		} else if (!strcmp(filename, KAR_COMPILER_ERROR_FILENAME)) {
-			error = check_file_object(filename, true, &test->compiler_error_file);
+			error = check_file_object(file, true, &test->compiler_error_file);
 		} else if (!strcmp(filename, KAR_OUT_ERROR_FILENAME)) {
-			error = check_file_object(filename, true, &test->out_error_file);
+			error = check_file_object(file, true, &test->out_error_file);
 		} else if (!strcmp(filename, KAR_OUT_FILENAME)) {
-			error = check_file_object(filename, true, &test->out_file);
+			error = check_file_object(file, true, &test->out_file);
 		} else if (!strcmp(filename, KAR_COMMENT_FILENAME)) {
-			error = check_file_object(filename, true, &test->comment_file);
+			error = check_file_object(file, true, &test->comment_file);
 		} else {
 			return kar_error_register(1,
 				"Объект %s лишний для тестового каталога.\nДопустимые имена: %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s.",
@@ -239,7 +240,7 @@ static KarError* check_for_integrity(KarTest* test) {
 
 static KarError* fill_test(KarTest* test, const char* dir) {
 	size_t file_count = 0;
-	char** files = kar_file_create_directory_list(dir, &file_count);
+	char** files = kar_file_create_absolute_directory_list(dir, &file_count);
 	KarError* error;
 	error = check_for_test_directory(test, files, file_count);
 	kar_string_list_free(files, file_count);
@@ -249,13 +250,6 @@ static KarError* fill_test(KarTest* test, const char* dir) {
 	}
 	
 	return check_for_integrity(test);
-}
-
-static KarStream* create_file_stream(char* path, char* path2) {
-	char* project_path = kar_string_create_concat(path, path2);
-	KarStream* file_stream = kar_stream_create(project_path);
-	KAR_FREE(project_path);
-	return file_stream;
 }
 
 static KarCursor* compare_strings(char* str1, char* str2) {
@@ -294,7 +288,8 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 	KarModule* module = kar_module_create(test->project_file.path);
 	
 	{
-		KarStream* file = create_file_stream(path2, test->project_file.path);
+		printf("%s\n", test->project_file.path);
+		KarStream* file = kar_stream_create(test->project_file.path);
 		bool lexerResult = kar_lexer_run(file, module);
 		kar_stream_free(file);
 		if (test->lexer_file.is) {
@@ -305,7 +300,7 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 			}
 			
 			char* testResult = kar_token_create_print(module->token);
-			char* gold_path = kar_string_create_concat(path2, test->lexer_file.path);
+			char* gold_path = kar_string_create_concat(path2, kar_file_system_get_basename(test->lexer_file.path));
 			char* gold = kar_file_load(gold_path);
 			KAR_FREE(gold_path);
 			
@@ -355,7 +350,7 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 			}
 		
 			char* testResult = kar_token_create_print(module->token);
-			char* gold_path = kar_string_create_concat(path2, test->parser_file.path);
+			char* gold_path = kar_string_create_concat(path2, kar_file_system_get_basename(test->lexer_file.path));
 			char* gold = kar_file_load(gold_path);
 			KAR_FREE(gold_path);
 			

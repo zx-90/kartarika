@@ -31,7 +31,7 @@ bool kar_file_system_is_directory(const char* path) {
 	return result;
 }
 
-char* kar_file_system_get_basaename(char* path) {
+char* kar_file_system_get_basename(char* path) {
 	return basename(path);
 }
 

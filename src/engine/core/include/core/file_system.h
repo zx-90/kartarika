@@ -13,7 +13,7 @@
 bool kar_file_system_is_file(const char* path);
 bool kar_file_system_is_directory(const char* path);
 
-char* kar_file_system_get_basaename(char* path);
+char* kar_file_system_get_basename(char* path);
 
 char** kar_file_create_directory_list(const char* path, size_t* count);
 char** kar_file_create_absolute_directory_list(const char* path, size_t* count);
