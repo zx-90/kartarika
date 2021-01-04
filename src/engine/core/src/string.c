@@ -42,12 +42,8 @@ void kar_string_list_quick_sort(char** list, size_t length) {
 	size_t p;
 	if (length > 1) {
 		p = partition(list, length);
-		if (p > 0) {
-			kar_string_list_quick_sort(list, p);
-		}
-		if (p < length - 1) {
-			kar_string_list_quick_sort(&(list[p + 1]), length - p - 1);
-		}
+		kar_string_list_quick_sort(list, p);
+		kar_string_list_quick_sort(&(list[p + 1]), length - p - 1);
 	}
 }
 
