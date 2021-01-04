@@ -12,18 +12,22 @@
 #include "core/string.h"
 #include "core/file_system.h"
 
-int main() {
-	// TODO: Здесь объединение подкаталогов надо вынести в отдельный модуль работы с файловой системой.
-	char* test_path = kar_string_create_concat(kar_file_get_working_dir(), "/тесты");
-	printf("Запуск каталога с тестами: %s\n", test_path);
+int main(int argc, char **argv) {
+	char* test_path;
+	if (argc < 2) {
+		test_path = "тесты";
+	} else if (argc == 2) {
+		test_path = argv[1];
+	} else {
+		printf("Ошибка. Количество аргументов запуска должно быть 0 или 1.");
+	}
 	
+	printf("Запуск каталога с тестами: %s\n", test_path);
 	KarError* error = kar_test_suite_run(test_path);
 	if (error) {
-		KAR_FREE(test_path);
 		printf("Ошибка %ld: %s\n", error->number, error->description);
 		return 1;
 	}
 	
-	KAR_FREE(test_path);
 	return 0;
 }
