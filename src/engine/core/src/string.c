@@ -39,12 +39,12 @@ static size_t partition(char** list, size_t length) {
 }
 
 void kar_string_list_quick_sort(char** list, size_t length) {
-	size_t p;
-	if (length > 1) {
-		p = partition(list, length);
-		kar_string_list_quick_sort(list, p);
-		kar_string_list_quick_sort(&(list[p + 1]), length - p - 1);
+	if (length <= 1) {
+		return;
 	}
+	size_t p = partition(list, length);
+	kar_string_list_quick_sort(list, p);
+	kar_string_list_quick_sort(&(list[p + 1]), length - p - 1);
 }
 
 char* kar_string_create_format(const char* format, ...) {
