@@ -18,6 +18,39 @@ void kar_string_list_free(char** list, size_t count) {
 	KAR_FREE(list);
 }
 
+static size_t partition(char** list, size_t length) {
+	size_t p = length - 1;
+	size_t firsthigh = 0;
+	
+	for (size_t i = 0; i < length; ++i) {
+		if (strcmp(list[i], list[p]) < 0) {
+			char* temp = list[i];
+			list[i] = list[firsthigh];
+			list[firsthigh] = temp;
+			firsthigh++;
+		}
+	}
+	
+	char* temp = list[p];
+	list[p] = list[firsthigh];
+	list[firsthigh] = temp;
+	
+	return firsthigh;
+}
+
+void kar_string_list_quick_sort(char** list, size_t length) {
+	size_t p;
+	if (length > 1) {
+		p = partition(list, length);
+		if (p > 0) {
+			kar_string_list_quick_sort(list, p);
+		}
+		if (p < length - 1) {
+			kar_string_list_quick_sort(&(list[p + 1]), length - p - 1);
+		}
+	}
+}
+
 char* kar_string_create_format(const char* format, ...) {
 	va_list args;
 	

@@ -63,6 +63,7 @@ char** kar_file_create_directory_list(const char* path, size_t* count) {
 	}
 	
 	closedir(dir);
+	kar_string_list_quick_sort(result, *count);
 	return result;
 }
 

@@ -14,6 +14,8 @@ typedef const char* KarString;
 
 void kar_string_list_free(char** list, size_t count);
 
+void kar_string_list_quick_sort(char** list, size_t length);
+
 char* kar_string_create_format(const char* format, ...);
 size_t kar_string_format_args_size(const char* format, va_list args);
 char* kar_string_create_format_args(const char* format, size_t size, va_list args);
