@@ -320,12 +320,7 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 				return result;
 			}
 		} else if (test->lexer_error_file.is) {
-			if (!lexerResult) {
-				// TODO: Возможно в файле сообщения об ошибке можно добавить формат для сравнения результатов.
-				kar_module_free(module);
-				KAR_FREE(path2);
-				return NULL;
-			} else {
+			if (lexerResult) {
 				kar_module_free(module);
 				KAR_FREE(path2);
 				return kar_error_register(1, "Ошибка в лексере. Ожидалось, что лексер вернет ошибку, но он отработал нормально.");
