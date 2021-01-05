@@ -76,7 +76,7 @@ static void print_level(const KarToken* token, FILE* stream, size_t level) {
 		n--;
 	}
 	
-	fprintf(stream, "%s(%d, %d): [%s]\n", kar_token_type_get_name(token->type), token->cursor.line, token->cursor.column, token->str);
+	fprintf(stream, "%s(%d, %d): [%s]\n", kar_token_type_get_name(token->type), token->cursor.line, token->cursor.column, KAR_STRING_NULL_PROTECT(token->str));
 	
 	for (n = 0; n < token->children.count; ++n) {
 		print_level(kar_token_child(token, n), stream, level + 1);
@@ -91,7 +91,7 @@ static int get_print_level_size(const KarToken* token, size_t level) {
 	int result = 0;
 	result += (int)(level * sizeof(char));
 	
-	result += snprintf(NULL, 0, "%s(%d, %d): [%s]\n", kar_token_type_get_name(token->type), token->cursor.line, token->cursor.column, token->str);
+	result += snprintf(NULL, 0, "%s(%d, %d): [%s]\n", kar_token_type_get_name(token->type), token->cursor.line, token->cursor.column, KAR_STRING_NULL_PROTECT(token->str));
 	
 	size_t n;
 	for (n = 0; n < token->children.count; ++n) {
@@ -109,7 +109,7 @@ static char* create_print_level(const KarToken* token, char* buffer, size_t leve
 		n--;
 	}
 	
-	buffer += sprintf(buffer, "%s(%d, %d): [%s]\n", kar_token_type_get_name(token->type), token->cursor.line, token->cursor.column, token->str);
+	buffer += sprintf(buffer, "%s(%d, %d): [%s]\n", kar_token_type_get_name(token->type), token->cursor.line, token->cursor.column, KAR_STRING_NULL_PROTECT(token->str));
 	
 	for (n = 0; n < token->children.count; ++n) {
 		buffer = create_print_level(kar_token_child(token, n), buffer, level + 1);
