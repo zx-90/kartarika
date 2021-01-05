@@ -1,4 +1,4 @@
-/* Copyright © 2020 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -20,6 +20,7 @@ char* kar_string_create_format(const char* format, ...);
 size_t kar_string_format_args_size(const char* format, va_list args);
 char* kar_string_create_format_args(const char* format, size_t size, va_list args);
 
+char* kar_string_create_copy(const char* str);
 char* kar_string_create_concat(const char* str1, const char* str2);
 
 #endif // KAR_STRING_H

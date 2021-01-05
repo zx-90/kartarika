@@ -1,4 +1,4 @@
-/* Copyright © 2020 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -13,7 +13,7 @@
 #include "core/alloc.h"
 #include "core/string.h"
 
-KAR_ARRAY_CODE(token_child, KarToken, children, kar_token_free)
+KAR_TREE_CODE(token_child, KarToken, children, kar_token_free)
 
 KarToken* kar_token_create()
 {

@@ -1,4 +1,4 @@
-/* Copyright © 2020 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -294,6 +294,7 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 		kar_stream_free(file);
 		if (test->lexer_file.is) {
 			if (!lexerResult) {
+				kar_module_print_errors(module);
 				kar_module_free(module);
 				KAR_FREE(path2);
 				return kar_error_register(1, "Ошибка в лексере. Ожидалось, что лексер отработает нормально.");

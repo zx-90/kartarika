@@ -1,4 +1,4 @@
-/* Copyright © 2020 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -23,6 +23,7 @@ int main(int argc, char** argv) {
 	
 	if (!kar_lexer_run(file, module)) {
 		fprintf(stderr, "Ошибка при парсинге файла в лексере.\n");
+		kar_module_print_errors(module);
 		kar_module_free(module);
 		kar_stream_free(file);
 		return 1;

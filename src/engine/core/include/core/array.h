@@ -1,4 +1,4 @@
-/* Copyright © 2020 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -26,7 +26,7 @@ void* kar_array_tear(KarArray* array, size_t num);
 void kar_array_erase(KarArray* array, size_t num, KarArrayFreeFn* fn);
 void kar_array_move_to_end(KarArray* from, KarArray* to, size_t begin, size_t count);
 
-#define KAR_ARRAY_HEADER(prefix, type)                                        \
+#define KAR_TREE_HEADER(prefix, type)                                        \
 void kar_##prefix##_add(type* array, type* child);                            \
 void kar_##prefix##_insert(type* array, type* child, size_t num);             \
 type* kar_##prefix##_tear(type* array, size_t num);                           \
@@ -34,7 +34,7 @@ void kar_##prefix##_erase(type* array, size_t num);                           \
 void kar_##prefix##_move_to_end(type* from, type* to, size_t begin, size_t count); \
 bool kar_##prefix##_foreach_bool(type* array, bool(*fn)(type* array))
 
-#define KAR_ARRAY_CODE(prefix, type, field, fn) \
+#define KAR_TREE_CODE(prefix, type, field, fn) \
 void kar_##prefix##_add(type* array, type* child) { kar_array_add(&array->field, child); } \
 void kar_##prefix##_insert(type* array, type* child, size_t num) { kar_array_insert(&array->field, child, num); } \
 type* kar_##prefix##_tear(type* array, size_t num) { return (type*)kar_array_tear(&array->field, num); } \

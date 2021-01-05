@@ -1,4 +1,4 @@
-/* Copyright © 2020 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -111,7 +111,7 @@ static KarLexerStatus get_status_by_symbol(KarFirstLexer* lexer) {
 	char* hex_code = create_string_to_hex(kar_stream_cursor_get(lexer->streamCursor));
 	snprintf(buff, sizeof(buff), "%s: %s (код %s).", ERROR_UNKNOWN_SYMBOL, kar_stream_cursor_get(lexer->streamCursor), hex_code);
 	KAR_FREE(hex_code);
-	kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, buff);
+	kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, buff);
 	return KAR_LEXER_STATUS_UNKNOWN;
 }
 
@@ -162,11 +162,11 @@ static void parse_string(KarFirstLexer* lexer) {
 	// TODO: Сделать парсинг спецсимволов \н, \т, \\ и т.п.
 	while (true) {
 		if (kar_stream_cursor_is_eof(lexer->streamCursor)) {
-			kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_END_OF_FILE_PARSING_STRING);
+			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_END_OF_FILE_PARSING_STRING);
 			return;
 		}
 		if (!kar_stream_cursor_next(lexer->streamCursor)) {
-			kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
+			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 		}
 		if (kar_stream_cursor_is_equal(lexer->streamCursor, KAR_KEYWORD_STRING_END)) {
 			next_token_default(lexer, KAR_LEXER_STATUS_UNKNOWN);
@@ -175,7 +175,7 @@ static void parse_string(KarFirstLexer* lexer) {
 		if (kar_stream_cursor_is_equal(lexer->streamCursor, KAR_KEYWORD_STRING_ESCAPE)) {
 			kar_token_add_str(lexer->current, kar_stream_cursor_get(lexer->streamCursor));
 			if (!kar_stream_cursor_next(lexer->streamCursor)) {
-				kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
+				kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 			}
 		}
 		kar_token_add_str(lexer->current, kar_stream_cursor_get(lexer->streamCursor));
@@ -188,7 +188,7 @@ static void parse_singleline_comment(KarFirstLexer* lexer) {
 			return;
 		}
 		if (!kar_stream_cursor_next(lexer->streamCursor)) {
-			kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
+			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 		}
 		if (kar_stream_cursor_is_equal(lexer->streamCursor, KAR_KEYWORD_SPACE_NEW_LINE)) {
 			next_token_default(lexer, KAR_LEXER_STATUS_UNKNOWN);
@@ -201,12 +201,12 @@ static void parse_singleline_comment(KarFirstLexer* lexer) {
 static void parse_multiline_comment(KarFirstLexer* lexer) {
 	while (true) {
 		if (kar_stream_cursor_is_eof(lexer->streamCursor)) {
-			kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_END_OF_FILE_PARSING_COMMENT);
+			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_END_OF_FILE_PARSING_COMMENT);
 			return;
 			
 		}
 		if (!kar_stream_cursor_next(lexer->streamCursor)) {
-			kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
+			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 		}
 		if (kar_stream_cursor_is_equal(lexer->streamCursor, KAR_KEYWORD_MULTILINE_COMMENT_END)) {
 			next_token_default(lexer, KAR_LEXER_STATUS_UNKNOWN);
@@ -220,18 +220,17 @@ bool kar_first_lexer_run(KarFirstLexer* lexer) {
 	KarStreamCursor* streamCursor = lexer->streamCursor;
 	if (!kar_stream_cursor_is_eof(streamCursor) && kar_stream_cursor_is_good(streamCursor)) {
 		if (!kar_stream_cursor_next(streamCursor)) {
-			kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
+			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 		} else if (kar_stream_cursor_is_equal(streamCursor, "\xEF\xBB\xBF")) {
 			kar_cursor_init(&streamCursor->cursor);
 			if (!kar_stream_cursor_next(streamCursor)) {
-				kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
+				kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 			}
 		}
 	}
 	while (!kar_stream_cursor_is_eof(streamCursor)) {
-		//printf("333\n");
 		if (!kar_stream_cursor_is_good(streamCursor)) {
-			kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_READ_STREAM);
+			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_READ_STREAM);
 			return false;
 		}
 		if (kar_stream_cursor_is_equal(streamCursor, KAR_KEYWORD_STRING_START)) {
@@ -279,9 +278,9 @@ bool kar_first_lexer_run(KarFirstLexer* lexer) {
 		if (!kar_stream_cursor_next(streamCursor)) {
 			next_token(lexer, KAR_TOKEN_UNKNOWN, KAR_LEXER_STATUS_UNKNOWN);
 			kar_token_set_str(lexer->current, kar_stream_cursor_get(streamCursor));
-			kar_module_error_set(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
+			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 		}
 	}
 	push_token(lexer);
-	return kar_module_error_get_count() == 0;
+	return kar_module_error_get_count(lexer->module) == 0;
 }
