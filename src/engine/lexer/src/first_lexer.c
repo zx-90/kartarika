@@ -216,6 +216,14 @@ static void parse_multiline_comment(KarFirstLexer* lexer) {
 	}
 }
 
+static void add_string_to_token(KarToken* token, KarStreamCursor* streamCursor) {
+	char* added = kar_stream_cursor_get(streamCursor);
+	if (!strcmp(added, KAR_KEYWORD_SPACE_CARRIAGE_RETURN)) {
+		return;
+	}
+	kar_token_add_str(token, added);
+}
+
 bool kar_first_lexer_run(KarFirstLexer* lexer) {
 	KarStreamCursor* streamCursor = lexer->streamCursor;
 	if (!kar_stream_cursor_is_eof(streamCursor) && kar_stream_cursor_is_good(streamCursor)) {
@@ -272,12 +280,12 @@ bool kar_first_lexer_run(KarFirstLexer* lexer) {
 				}
 			}
 
-			kar_token_add_str(lexer->current, kar_stream_cursor_get(streamCursor));
+			add_string_to_token(lexer->current, streamCursor);
 		}
 		
 		if (!kar_stream_cursor_next(streamCursor)) {
 			next_token(lexer, KAR_TOKEN_UNKNOWN, KAR_LEXER_STATUS_UNKNOWN);
-			kar_token_set_str(lexer->current, kar_stream_cursor_get(streamCursor));
+			add_string_to_token(lexer->current, streamCursor);
 			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 		}
 	}
