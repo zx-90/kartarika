@@ -1,4 +1,4 @@
-/* Copyright © 2020 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -16,12 +16,38 @@ static void retype_if_check(KarToken* token, KarTokenType checkType, const char*
 	}
 }
 
-static bool retype_all(KarToken* token) {
+static bool is_cypher(const char c) {
+	return (c >= 0x30 && c <= 0x39);
+}
+
+static bool check_for_number(KarToken* token, KarModule* module) {
+	if (token->type != KAR_TOKEN_IDENTIFIER) {
+		return true;
+	}
+	if (!is_cypher(token->str[0])) {
+		return true;
+	}
+	size_t len = strlen(token->str);
+	for (size_t i = 1; i < len; ++i) {
+		if(!is_cypher(token->str[i])) {
+			kar_module_add_error(module, &token->cursor, 1, "Токен не является корректным числом.");
+			return false;
+		}
+	}
+	token->type = KAR_TOKEN_VAL_INTEGER;
+	return true;
+}
+
+static bool retype_all(KarToken* token, KarModule* module) {
 	// Значения переменных.
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_VAL_NULL, KAR_TOKEN_VAL_NULL);
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_VAL_TRUE, KAR_TOKEN_VAL_TRUE);
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_VAL_FALSE, KAR_TOKEN_VAL_FALSE);
-	// TODO: Написать про число.
+	
+	// Число.
+	if (!check_for_number(token, module)) {
+		return false;
+	}
 		
 	// Объявления переменных.
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_DECLARATION_CONST, KAR_TOKEN_FIELD_CONST);
@@ -132,7 +158,15 @@ static bool retype_all(KarToken* token) {
 	return true;
 }
 
+static bool foreach_retype(KarToken* token, KarModule* module) {
+	for (size_t i = 0; i < token->children.count; i++) {
+		if (!foreach_retype(token->children.items[i], module)) {
+			return false;
+		}
+	}
+	return retype_all(token, module);
+}
+
 bool kar_second_lexer_run(KarModule* module) {
-	kar_token_child_foreach_bool(module->token, retype_all);
-	return true;
+	return foreach_retype(module->token, module);
 }
