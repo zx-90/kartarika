@@ -1,1 +1,5 @@
-ещё не реализовано.
+MODULE(1, 1): [NULL]
+	INDENT(1, 1): []
+	INDENT(2, 1): []
+	VAL_STRING(2, 1): []
+	INDENT(3, 1): []
