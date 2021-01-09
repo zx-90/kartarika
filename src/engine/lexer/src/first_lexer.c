@@ -157,26 +157,120 @@ static void add_new_line(KarFirstLexer* lexer) {
 	lexer->status = KAR_LEXER_STATUS_INDENT;
 }
 
+static bool add_char_to_lexer(int32_t code, size_t count, KarFirstLexer* lexer) {
+	if (count == 0 || count > 5) {
+		kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, "Ожидается шестнадцатиричный код символа.");
+		return false;
+	}
+
+	char res[5];
+	if (code < 0) {
+		kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, "Неверный номер символа кодировки Юникод.");
+		return false;
+	} else if (code < 0x80) {
+		res[0] = (char)code;
+		res[1] = 0;
+	} else if (code < 0x800) {
+		res[0] = (char)((code >> 6) | 0xC0);
+		res[1] = (char)((code & 0x3F) | 0x80);
+		res[2] = 0;
+	} else if (code < 0x10000) {
+		res[0] = (char)((code >> 12) | 0xE0);
+		res[1] = (char)(((code >> 6) & 0x3F) | 0x80);
+		res[2] = (char)((code & 0x3F) | 0x80);
+		res[3] = 0;
+	} else if (code < 0x110000) {
+		res[0] = (char)((code >> 18) | 0xF0);
+		res[1] = (char)((code >> 12 & 0x3F) | 0x80);
+		res[2] = (char)((code >> 6 & 0x3F) | 0x80);
+		res[3] = (char)((code & 0x3F) | 0x80);
+		res[4] = 0;
+	} else {
+		kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, "Неверный номер символа кодировки Юникод.");
+		return false;
+	}
+	kar_token_add_str(lexer->current, res);
+	return true;
+}
+
+static bool parse_hexadecimal_string(KarFirstLexer* lexer, bool *is_next_char) {
+	int32_t code = 0;
+	size_t count = 0;
+	while(true) {
+		if (!kar_stream_cursor_next(lexer->streamCursor)) {
+			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
+		}
+		unsigned char* current = (unsigned char*)lexer->streamCursor->currentChar;
+		
+		if (current[0] == ' ') {
+			break;
+		}
+		if (current[0] == ',') {
+			if (!add_char_to_lexer(code, count, lexer)) {
+				return false;
+			}
+			code = 0;
+			count = 0;
+			continue;
+		}
+		
+		if (current[0] >= 0x30 && current[0] <= 0x39) {
+			code = (code << 4) + (current[0] - 0x30);
+		} else if (current[0] == 0xD0 && (current[1] >= 0x90 && current[1] <= 0x95)) {
+			code = (code << 4) + (current[1] - 0x90 + 10);
+		} else if (current[0] == 0xD0 && (current[1] >= 0xB0 && current[1] <= 0xB5)) {
+			code = (code << 4) + (current[1] - 0xB0 + 10);
+		} else {
+			*is_next_char = false;
+			break;
+		}
+		count++;
+	}
+	if (!add_char_to_lexer(code, count, lexer)) {
+		return false;
+	}
+	return true;
+}
 
 static void parse_string(KarFirstLexer* lexer) {
-	// TODO: Сделать парсинг спецсимволов \н, \т, \\ и т.п.
+	bool is_next_char = true;
 	while (true) {
 		if (kar_stream_cursor_is_eof(lexer->streamCursor)) {
 			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_END_OF_FILE_PARSING_STRING);
 			return;
 		}
-		if (!kar_stream_cursor_next(lexer->streamCursor)) {
+		if (is_next_char && !kar_stream_cursor_next(lexer->streamCursor)) {
 			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 		}
+		is_next_char = true;
 		if (kar_stream_cursor_is_equal(lexer->streamCursor, KAR_KEYWORD_STRING_END)) {
 			next_token_default(lexer, KAR_LEXER_STATUS_UNKNOWN);
 			return;
 		}
 		if (kar_stream_cursor_is_equal(lexer->streamCursor, KAR_KEYWORD_STRING_ESCAPE)) {
-			kar_token_add_str(lexer->current, kar_stream_cursor_get(lexer->streamCursor));
 			if (!kar_stream_cursor_next(lexer->streamCursor)) {
 				kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 			}
+			if (!strcmp(lexer->streamCursor->currentChar, "н")) {
+				kar_token_add_str(lexer->current, "\n");
+			} else if (!strcmp(lexer->streamCursor->currentChar, "к")) {
+				kar_token_add_str(lexer->current, "\r");
+			} else if (!strcmp(lexer->streamCursor->currentChar, "т")) {
+				kar_token_add_str(lexer->current, "\t");
+			} else if (!strcmp(lexer->streamCursor->currentChar, "\"")) {
+				kar_token_add_str(lexer->current, "\"");
+			} else if (!strcmp(lexer->streamCursor->currentChar, "\\")) {
+				kar_token_add_str(lexer->current, "\\");
+			} else if (!strcmp(lexer->streamCursor->currentChar, "ш")) {
+				if (!parse_hexadecimal_string(lexer, &is_next_char)) {
+					return;
+				}
+			} else {
+				char buff[1024];
+				snprintf(buff, sizeof(buff), "Неверный управляющий символ: \\%s.", lexer->streamCursor->currentChar);
+				kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, buff);
+			}
+			continue;
 		}
 		kar_token_add_str(lexer->current, kar_stream_cursor_get(lexer->streamCursor));
 	}
