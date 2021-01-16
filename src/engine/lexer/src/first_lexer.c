@@ -159,7 +159,7 @@ static void add_new_line(KarFirstLexer* lexer) {
 
 static bool add_char_to_lexer(int32_t code, size_t count, KarFirstLexer* lexer) {
 	if (count == 0 || count > 5) {
-		kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, "Ожидается шестнадцатиричный код символа.");
+		kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, "Неверный номер символа кодировки Юникод.");
 		return false;
 	}
 
