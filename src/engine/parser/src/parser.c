@@ -11,13 +11,19 @@
 bool kar_parser_run(KarModule* module) {
 	KarToken* token = module->token;
 	bool b = true;
+	
+	// Парсинг структуры.
 	b = b && kar_parser_split_by_lines(token);
 	b = b && kar_parser_split_by_blocks(token);
 	b = b && kar_parser_extern_brackets(token);
+	
+	// Парсинг до удаления пробелов.
 	b = b && kar_parser_make_path(token);
 	
+	// Удаление пробелов.
 	b = b && kar_parser_remove_spaces(token);
 	
+	// Парсинг после удаления пробелов.
 	b = b && kar_parser_make_return(token);
 	b = b && kar_parser_make_function(token);
 	return b;
