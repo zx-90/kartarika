@@ -6,5 +6,7 @@
 
 [Стандарт языка](doc/standard/start.md)
 
+[Разработчикам](doc/develop/start.md)
+
 [Обучение](doc/education/start.md)
 
