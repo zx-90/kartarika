@@ -31,7 +31,6 @@ static KarError* check_for_subdirs(char** files, size_t count) {
 }
 
 static KarError* run_dir(const char* path) {
-	printf("Тестирование каталога %s\n", path);
 	size_t count;
 	char** files = kar_file_create_absolute_directory_list(path, &count);
 	if (!files) {
@@ -39,13 +38,14 @@ static KarError* run_dir(const char* path) {
 		return kar_error_get_last();
 	}
 	if (count == 0) {
-		printf("Предупреждение. Каталог пуст.\n");
+		printf("Предупреждение. Каталог %s пуст.\n", path);
 		kar_string_list_free(files, count);
 		return NULL;
 	}
 	
 	KarError* error = check_for_subdirs(files, count);
 	if (!error) {
+		//printf("КАТАЛОГ %s\n", path);
 		size_t i;
 		for (i = 0; i < count; i++) {
 			if (kar_file_system_is_directory(files[i])) {
@@ -57,6 +57,7 @@ static KarError* run_dir(const char* path) {
 			}
 		}
 	} else {
+		printf("ТЕСТ %s\n", path);
 		KarTest* tf = kar_test_create();
 		KarError* result = kar_test_run(tf, path);
 		kar_test_free(tf);

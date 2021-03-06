@@ -82,7 +82,7 @@ typedef enum {
 	KAR_TOKEN_SIGN_BIT_NOT,
 	KAR_TOKEN_SIGN_BIT_XOR,
 	
-	// Управление последовательостью выполенения.
+	// Управление последовательностью выполенения.
 	KAR_TOKEN_COMMAND_BLOCK,
 	KAR_TOKEN_COMMAND_PASS,
 	
@@ -105,6 +105,8 @@ typedef enum {
 	
 	KAR_TOKEN_COMMAND_OPEN, // рыскрыть вопросительный элемент.
 	
+	KAR_TOKEN_BLOCK_BODY,
+	
 	// Функция.
 	KAR_TOKEN_FUNCTION,
 	
@@ -115,6 +117,7 @@ typedef enum {
 	//KAR_TOKEN_FUNC_LOCAL,
 	KAR_TOKEN_FUNC_STAT,
 	
+	KAR_TOKEN_FUNC_PARAMETERS,
 	//KAR_TOKEN_ARGUMENT_CONST,
 	//KAR_TOKEN_ARGUMENT_VAR,
 	//KAR_TOKEN_ARGUMENT_POINTER,

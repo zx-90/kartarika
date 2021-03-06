@@ -19,6 +19,11 @@ KarModuleError* kar_module_error_create(KarCursor* cursor, int code, const char*
 	return error;
 }
 
+void kar_module_error_create_add(KarArray* errors, KarCursor* cursor, int code, const char* description) {
+	KarModuleError* error = kar_module_error_create(cursor, code, description);
+	kar_array_add(errors, (void*)error);
+}
+
 void kar_module_error_free(KarModuleError* error) {
 	KAR_FREE(error->description);
 	KAR_FREE(error);

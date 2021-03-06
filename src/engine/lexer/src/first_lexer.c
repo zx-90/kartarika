@@ -111,7 +111,7 @@ static KarLexerStatus get_status_by_symbol(KarFirstLexer* lexer) {
 	char* hex_code = create_string_to_hex(kar_stream_cursor_get(lexer->streamCursor));
 	snprintf(buff, sizeof(buff), "%s: %s (код %s).", ERROR_UNKNOWN_SYMBOL, kar_stream_cursor_get(lexer->streamCursor), hex_code);
 	KAR_FREE(hex_code);
-	kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, buff);
+	kar_module_error_create_add(&lexer->module->errors, &lexer->streamCursor->cursor, 1, buff);
 	return KAR_LEXER_STATUS_UNKNOWN;
 }
 
@@ -159,13 +159,13 @@ static void add_new_line(KarFirstLexer* lexer) {
 
 static bool add_char_to_lexer(int32_t code, size_t count, KarFirstLexer* lexer) {
 	if (count == 0 || count > 5) {
-		kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, "Неверный номер символа кодировки Юникод.");
+		kar_module_error_create_add(&lexer->module->errors, &lexer->streamCursor->cursor, 1, "Неверный номер символа кодировки Юникод.");
 		return false;
 	}
 
 	char res[5];
 	if (code < 0) {
-		kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, "Неверный номер символа кодировки Юникод.");
+		kar_module_error_create_add(&lexer->module->errors, &lexer->streamCursor->cursor, 1, "Неверный номер символа кодировки Юникод.");
 		return false;
 	} else if (code < 0x80) {
 		res[0] = (char)code;
@@ -186,7 +186,7 @@ static bool add_char_to_lexer(int32_t code, size_t count, KarFirstLexer* lexer) 
 		res[3] = (char)((code & 0x3F) | 0x80);
 		res[4] = 0;
 	} else {
-		kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, "Неверный номер символа кодировки Юникод.");
+		kar_module_error_create_add(&lexer->module->errors, &lexer->streamCursor->cursor, 1, "Неверный номер символа кодировки Юникод.");
 		return false;
 	}
 	kar_token_add_str(lexer->current, res);
@@ -198,7 +198,7 @@ static bool parse_hexadecimal_string(KarFirstLexer* lexer, bool *is_next_char) {
 	size_t count = 0;
 	while(true) {
 		if (!kar_stream_cursor_next(lexer->streamCursor)) {
-			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
+			kar_module_error_create_add(&lexer->module->errors, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 		}
 		unsigned char* current = (unsigned char*)lexer->streamCursor->currentChar;
 		
@@ -236,11 +236,11 @@ static void parse_string(KarFirstLexer* lexer) {
 	bool is_next_char = true;
 	while (true) {
 		if (kar_stream_cursor_is_eof(lexer->streamCursor)) {
-			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_END_OF_FILE_PARSING_STRING);
+			kar_module_error_create_add(&lexer->module->errors, &lexer->streamCursor->cursor, 1, ERROR_END_OF_FILE_PARSING_STRING);
 			return;
 		}
 		if (is_next_char && !kar_stream_cursor_next(lexer->streamCursor)) {
-			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
+			kar_module_error_create_add(&lexer->module->errors, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 		}
 		is_next_char = true;
 		if (kar_stream_cursor_is_equal(lexer->streamCursor, KAR_KEYWORD_STRING_END)) {
@@ -249,7 +249,7 @@ static void parse_string(KarFirstLexer* lexer) {
 		}
 		if (kar_stream_cursor_is_equal(lexer->streamCursor, KAR_KEYWORD_STRING_ESCAPE)) {
 			if (!kar_stream_cursor_next(lexer->streamCursor)) {
-				kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
+				kar_module_error_create_add(&lexer->module->errors, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 			}
 			if (!strcmp(lexer->streamCursor->currentChar, "н")) {
 				kar_token_add_str(lexer->current, "\n");
@@ -268,7 +268,7 @@ static void parse_string(KarFirstLexer* lexer) {
 			} else {
 				char buff[1024];
 				snprintf(buff, sizeof(buff), "Неверный управляющий символ: \\%s.", lexer->streamCursor->currentChar);
-				kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, buff);
+				kar_module_error_create_add(&lexer->module->errors, &lexer->streamCursor->cursor, 1, buff);
 			}
 			continue;
 		}
@@ -282,7 +282,7 @@ static void parse_singleline_comment(KarFirstLexer* lexer) {
 			return;
 		}
 		if (!kar_stream_cursor_next(lexer->streamCursor)) {
-			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
+			kar_module_error_create_add(&lexer->module->errors, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 		}
 		if (kar_stream_cursor_is_equal(lexer->streamCursor, KAR_KEYWORD_SPACE_NEW_LINE)) {
 			next_token_default(lexer, KAR_LEXER_STATUS_UNKNOWN);
@@ -296,12 +296,12 @@ static void parse_multiline_comment(KarFirstLexer* lexer) {
 	bool end_mul = false;
 	while (true) {
 		if (kar_stream_cursor_is_eof(lexer->streamCursor)) {
-			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_END_OF_FILE_PARSING_COMMENT);
+			kar_module_error_create_add(&lexer->module->errors, &lexer->streamCursor->cursor, 1, ERROR_END_OF_FILE_PARSING_COMMENT);
 			return;
 			
 		}
 		if (!kar_stream_cursor_next(lexer->streamCursor)) {
-			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
+			kar_module_error_create_add(&lexer->module->errors, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 		}
 		if (end_mul && kar_stream_cursor_is_equal(lexer->streamCursor, KAR_KEYWORD_SIGN_DIV)) {
 			lexer->current->str[strlen(lexer->current->str) - 1] = 0;
@@ -325,17 +325,17 @@ bool kar_first_lexer_run(KarFirstLexer* lexer) {
 	KarStreamCursor* streamCursor = lexer->streamCursor;
 	if (!kar_stream_cursor_is_eof(streamCursor) && kar_stream_cursor_is_good(streamCursor)) {
 		if (!kar_stream_cursor_next(streamCursor)) {
-			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
+			kar_module_error_create_add(&lexer->module->errors, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 		} else if (kar_stream_cursor_is_equal(streamCursor, "\xEF\xBB\xBF")) {
 			kar_cursor_init(&streamCursor->cursor);
 			if (!kar_stream_cursor_next(streamCursor)) {
-				kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
+				kar_module_error_create_add(&lexer->module->errors, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 			}
 		}
 	}
 	while (!kar_stream_cursor_is_eof(streamCursor)) {
 		if (!kar_stream_cursor_is_good(streamCursor)) {
-			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_READ_STREAM);
+			kar_module_error_create_add(&lexer->module->errors, &lexer->streamCursor->cursor, 1, ERROR_READ_STREAM);
 			return false;
 		}
 		if (kar_stream_cursor_is_equal(streamCursor, KAR_KEYWORD_STRING_START)) {
@@ -393,7 +393,7 @@ bool kar_first_lexer_run(KarFirstLexer* lexer) {
 		if (!kar_stream_cursor_next(streamCursor)) {
 			next_token(lexer, KAR_TOKEN_UNKNOWN, KAR_LEXER_STATUS_UNKNOWN);
 			add_string_to_token(lexer->current, streamCursor);
-			kar_module_add_error(lexer->module, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
+			kar_module_error_create_add(&lexer->module->errors, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 		}
 	}
 	push_token(lexer);

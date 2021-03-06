@@ -10,6 +10,7 @@
 #include <stddef.h>
 
 #include "cursor.h"
+#include "array.h"
 
 typedef struct {
 	KarCursor cursor;
@@ -18,6 +19,9 @@ typedef struct {
 } KarModuleError;
 
 KarModuleError* kar_module_error_create(KarCursor* cursor, int code, const char* description);
+
+void kar_module_error_create_add(KarArray* errors, KarCursor* cursor, int code, const char* description);
+
 void kar_module_error_free(KarModuleError* error);
 
 void kar_module_error_print(const char* module_name, KarModuleError* error);

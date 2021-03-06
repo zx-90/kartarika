@@ -29,11 +29,6 @@ void kar_module_free(KarModule* module) {
 	KAR_FREE(module);
 }
 
-void kar_module_add_error(KarModule* module, KarCursor* cursor, int code, const char* description) {
-	KarModuleError* error = kar_module_error_create(cursor, code, description);
-	kar_array_add(&module->errors, error);
-}
-
 void kar_module_print_errors(KarModule* module) {
 	for (size_t i = 0; i < kar_module_error_get_count(module); ++i) {
 		kar_module_error_print(module->name, kar_module_error_get(module, i));

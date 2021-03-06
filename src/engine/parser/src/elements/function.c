@@ -38,9 +38,17 @@ bool kar_parser_make_function(KarToken* token)
 			continue;
 		}
 		
+		// TODO: Проверить, что в funcName нет параметров, и перенести его в токен с параметрами.
 		child->type = KAR_TOKEN_FUNCTION;
 		child->str = kar_string_create_copy(kar_token_child(child, funcName)->str);
-		kar_token_child_erase(child, func);
+
+		KarToken* parameters = kar_token_create();
+		parameters->type = KAR_TOKEN_FUNC_PARAMETERS;
+		parameters->cursor = kar_token_child(child, funcName)->cursor;
+		kar_token_child_insert(child, parameters, 1);
+		
+		kar_token_child_erase(child, funcName);
+		kar_token_child_erase(child, funcName);
 		
 		size_t signColon = func + 1;
 		size_t returnKeyword = func + 1;

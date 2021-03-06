@@ -30,7 +30,7 @@ static bool check_for_number(KarToken* token, KarModule* module) {
 	size_t len = strlen(token->str);
 	for (size_t i = 1; i < len; ++i) {
 		if(!is_cypher(token->str[i])) {
-			kar_module_add_error(module, &token->cursor, 1, "Токен не является корректным числом.");
+			kar_module_error_create_add(&module->errors, &token->cursor, 1, "Токен не является корректным числом.");
 			return false;
 		}
 	}

@@ -106,6 +106,8 @@ const char* kar_token_type_get_name(const KarTokenType type)
 		
 		PROCESS_VAL(COMMAND_OPEN);
 		
+		PROCESS_VAL(BLOCK_BODY);
+		
 		// Функция.
 		PROCESS_VAL(FUNCTION);
 		PROCESS_VAL(FUNC_MODIFIER);
@@ -115,6 +117,7 @@ const char* kar_token_type_get_name(const KarTokenType type)
 		//PROCESS_VAL(FUNC_LOCAL);
 		PROCESS_VAL(FUNC_STAT);
 		
+		PROCESS_VAL(FUNC_PARAMETERS);
 		//PROCESS_VAL(ARGUMENT_CONST);
 		//PROCESS_VAL(ARGUMENT_VAR);
 		//PROCESS_VAL(ARGUMENT_POINTER);

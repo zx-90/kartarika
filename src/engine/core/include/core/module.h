@@ -23,7 +23,6 @@ typedef struct {
 KarModule* kar_module_create(const char* name);
 void kar_module_free(KarModule* module);
 
-void kar_module_add_error(KarModule* module, KarCursor* cursor, int code, const char* description);
 void kar_module_print_errors(KarModule* module);
 
 #endif // KAR_MODULE_H
