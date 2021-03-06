@@ -305,20 +305,22 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 			char* gold = kar_file_load(gold_path);
 			KAR_FREE(gold_path);
 			
-			// TODO: Сделать сравнение более подробно хотя бы номер первой строки, в которой не сопадает исходный файл с тестом.
 			KarCursor* cursor = compare_strings(testResult, gold);
 			if (cursor) {
-				kar_module_free(module);
-				KAR_FREE(path2);
 				KarError* result = kar_error_register(1, "Ошибка в лексере. Выход теста не совпадает с ожидаемым [%d;%d].\n"
 					"Эталон:\n%s\nВывод программы:\n%s",
 					cursor->line, cursor->column, gold, testResult
 				);
+				kar_module_free(module);
+				KAR_FREE(path2);
 				KAR_FREE(testResult);
 				KAR_FREE(gold);
 				KAR_FREE(cursor);
 				return result;
 			}
+			KAR_FREE(testResult);
+			KAR_FREE(gold);
+			KAR_FREE(cursor);
 		} else if (test->lexer_error_file.is) {
 			if (lexerResult) {
 				kar_module_free(module);
@@ -344,28 +346,30 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 				KAR_FREE(path2);
 				return kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер отработает нормально.");
 			}
-		
+			
 			char* testResult = kar_token_create_print(module->token);
-			char* gold_path = kar_string_create_concat(path2, kar_file_system_get_basename(test->lexer_file.path));
+			char* gold_path = kar_string_create_concat(path2, kar_file_system_get_basename(test->parser_file.path));
 			char* gold = kar_file_load(gold_path);
 			KAR_FREE(gold_path);
 			
-			// TODO: Сделать сравнение более подробно хотя бы номер первой строки, в которой не сопадает исходный файл с тестом.
-			if (testResult != gold) {
+			KarCursor* cursor = compare_strings(testResult, gold);
+			if (cursor) {
+				KarError* result = kar_error_register(1, "Ошибка в парсере. Выход теста не совпадает с ожидаемым [%d;%d].\n"
+					"Эталон:\n%s\nВывод программы:\n%s",
+					cursor->line, cursor->column, gold, testResult
+				);
 				kar_module_free(module);
 				KAR_FREE(path2);
 				KAR_FREE(testResult);
 				KAR_FREE(gold);
-				return kar_error_register(1, "Ошибка в парсере. Выход теста не совпадает с ожидаемым.");
+				KAR_FREE(cursor);
+				return result;
 			}
-			
+			KAR_FREE(testResult);
+			KAR_FREE(gold);
+			KAR_FREE(cursor);
 		} else if (test->parser_error_file.is) {
-			if (!parserResult) {
-				// TODO: Возможно в файле сообщения об ошибке можно добавить формат для сравнения результатов.
-				kar_module_free(module);
-				KAR_FREE(path2);
-				return NULL;
-			} else {
+			if (parserResult) {
 				kar_module_free(module);
 				KAR_FREE(path2);
 				return kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер вернет ошибку, но он отработал нормально.");
