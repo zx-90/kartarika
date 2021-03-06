@@ -268,7 +268,6 @@ static KarCursor* compare_strings(char* str1, char* str2) {
 		str1++;
 		str2++;
 		if (*str1 != *str2) {
-			printf("[%c][%c]", *str1, *str2);
 			return result;
 		}
 	}
@@ -288,7 +287,6 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 	KarModule* module = kar_module_create(test->project_file.path);
 	
 	{
-		printf("%s\n", test->project_file.path);
 		KarStream* file = kar_stream_create(test->project_file.path);
 		bool lexerResult = kar_lexer_run(file, module);
 		kar_stream_free(file);

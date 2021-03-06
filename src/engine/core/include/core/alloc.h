@@ -51,6 +51,6 @@
 
 #define KAR_FREE(var) free(var);
 
-#endif // KAR_DEBUG_ON
+#endif // KAR_ALLOC_DEBUG
 
 #endif // KAR_ALLOC_H

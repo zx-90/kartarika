@@ -6,6 +6,7 @@
 
 #include <stdbool.h>
 
+#include "core/string.h"
 #include "core/token.h"
 
 bool kar_parser_make_function(KarToken* token)
@@ -38,7 +39,7 @@ bool kar_parser_make_function(KarToken* token)
 		}
 		
 		child->type = KAR_TOKEN_FUNCTION;
-		child->str = kar_token_child(child, funcName)->str;
+		child->str = kar_string_create_copy(kar_token_child(child, funcName)->str);
 		kar_token_child_erase(child, func);
 		
 		size_t signColon = func + 1;
