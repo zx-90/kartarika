@@ -1,0 +1,8 @@
+MODULE(1, 1): [NULL]
+	INDENT(1, 1): []
+		FUNC_STAT(1, 1): [стат]
+		FIELD_VAR(1, 6): [поле]
+		IDENTIFIER(1, 11): [К]
+		SIGN_ASSIGN(1, 13): [=]
+		IDENTIFIER(1, 15): [Кар1]
+			SIGN_OPEN_BRACES(1, 19): [(]

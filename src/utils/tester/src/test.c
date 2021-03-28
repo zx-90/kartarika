@@ -340,6 +340,7 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 		bool parserResult = kar_parser_run(module);
 		if (test->parser_file.is) {
 			if (!parserResult) {
+				kar_module_print_errors(module);
 				kar_module_free(module);
 				KAR_FREE(path2);
 				return kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер отработает нормально.");
@@ -401,7 +402,7 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 			} else {
 				kar_module_free(module);
 				KAR_FREE(path2);
-				return kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер вернет ошибку, но он отработал нормально.");
+				return kar_error_register(1, "Ошибка в компиляторе. Ожидалось, что компилятор вернет ошибку, но он отработал нормально.");
 			}
 		}
 	}
