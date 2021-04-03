@@ -1,4 +1,4 @@
-/* Copyright © 2020 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -59,6 +59,7 @@ static bool fill_block(
 	KarArray* errors
 	)
 {
+	// TODO: Правильный курсор на местоположение во всех ошибках проверить.
 	bool prev_colon_end = false;
 	int indent = get_token_indent(kar_token_child(rootToken, *num));
 	int currentIndent = indent;
@@ -86,6 +87,7 @@ static bool fill_block(
 				parent = kar_token_child(parentToken, parentToken->children.count - 1);
 			}
 			if (!is_colon_end(parent)) {
+				// TODO: Правильный курсор на местоположение, где должно находиться двоеточие.
 				kar_module_error_create_add(errors, &parent->cursor, 1, "Блок должен открываться двоеточием.");
 				return false;
 			}
