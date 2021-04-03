@@ -3,13 +3,16 @@ cmake_minimum_required(VERSION 3.8)
 set(lib_parser_SRC
 
 src/parser.c
-src/elements/blocks.c
-src/elements/brackets.c
-src/elements/function.c
-src/elements/lines.c
-src/elements/path.c
-src/elements/return.c
-src/elements/space.c
+
+src/structure/blocks.c
+src/structure/brackets.c
+src/structure/lines.c
+src/structure/space.c
+
+src/arithmetic/path.c
+
+src/function/header.c
+src/function/return.c
 
 )
 
