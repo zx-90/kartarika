@@ -1,4 +1,4 @@
-/* Copyright © 2020 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -14,8 +14,8 @@ bool kar_parser_run(KarModule* module) {
 	bool b = true;
 	
 	// Парсинг структуры.
-	b = b && kar_parser_extern_brackets(token);
-	b = b && kar_parser_split_by_lines(token);
+	b = b && kar_parser_extern_brackets(token, errors);
+	b = b && kar_parser_split_by_lines(token, errors);
 	b = b && kar_parser_split_by_blocks(token, errors);
 	
 	// Парсинг до удаления пробелов.

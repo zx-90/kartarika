@@ -1,4 +1,4 @@
-/* Copyright © 2020 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -7,9 +7,10 @@
 #include <stdbool.h>
 
 #include "core/alloc.h"
+#include "core/module_error.h"
 #include "core/token.h"
 
-static bool extern_bracket(KarToken* token) {
+static bool extern_bracket(KarToken* token, KarArray* errors) {
 	KAR_CREATES(opens, size_t, token->children.count);
 	size_t opens_cursor = 0;
 	for (size_t i = 0; i < token->children.count; ++i) {
@@ -20,6 +21,7 @@ static bool extern_bracket(KarToken* token) {
 		if (kar_token_child(token, i)->type == KAR_TOKEN_SIGN_CLOSE_BRACES) {
 			if (opens_cursor == 0) {
 				KAR_FREE(opens);
+				kar_module_error_create_add(errors, &kar_token_child(token, i)->cursor, 1, "У закрывающейся скобки нет соответствующей ей открывающейся.");
 				return false;
 			}
 			opens_cursor--;
@@ -29,11 +31,26 @@ static bool extern_bracket(KarToken* token) {
 			i = open + 1;
 		}
 	}
+	if (opens_cursor != 0) {
+		kar_module_error_create_add(errors, &kar_token_child(token, opens[opens_cursor - 1])->cursor, 1, "У открывающейся скобки нет соответствующей ей закрывающейся.");
+		KAR_FREE(opens);
+		return false;
+	}
 	KAR_FREE(opens);
-	return opens_cursor == 0;
+	return true;
 }
 
-bool kar_parser_extern_brackets(KarToken* token)
+static bool foreach(KarToken* token, KarArray* errors) 
 {
-	return kar_token_child_foreach_bool(token, extern_bracket);
+	for (size_t i = 0; i < token->children.count; i++) {
+		if (!foreach(token->children.items[i], errors)) {
+			return false;
+		}
+	}
+	return extern_bracket(token, errors);
+}
+
+bool kar_parser_extern_brackets(KarToken* token, KarArray* errors)
+{
+	return foreach(token, errors);
 }

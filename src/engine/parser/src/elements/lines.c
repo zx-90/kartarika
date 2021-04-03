@@ -1,4 +1,4 @@
-/* Copyright © 2020 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -6,12 +6,14 @@
 
 #include <stdbool.h>
 
+#include "core/module_error.h"
 #include "core/token.h"
 
-bool kar_parser_split_by_lines(KarToken* token)
+bool kar_parser_split_by_lines(KarToken* token, KarArray* errors)
 {
 	if (token->children.count < 1 || kar_token_child(token, 0)->type != KAR_TOKEN_INDENT)
 	{
+		kar_module_error_create_add(errors, 0, 1, "Внутрення ошибка. В модуле нет ни одного токена.");
 		return false;
 	}
 	size_t cursor = 0;
