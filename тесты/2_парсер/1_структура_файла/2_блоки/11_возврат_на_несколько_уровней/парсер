@@ -1,7 +1,7 @@
 MODULE(1, 1): [NULL]
 	FUNCTION(1, 1): [запустить]
 		FUNC_MODIFIER(1, 1): [NULL]
-			FUNC_STAT(1, 1): [стат]
+			MODIFIER_STAT(1, 1): [стат]
 		FUNC_PARAMETERS(1, 14): [NULL]
 		FUNC_RETURN_TYPE(1, 26): [возвращает]
 			VAR_INTEGER64(1, 37): [число]

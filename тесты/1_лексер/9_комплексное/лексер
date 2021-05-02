@@ -1,7 +1,7 @@
 MODULE(1, 1): [NULL]
 	INDENT(1, 1): []
 	INDENT(2, 1): []
-	FUNC_STAT(2, 1): [стат]
+	MODIFIER_STAT(2, 1): [стат]
 	SPACE(2, 5): [ ]
 	FUNCTION(2, 6): [функция]
 	SPACE(2, 13): [ ]

@@ -1,1 +1,5 @@
-Ещё не реализовано.
+MODULE(1, 1): [NULL]
+	FIELD_VAR(1, 1): [имя]
+		VAR_MODIFIER(1, 1): [NULL]
+		BLOCK_BODY(1, 12): [NULL]
+			VAL_INTEGER(1, 12): [1]

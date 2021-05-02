@@ -32,6 +32,11 @@
 #define KAR_KEYWORD_DECLARATION_CONST "константа"
 #define KAR_KEYWORD_DECLARATION_VAR "поле"
 
+#define KAR_KEYWORD_VAR_MODIFIER_DYNAMIC "динамическое"
+#define KAR_KEYWORD_VAR_MODIFIER_PRIVATE "закрытое"
+#define KAR_KEYWORD_VAR_MODIFIER_PROTECTED "защищённое"
+#define KAR_KEYWORD_VAR_MODIFIER_PUBLIC "открытое"
+
 // Типы переменных.
 #define KAR_KEYWORD_TYPE_BOOL "буль"
 
