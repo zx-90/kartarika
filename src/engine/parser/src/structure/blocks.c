@@ -63,6 +63,10 @@ static bool fill_block(
 	bool prev_colon_end = false;
 	int indent = get_token_indent(kar_token_child(rootToken, *num));
 	int currentIndent = indent;
+	if (*num == 0 && indent != 0) {
+		kar_module_error_create_add(errors, &kar_token_child(rootToken, *num)->cursor, 1, "Отступ в строке не соответствует ни одному предыдущему отступу.");
+		return false;
+	}
 	while (true) {
 		if (*num == rootToken->children.count) {
 			return true;

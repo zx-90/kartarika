@@ -1,4 +1,4 @@
-/* Copyright © 2020 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -52,7 +52,7 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 }
 	
 static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder) {
-	if (token->type != KAR_TOKEN_FUNCTION) {
+	if (token->type != KAR_TOKEN_METHOD) {
 		return false;
 	}
 	if (!strcmp(token->str, "запустить")) {
@@ -66,7 +66,7 @@ static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilder
 		}
 		LLVMBuildRetVoid(builder);
 	} else {
-		// Далее здесь необходимо дописать поддержку других функций.
+		// Далее здесь необходимо дописать поддержку других методов.
 		return false;
 	}
 	return true;
@@ -77,7 +77,7 @@ static bool generate_module(const KarToken* token, LLVMModuleRef module, LLVMBui
 		return false;
 	}
 	for (size_t i = 0; i < token->children.count; ++i) {
-		if (kar_token_child(token, i)->type == KAR_TOKEN_FUNCTION) {
+		if (kar_token_child(token, i)->type == KAR_TOKEN_METHOD) {
 			generate_function(kar_token_child(token, i), module, builder);
 		} else {
 			return false;

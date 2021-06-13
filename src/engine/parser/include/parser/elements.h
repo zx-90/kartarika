@@ -17,6 +17,6 @@ bool kar_parser_remove_spaces(KarToken* token);
 
 bool kar_parser_make_variable(KarToken* token, KarArray* errors);
 bool kar_parser_make_return(KarToken* token);
-bool kar_parser_make_function(KarToken* token);
+bool kar_parser_make_method(KarToken* token);
 
 #endif // KAR_PARSER_ELEMENTS_H

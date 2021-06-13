@@ -12,8 +12,8 @@ src/structure/space.c
 src/arithmetic/path.c
 
 src/root/variable.c
-src/root/function/header.c
-src/root/function/return.c
+src/root/method/header.c
+src/root/method/return.c
 
 )
 

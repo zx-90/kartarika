@@ -1,4 +1,4 @@
-/* Copyright © 2020 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -115,20 +115,19 @@
 
 #define KAR_KEYWORD_COMMAND_OPEN "раскрыть"
 
-#define KAR_KEYWORD_DECLARATION_FUNCTION "функция"
+#define KAR_KEYWORD_DECLARATION_METHOD "метод"
 
-//KAR_TOKEN_FUNC_PRIVATE,
-//KAR_TOKEN_FUNC_PROTECTED,
-//KAR_TOKEN_FUNC_PUBLIC,
-//KAR_TOKEN_FUNC_LOCAL,
-#define KAR_KEYWORD_FUNC_STAT "стат"
+//KAR_TOKEN_METHOD_PRIVATE,
+//KAR_TOKEN_METHOD_PROTECTED,
+//KAR_TOKEN_METHOD_PUBLIC,
+//KAR_TOKEN_METHOD_LOCAL,
+#define KAR_KEYWORD_STAT "стат"
 
-//KAR_TOKEN_ARGUMENT_CONST,
-//KAR_TOKEN_ARGUMENT_VAR,
-//KAR_TOKEN_ARGUMENT_POINTER,
+//KAR_TOKEN_METHOD_ARGUMENT_CONST,
+//KAR_TOKEN_METHOD_ARGUMENT_VAR,
+//KAR_TOKEN_METHOD_ARGUMENT_POINTER,
 
-#define KAR_KEYWORD_RETURN_TYPE "возвращает"
-#define KAR_KEYWORD_FUNC_RETURN "вернуть"
+#define KAR_KEYWORD_METHOD_RETURN "вернуть"
 
 // Класс
 

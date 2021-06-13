@@ -27,7 +27,7 @@ bool kar_parser_run(KarModule* module) {
 	// Парсинг после удаления пробелов.
 	b = b && kar_parser_make_variable(token, errors);
 	b = b && kar_parser_make_return(token);
-	b = b && kar_parser_make_function(token);
+	b = b && kar_parser_make_method(token);
 	
 	return b;
 }
