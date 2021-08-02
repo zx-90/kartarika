@@ -7,6 +7,7 @@
 #include "lexer/first_lexer.h"
 
 #include <string.h>
+#include <stdint.h>
 
 #include "core/alloc.h"
 #include "core/module_error.h"

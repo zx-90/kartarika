@@ -8,8 +8,8 @@ src/generator.c
 
 add_library(generator STATIC ${lib_generator_SRC})
 
-find_package(LLVM 9.0 REQUIRED)
-target_link_libraries(generator LLVM) 
+#find_package(LLVM 9.0 REQUIRED)
+#target_link_libraries(generator LLVM) 
 
 target_link_libraries(generator core)
 
