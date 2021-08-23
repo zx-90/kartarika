@@ -6,22 +6,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-#add_compile_options(
-    #-Werror
 
-    #-Wall
-    #-Wextra
-    #-Wpedantic
-
-    #-Wcast-align
-    #-Wcast-qual
-    #-Wconversion
-    #-Wenum-compare
-    #-Wfloat-equal
-    #-Wredundant-decls
-    #-Wsign-conversion
-#)
-
+if (UNIX)
+	add_compile_options(-Werror -Wall -Wextra -Wpedantic -Wcast-align -Wcast-qual -Wconversion -Wenum-compare -Wfloat-equal -Wredundant-decls -Wsign-conversion)
+elseif(WIN32)
+	add_compile_options(/Y-)
+endif()
+	
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_subdirectory(src/engine/core)

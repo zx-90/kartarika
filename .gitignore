@@ -56,3 +56,8 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Visual Studio files
+.vs/
+out/
+CMakeSettings.json

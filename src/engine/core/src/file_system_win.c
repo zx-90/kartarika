@@ -1,5 +1,5 @@
-/* Copyright В© 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
- * 
+/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
+ *
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 #include <sys/stat.h>
-/*#include <dirent.h>*/
+//#include <dirent.h>
 #include <errno.h>
 /*#include <unistd.h>
 #include <libgen.h>*/
@@ -50,9 +50,9 @@ char** kar_file_create_directory_list(const char* path, size_t* count) {
 		(*count)++;
 	}
 	KAR_CREATES(result, char*, *count);
-	
+
 	rewinddir(dir);
-	
+
 	size_t i = 0;
 	while ((ent = readdir(dir)) != NULL) {
 		if (!strcmp(ent->d_name, ".") || !strcmp(ent->d_name, "..")) {
@@ -64,7 +64,7 @@ char** kar_file_create_directory_list(const char* path, size_t* count) {
 		result[i] = element;
 		i++;
 	}
-	
+
 	closedir(dir);
 	kar_string_list_quick_sort(result, *count);
 	return result;*/
@@ -76,15 +76,15 @@ char** kar_file_create_absolute_directory_list(const char* path, size_t* count) 
 	if (!result) {
 		return NULL;
 	}
-	
-	// TODO: Р—РґРµСЃСЊ РЅР°РґРѕ СЃРєР°С‡РёРІР°С‚СЊ СЌС‚Рѕ СЃРѕРµРґРёРЅРµРЅРёРµ "/" С‡РµСЂРµР· С„СѓРЅРєС†РёРё РћРЎ.
+
+	// TODO: Здесь надо скачивать это соединение "/" через функции ОС.
 	char* path2 = kar_string_create_concat(path, "/");
 	if (!path2) {
 		kar_string_list_free(result, *count);
 		*count = 0;
 		return NULL;
 	}
-	
+
 	size_t i;
 	for (i = 0; i < *count; i++) {
 		char* file_name = result[i];
@@ -102,10 +102,10 @@ char* kar_file_load(const char* path) {
 	if (f == NULL) {
 		return NULL;
 	}
-	
+
 	fseek(f, 0, SEEK_END);
 	size_t size = (size_t)ftell(f);
-	
+
 	fseek(f, 0, SEEK_SET);
 	KAR_CREATES(result, char, size + 1);
 	if (size != fread(result, sizeof(char), size, f)) {
@@ -113,10 +113,10 @@ char* kar_file_load(const char* path) {
 		fclose(f);
 		return NULL;
 	}
-	
+
 	fclose(f);
 	result[size] = 0;
-	
+
 	return result;*/
 	return NULL;
 }

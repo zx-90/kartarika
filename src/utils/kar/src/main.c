@@ -10,8 +10,10 @@
 #include "lexer/lexer.h"
 #include "parser/parser.h"
 #include "generator/generator.h"
+#include "core/console_system.h"
 
 int main(int argc, char** argv) {
+	kar_console_init();
 	if (argc != 2) {
 		fprintf(stderr, "Ошибка. Необходимо имя файла для запуска.\n");
 		return -1;

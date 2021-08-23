@@ -11,8 +11,10 @@
 #include "core/alloc.h"
 #include "core/string.h"
 #include "core/file_system.h"
+#include "core/console_system.h"
 
 int main(int argc, char **argv) {
+	kar_console_init();
 	char* test_path;
 	if (argc < 2) {
 		test_path = "тесты";
