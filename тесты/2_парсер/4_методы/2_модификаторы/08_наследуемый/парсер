@@ -1,0 +1,8 @@
+MODULE(1, 1): [NULL]
+	METHOD(1, 1): [Затычка]
+		METHOD_MODIFIER(1, 1): [NULL]
+			METHOD_MODIFIER_INHERITED(1, 1): [наследуемый]
+		METHOD_PARAMETERS(1, 26): [NULL]
+		BLOCK_BODY(2, 1): [NULL]
+			INDENT(2, 1): [	]
+				METHOD_RETURN(2, 2): [вернуть]

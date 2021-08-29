@@ -60,8 +60,8 @@ bool kar_parser_make_variable(KarToken* token, KarArray* errors)
 				return false;
 			}
 			if (
-				child->type != KAR_TOKEN_MODIFIER_STAT &&
-				child->type != KAR_TOKEN_VAR_MODIFIER_DYNAMIC
+				child->type == KAR_TOKEN_MODIFIER_STAT ||
+				child->type == KAR_TOKEN_VAR_MODIFIER_DYNAMIC
 			) {
 				if (static_modifier) {
 					kar_module_error_create_add(errors, &child->cursor, 1, "Объявлено более одного модификатора статичности при инициализации переменной.");
@@ -71,9 +71,9 @@ bool kar_parser_make_variable(KarToken* token, KarArray* errors)
 				}
 			}
 			if (
-				child->type != KAR_TOKEN_VAR_MODIFIER_PRIVATE &&
-				child->type != KAR_TOKEN_VAR_MODIFIER_PROTECTED &&
-				child->type != KAR_TOKEN_VAR_MODIFIER_PUBLIC
+				child->type == KAR_TOKEN_VAR_MODIFIER_PRIVATE ||
+				child->type == KAR_TOKEN_VAR_MODIFIER_PROTECTED ||
+				child->type == KAR_TOKEN_VAR_MODIFIER_PUBLIC
 			) {
 				if (inherit_modifier) {
 					kar_module_error_create_add(errors, &child->cursor, 1, "Объявлено более одного модификатора области видимости при инициализации переменной.");
