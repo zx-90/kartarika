@@ -6,10 +6,36 @@
 
 #include <stdbool.h>
 
+#include "core/alloc.h"
 #include "core/string.h"
 #include "core/token.h"
+#include "core/module_error.h"
 
-bool kar_parser_make_method(KarToken* token)
+static bool kar_token_is_name(KarToken* token) {
+	return
+		token->type == KAR_TOKEN_IDENTIFIER;
+	// TODO: добавить ещё тип класса. То есть проверить, что это путь.
+}
+
+static bool kar_token_is_type(KarToken* token) {
+	return
+		token->type == KAR_TOKEN_VAR_BOOL ||
+		token->type == KAR_TOKEN_VAR_FLOAT32 ||
+		token->type == KAR_TOKEN_VAR_FLOAT64 ||
+		token->type == KAR_TOKEN_VAR_FLOAT80 ||
+		token->type == KAR_TOKEN_VAR_INTEGER8 ||
+		token->type == KAR_TOKEN_VAR_INTEGER16 ||
+		token->type == KAR_TOKEN_VAR_INTEGER32 ||
+		token->type == KAR_TOKEN_VAR_INTEGER64 ||
+		token->type == KAR_TOKEN_VAR_UNSIGNED8 ||
+		token->type == KAR_TOKEN_VAR_UNSIGNED16 ||
+		token->type == KAR_TOKEN_VAR_UNSIGNED32 ||
+		token->type == KAR_TOKEN_VAR_UNSIGNED64 ||
+		token->type == KAR_TOKEN_VAR_STRING;
+	// TODO: добавить ещё тип класса. То есть проверить, что это путь.
+}
+
+bool kar_parser_make_method(KarToken* token, KarArray* errors)
 {
 	for (size_t i = 0; i < token->children.count; ++i) {
 		KarToken* child = kar_token_child(token, i);
@@ -29,26 +55,130 @@ bool kar_parser_make_method(KarToken* token)
 		kar_token_child_insert(child, modifiers, 0);
 		kar_token_child_move_to_end(child, modifiers, 1, methodPos);
 		methodPos = 1;
-
+		
+		bool static_modifier = false;
+		bool inherit_modifier = false;
+		bool finalize_modifier = false;
+		bool overload_modifier = false;
+		for (size_t i = 0; i < modifiers->children.count; i++){
+			KarToken* child = kar_token_child(modifiers, i);
+			if (
+				child->type != KAR_TOKEN_MODIFIER_STAT &&
+				child->type != KAR_TOKEN_METHOD_MODIFIER_DYNAMIC &&
+				child->type != KAR_TOKEN_METHOD_MODIFIER_PRIVATE &&
+				child->type != KAR_TOKEN_METHOD_MODIFIER_PROTECTED &&
+				child->type != KAR_TOKEN_METHOD_MODIFIER_PUBLIC &&
+				child->type != KAR_TOKEN_METHOD_MODIFIER_FINALIZED &&
+				child->type != KAR_TOKEN_METHOD_MODIFIER_INHERITED &&
+				child->type != KAR_TOKEN_METHOD_MODIFIER_OVERLOAD
+			) {
+				kar_module_error_create_add(errors, &child->cursor, 1, "Некорректный модификатор при объявлении функции.");
+				return false;
+			}
+			if (
+				child->type == KAR_TOKEN_MODIFIER_STAT ||
+				child->type == KAR_TOKEN_METHOD_MODIFIER_DYNAMIC
+			) {
+				if (static_modifier) {
+					kar_module_error_create_add(errors, &child->cursor, 1, "Объявлено более одного модификатора статичности при объявлении функции.");
+					return false;
+				} else {
+					static_modifier = true;
+				}
+			}
+			if (
+				child->type == KAR_TOKEN_METHOD_MODIFIER_PRIVATE ||
+				child->type == KAR_TOKEN_METHOD_MODIFIER_PROTECTED ||
+				child->type == KAR_TOKEN_METHOD_MODIFIER_PUBLIC
+			) {
+				if (inherit_modifier) {
+					kar_module_error_create_add(errors, &child->cursor, 1, "Объявлено более одного модификатора области видимости при объявлении функции.");
+					return false;
+				} else {
+					inherit_modifier = true;
+				}
+			}
+			if (
+				child->type == KAR_TOKEN_METHOD_MODIFIER_FINALIZED ||
+				child->type == KAR_TOKEN_METHOD_MODIFIER_INHERITED
+			) {
+				if (finalize_modifier) {
+					kar_module_error_create_add(errors, &child->cursor, 1, "Объявлено более одного модификатора финализации при объявлении функции.");
+					return false;
+				} else {
+					finalize_modifier = true;
+				}
+			}
+			if (
+				child->type == KAR_TOKEN_METHOD_MODIFIER_OVERLOAD
+			) {
+				if (overload_modifier) {
+					kar_module_error_create_add(errors, &child->cursor, 1, "Объявлено более одного модификатора перегрузки при объявлении функции.");
+					return false;
+				} else {
+					overload_modifier = true;
+				}
+			}
+		}
+		
 		size_t methodNamePos = methodPos + 1;
 		if (methodNamePos == child->children.count) {
-			continue;
+			kar_module_error_create_add(errors, &kar_token_child(child, child->children.count - 1)->cursor, 1, "Неожиданный конец строки. Ожидалось имя метода.");
+			return false;
 		}
 		if (kar_token_child(child, methodNamePos)->type != KAR_TOKEN_IDENTIFIER ) {
-			continue;
+			kar_module_error_create_add(errors, &kar_token_child(child, methodNamePos)->cursor, 1, "Некорректное имя метода. Ожидалось, что будет идентификатор.");
+			return false;
 		}
 		
 		// TODO: Проверить, что в methodNamePos нет параметров, и перенести его в токен с параметрами.
 		child->type = KAR_TOKEN_METHOD;
 		child->str = kar_string_create_copy(kar_token_child(child, methodNamePos)->str);
 
-		KarToken* parameters = kar_token_create();
+		KarToken* methodName = kar_token_child(child, methodNamePos);
+		if (methodName->children.count < 1) {
+			kar_module_error_create_add(errors, &methodName->cursor, 1, "Отсутствуют параметры метода.");
+			return false;
+		}
+		KarToken* parameters = kar_token_child_tear(methodName, 0);
 		parameters->type = KAR_TOKEN_METHOD_PARAMETERS;
-		parameters->cursor = kar_token_child(child, methodNamePos)->cursor;
+		KAR_FREE(parameters->str)
+		parameters->str = NULL;
 		kar_token_child_insert(child, parameters, 1);
 		
 		kar_token_child_erase(child, methodNamePos);
 		kar_token_child_erase(child, methodNamePos);
+		
+		if (parameters->children.count == 0) {
+			
+		} else if (
+			parameters->children.count == 2 &&
+			kar_token_is_type(kar_token_child(parameters, 0)) &&
+			kar_token_is_name(kar_token_child(parameters, 1))
+		) {
+			KarToken* parameter = kar_token_create();
+			parameter->type = KAR_TOKEN_METHOD_PARAMETER_CONST;
+			parameter->cursor = kar_token_child(parameters, 0)->cursor;
+			kar_token_child_add(parameter, kar_token_child_tear(parameters, 0));
+			kar_token_child_add(parameter, kar_token_child_tear(parameters, 0));
+			kar_token_child_add(parameters, parameter);
+		} else if (
+			parameters->children.count == 3 &&
+			kar_token_is_type(kar_token_child(parameters, 0)) &&
+			kar_token_child(parameters, 1)->type == KAR_TOKEN_SIGN_MUL &&
+			kar_token_is_name(kar_token_child(parameters, 2))
+		) {
+			KarToken* parameter = kar_token_create();
+			parameter->type = KAR_TOKEN_METHOD_PARAMETER_VAR;
+			parameter->cursor = kar_token_child(parameters, 0)->cursor;
+			kar_token_child_add(parameter, kar_token_child_tear(parameters, 0));
+			kar_token_child_erase(parameters, 0);
+			kar_token_child_add(parameter, kar_token_child_tear(parameters, 0));
+			kar_token_child_add(parameters, parameter);
+		} else {
+			kar_module_error_create_add(errors, &parameters->cursor, 1, "Не корректные параметры метода.");
+			return false;			
+		}
 		
 		size_t signColonPos = methodPos + 1;
 		size_t returnTypePos = methodPos + 1;
