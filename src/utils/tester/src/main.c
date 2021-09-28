@@ -22,6 +22,7 @@ int main(int argc, char **argv) {
 		test_path = argv[1];
 	} else {
 		printf("Ошибка. Количество аргументов запуска должно быть 0 или 1.");
+		return 1;
 	}
 	
 	printf("Запуск каталога с тестами: %s\n", test_path);

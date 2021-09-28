@@ -34,7 +34,6 @@ static KarError* run_dir(const char* path) {
 	size_t count;
 	char** files = kar_file_create_absolute_directory_list(path, &count);
 	if (!files) {
-		kar_string_list_free(files, count);
 		return kar_error_get_last();
 	}
 	if (count == 0) {

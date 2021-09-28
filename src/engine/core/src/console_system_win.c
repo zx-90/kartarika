@@ -6,7 +6,6 @@
 
 
 #include <windows.h>
-#pragma execution_character_set( "utf-8" )
 
 void kar_console_init() {
 	SetConsoleOutputCP(65001);

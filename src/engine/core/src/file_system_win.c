@@ -10,68 +10,134 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <sys/stat.h>
-//#include <dirent.h>
-#include <errno.h>
-/*#include <unistd.h>
-#include <libgen.h>*/
+#include <windows.h>
 
 #include "core/alloc.h"
 #include "core/string.h"
+#include "core/error.h"
+
+#include <shlwapi.h>
+
+static DWORD get_file_attributes(const char* path){
+	int wSize = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, NULL, 0);
+	LPWSTR wPath = malloc(wSize * sizeof(WCHAR));
+	if (!wPath) {
+		return INVALID_FILE_ATTRIBUTES;
+	}
+	int hResult = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, wPath, wSize);
+	if (hResult == 0) {
+		free(wPath);
+		return INVALID_FILE_ATTRIBUTES;
+	}
+	DWORD ftyp = GetFileAttributesW(wPath);
+	free(wPath);
+	return ftyp;
+}
 
 bool kar_file_system_is_file(const char* path) {
-	/*struct stat sts;
-	return (stat(path, &sts) == 0);*/
+	DWORD ftyp = get_file_attributes(path);
+	if (ftyp == INVALID_FILE_ATTRIBUTES) {
+		return false;
+	}
+	if (!(ftyp & FILE_ATTRIBUTE_DIRECTORY)) {
+		return true;
+	}
 	return false;
 }
 
 bool kar_file_system_is_directory(const char* path) {
-	/*DIR* dir = opendir(path);
-	bool result = (dir != NULL);
-	closedir(dir);
-	return result;*/
-	return false;
+	DWORD ftyp = get_file_attributes(path);
+	if (ftyp == INVALID_FILE_ATTRIBUTES) {
+		return false;
+	}
+	if (ftyp & FILE_ATTRIBUTE_DIRECTORY) {
+		return true;
+	}
+	return false;  
 }
 
 char* kar_file_system_get_basename(char* path) {
-	//return basename(path);
-	return NULL;
-}
-
-char** kar_file_create_directory_list(const char* path, size_t* count) {
-	/*DIR* dir = opendir(path);
-	if (!dir) {
+	int wSize = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, NULL, 0);
+	LPWSTR wPath = malloc(wSize * sizeof(WCHAR));
+	if (!wPath) {
 		return NULL;
 	}
-	struct dirent* ent;
-
-	*count = 0;
-	while ((ent = readdir(dir)) != NULL) {
-		(*count)++;
-	}
-	KAR_CREATES(result, char*, *count);
-
-	rewinddir(dir);
-
-	size_t i = 0;
-	while ((ent = readdir(dir)) != NULL) {
-		if (!strcmp(ent->d_name, ".") || !strcmp(ent->d_name, "..")) {
-			(*count)--;
-			continue;
-		}
-		KAR_CREATES(element, char, strlen(ent->d_name) + 1);
-		strcpy(element, ent->d_name);
-		result[i] = element;
-		i++;
+	int hResult = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, wPath, wSize);
+	if (hResult == 0) {
+		free(wPath);
+		return NULL;
 	}
 
-	closedir(dir);
-	kar_string_list_quick_sort(result, *count);
-	return result;*/
-	return NULL;
+	LPWSTR wPath_2 = (LPWSTR)PathFindFileNameA(wPath);
+	//return basename(path);
+	return (char *)wPath_2;
 }
 
 char** kar_file_create_absolute_directory_list(const char* path, size_t* count) {
+	
+	WIN32_FIND_DATAW findData;
+	int wSize = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, NULL, 0);
+	LPWSTR wPath = malloc((wSize+4) * sizeof(WCHAR));
+	if (!wPath) {
+		kar_error_register(1, "Ошибка выделения памяти.");//
+		return NULL;
+	}
+	int hResult = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, wPath, wSize);
+	if (hResult == 0) {
+		free(wPath);
+		kar_error_register(1, "Ошибка конвертации строки.");
+		return NULL;
+	}
+	wSize = wcslen(wPath);
+	wPath[wSize] = L'\\';
+	wPath[wSize+1] = L'*';
+	wPath[wSize+2] = L'.';
+	wPath[wSize+3] = L'*';
+	wPath[wSize+4] = 0;
+
+	HANDLE file = FindFirstFileW(wPath, &findData);
+
+	if (file == INVALID_HANDLE_VALUE) {
+		free(wPath);
+		kar_error_register(1, "Ошибка. Невозможно найти файлы в каталоге %s.", path);
+		return NULL;
+	}
+
+	*count = 0;
+	do {
+		if (wcscmp(findData.cFileName, L".") == 0) {
+			continue;
+		}
+		if (wcscmp(findData.cFileName, L"..") == 0) {
+			continue;
+		}
+		*count++;
+	} while (FindNextFileW(file, &findData));
+	FindClose(file);
+
+	KAR_CREATES(result, char *, *count);
+	file = FindFirstFileW(wPath, &findData);
+	free(wPath);
+	if (file == INVALID_HANDLE_VALUE) {
+		KAR_FREE(result);
+		kar_error_register(1, "Ошибка. Невозможно найти файлы в каталоге %s.", path);
+		return NULL;
+	}
+
+	size_t number = 0;
+	do {
+		if (wcscmp(findData.cFileName, L".") == 0) {
+			continue;
+		}
+		if (wcscmp(findData.cFileName, L"..") == 0) {
+			continue;
+		}
+		int pathSize = WideCharToMultiByte(CP_UTF8, 0, findData.cFileName, -1, NULL, 0, NULL, NULL);
+		KAR_CREATES(path, char, pathSize);
+		result[number] = path;
+		number++;
+	} while (FindNextFileW(file, &findData));
+	FindClose(file);
 	/*char** result = kar_file_create_directory_list(path, count);
 	if (!result) {
 		return NULL;
@@ -94,7 +160,7 @@ char** kar_file_create_absolute_directory_list(const char* path, size_t* count) 
 	}
 	KAR_FREE(path2);
 	return result;*/
-	return NULL;
+	return result;
 }
 
 char* kar_file_load(const char* path) {
