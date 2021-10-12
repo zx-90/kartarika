@@ -13,7 +13,7 @@
 // TODO: Добавить логирование сообщений об ошибках.
 
 KarStream* kar_stream_create(const char* path) {
-	FILE* file = fopen(path, "r");
+	FILE* file = kar_file_system_create_handle(path);
 	// TODO: Сообщение об ошибке (но ещё перевод нужен): printf("Error: %d (%s)\n", errno, strerror(errno))
 	if (file == NULL) {
 		return NULL;

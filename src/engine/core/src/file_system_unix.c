@@ -93,6 +93,10 @@ char** kar_file_create_absolute_directory_list(const char* path, size_t* count) 
 	return result;
 }
 
+FILE* kar_file_system_create_handle(char* path) {
+	return fopen(path, "r");
+}
+
 char* kar_file_load(const char* path) {
 	FILE* f = fopen(path, "rb");
 	if (f == NULL) {

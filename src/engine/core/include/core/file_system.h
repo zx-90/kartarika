@@ -9,6 +9,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
 
 bool kar_file_system_is_file(const char* path);
 bool kar_file_system_is_directory(const char* path);
@@ -16,6 +17,8 @@ bool kar_file_system_is_directory(const char* path);
 char* kar_file_system_get_basename(char* path);
 
 char** kar_file_create_absolute_directory_list(const char* path, size_t* count);
+
+FILE* kar_file_system_create_handle(char* path);
 
 char* kar_file_load(const char* path);
 
