@@ -91,7 +91,7 @@ static bool is_identifier(KarFirstLexer* lexer) {
 		(strcmp(str, "A") >= 0 && strcmp(str, "Z") <= 0) ||
 		(strcmp(str, "_") == 0) ||
 		// Кириллица
-		(strcmp(str, "\u0400") >= 0 && strcmp(str, "\u052F") <= 0);
+		(strcmp(str, "\xD0\x80") >= 0 && strcmp(str, "\xD4\xAF") <= 0);
 }
 
 static bool is_sign(KarFirstLexer* lexer) {
@@ -108,7 +108,7 @@ static KarLexerStatus get_status_by_symbol(KarFirstLexer* lexer) {
 	if (is_sign(lexer)) {
 		return KAR_LEXER_STATUS_SIGN;
 	}
-	char buff[1024];
+	char buff[2048];
 	char* hex_code = create_string_to_hex(kar_stream_cursor_get(lexer->streamCursor));
 	snprintf(buff, sizeof(buff), "%s: %s (код %s).", ERROR_UNKNOWN_SYMBOL, kar_stream_cursor_get(lexer->streamCursor), hex_code);
 	KAR_FREE(hex_code);
@@ -346,7 +346,7 @@ bool kar_first_lexer_run(KarFirstLexer* lexer) {
 			add_new_line(lexer);
 		} else {
 			if (lexer->status == KAR_LEXER_STATUS_INDENT) {
-				KarLexerStatus st = get_status_by_symbol(lexer);
+				KarLexerStatus st = get_status_by_symbol(lexer);// /
 				if (st != KAR_LEXER_STATUS_SPACE) {
 					next_token_default(lexer, st);
 				}

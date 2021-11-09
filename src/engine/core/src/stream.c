@@ -8,6 +8,8 @@
 
 #include <stdio.h>
 
+#include <windows.h>
+
 #include "core/alloc.h"
 
 // TODO: Добавить логирование сообщений об ошибках.
@@ -22,6 +24,7 @@ KarStream* kar_stream_create(const char* path) {
 	
 	result->data = file;
 	result->good = true;
+	result->eof = false;
 	
 	return result;
 }
@@ -47,16 +50,24 @@ bool kar_stream_eof(KarStream* stream) {
 	if (stream == NULL) {
 		return false;
 	}
-	return feof(stream->data);
+	// TODO: feof не работает для windows. Возможно нужно полностью удалить.
+	return stream->eof;
+	//return feof(stream->data);
 }
 
 char kar_stream_get(KarStream* stream) {
 	if (stream == NULL) {
 		return 0;
 	}
-	int result = fgetc(stream->data);
-	if (result == EOF) {
+	DWORD read;
+	char result;
+	//int result = fgetc(stream->data);
+	if (!ReadFile(stream->data, &result, 1, &read, NULL)) {
 		return 0;
 	}
-	return (char)result;
+	if (read == 0) {
+		stream->eof = true;
+		return 0;
+	}
+	return result;
 }

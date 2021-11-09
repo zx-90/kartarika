@@ -13,6 +13,7 @@
 typedef struct {
 	FILE* data;
 	bool good;
+	bool eof;
 } KarStream;
 
 KarStream* kar_stream_create(const char* path);

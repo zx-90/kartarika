@@ -11,12 +11,12 @@
 #include <stdio.h>
 
 #include <windows.h>
+#include <fileapi.h>
+#include <shlwapi.h>
 
 #include "core/alloc.h"
 #include "core/string.h"
 #include "core/error.h"
-
-#include <shlwapi.h>
 
 static DWORD get_file_attributes(const char* path){
 	int wSize = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, NULL, 0);
@@ -68,7 +68,7 @@ char* kar_file_system_get_basename(char* path) {
 		return NULL;
 	}
 
-	LPWSTR wPath2 = (LPWSTR)PathFindFileNameW(wPath);
+	LPCWSTR wPath2 = PathFindFileNameW(wPath);
 
 
 	int size2 = WideCharToMultiByte(CP_UTF8, 0, wPath2, -1, NULL, 0, NULL, NULL);
@@ -183,7 +183,7 @@ char** kar_file_create_absolute_directory_list(const char* path, size_t* count) 
 
 FILE* kar_file_system_create_handle(char* path) {
 	int wSize = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, NULL, 0);
-	LPWSTR wPath = malloc((wSize + 4) * sizeof(WCHAR));
+	LPWSTR wPath = malloc(wSize * sizeof(WCHAR));
 	if (!wPath) {
 		kar_error_register(1, "Ошибка выделения памяти.");
 		return NULL;
@@ -194,13 +194,26 @@ FILE* kar_file_system_create_handle(char* path) {
 		kar_error_register(1, "Ошибка конвертации строки.");
 		return NULL;
 	}
-	FILE* result =  _wfopen(wPath, L"r");
-	//free(wPath);
+	//FILE* result =  _wfopen(wPath, L"rb+");
+	HANDLE result = CreateFileW(wPath, GENERIC_READ, FILE_SHARE_READ,NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	free(wPath);
 	return result;
 }
 
 char* kar_file_load(const char* path) {
-	FILE* f = fopen(path, "rb");
+	int wSize = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, NULL, 0);
+	LPWSTR wPath = malloc(wSize * sizeof(WCHAR));
+	if (!wPath) {
+		kar_error_register(1, "Ошибка выделения памяти.");
+		return NULL;
+	}
+	int hResult = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, wPath, wSize);
+	if (hResult == 0) {
+		free(wPath);
+		kar_error_register(1, "Ошибка конвертации строки.");
+		return NULL;
+	}
+	FILE* f = _wfopen(wPath, L"rb+");
 	if (f == NULL) {
 		return NULL;
 	}
