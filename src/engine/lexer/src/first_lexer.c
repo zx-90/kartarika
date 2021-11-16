@@ -342,11 +342,12 @@ bool kar_first_lexer_run(KarFirstLexer* lexer) {
 		if (kar_stream_cursor_is_equal(streamCursor, KAR_KEYWORD_STRING_START)) {
 			next_token(lexer, KAR_TOKEN_VAL_STRING, KAR_LEXER_STATUS_UNKNOWN);
 			parse_string(lexer);
+		} else if (kar_stream_cursor_is_equal(streamCursor, KAR_KEYWORD_SPACE_CARRIAGE_RETURN)) {
 		} else if (kar_stream_cursor_is_equal(streamCursor, KAR_KEYWORD_SPACE_NEW_LINE)) {
 			add_new_line(lexer);
 		} else {
 			if (lexer->status == KAR_LEXER_STATUS_INDENT) {
-				KarLexerStatus st = get_status_by_symbol(lexer);// /
+				KarLexerStatus st = get_status_by_symbol(lexer);
 				if (st != KAR_LEXER_STATUS_SPACE) {
 					next_token_default(lexer, st);
 				}
