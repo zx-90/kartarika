@@ -8,8 +8,11 @@ src/generator.c
 
 add_library(generator STATIC ${lib_generator_SRC})
 
-#find_package(LLVM 9.0 REQUIRED)
-#target_link_libraries(generator LLVM) 
+# Здесь надо подключить библиотеку LLVM и для Windows тоже.
+if (UNIX)
+find_package(LLVM 9.0 REQUIRED)
+target_link_libraries(generator LLVM) 
+endif()
 
 target_link_libraries(generator core)
 

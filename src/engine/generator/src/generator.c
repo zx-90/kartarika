@@ -10,13 +10,16 @@
 #include <stdbool.h>
 #include <string.h>
 
-/*#include <llvm-c/Core.h>
+// Временно, пока не подключили LLVM или LLVM-C под Windows.
+#ifdef __linux__ 
+
+#include <llvm-c/Core.h>
 #include <llvm-c/Target.h>
 #include <llvm-c/TargetMachine.h>
 
-#include <llvm-c/BitWriter.h>*/
+#include <llvm-c/BitWriter.h>
 
-/*static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder) {
+static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder) {
 	if (token->type != KAR_TOKEN_INDENT) {
 		return false;
 	}
@@ -84,7 +87,7 @@ static bool generate_module(const KarToken* token, LLVMModuleRef module, LLVMBui
 		}
 	}
 	return true;
-}*/
+}
 
 /*static void generate_hello_world(LLVMModuleRef module, LLVMBuilderRef builder) {
 	LLVMTypeRef funcType = LLVMFunctionType(LLVMVoidType(), NULL, 0, false);
@@ -102,9 +105,12 @@ static bool generate_module(const KarToken* token, LLVMModuleRef module, LLVMBui
 	LLVMBuildRetVoid(builder);
 }*/
 
+#endif // LINUX
+
 bool kar_generator_run(KarModule* mod) {
+#ifdef __linux__ 
 	// TODO: обработка ошибок. Добавить.
-	/*LLVMContextRef context = LLVMContextCreate();
+	LLVMContextRef context = LLVMContextCreate();
 	LLVMModuleRef module = LLVMModuleCreateWithNameInContext("asdf", context);
 	LLVMBuilderRef builder = LLVMCreateBuilderInContext(context);
 	
@@ -167,7 +173,7 @@ bool kar_generator_run(KarModule* mod) {
 		return false;
 	}*/
 	
-	/*LLVMDisposeTargetData(target_data);
+	LLVMDisposeTargetData(target_data);
 	LLVMDisposeTargetMachine(the_target_machine);
 	LLVMDisposeMessage(target_triple);
 	LLVMDisposeModule(module);
@@ -175,6 +181,8 @@ bool kar_generator_run(KarModule* mod) {
 	
 	// TODO: Разобраться можно ли это как-то без clang делать. Только с помощью llvm.
 	system("clang-9 asdf.o -o a.out");
-	return true;*/
+	return true;
+#elif _WIN32
 	return false;
+#endif // WIN32
 }
