@@ -1,4 +1,4 @@
-/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright В© 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
  *
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -17,6 +17,8 @@
 #include "core/alloc.h"
 #include "core/string.h"
 #include "core/error.h"
+
+const char* KAR_FILE_SYSTEM_DELIMETER = "\\";
 
 static DWORD get_file_attributes(const char* path){
 	int wSize = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, NULL, 0);
@@ -92,13 +94,13 @@ char** kar_file_create_absolute_directory_list(const char* path, size_t* count) 
 	int wSize = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, NULL, 0);
 	LPWSTR wPath = malloc((wSize+4) * sizeof(WCHAR));
 	if (!wPath) {
-		kar_error_register(1, "Ошибка выделения памяти.");
+		kar_error_register(1, "РћС€РёР±РєР° РІС‹РґРµР»РµРЅРёСЏ РїР°РјСЏС‚Рё.");
 		return NULL;
 	}
 	int hResult = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, wPath, wSize);
 	if (hResult == 0) {
 		free(wPath);
-		kar_error_register(1, "Ошибка конвертации строки.");
+		kar_error_register(1, "РћС€РёР±РєР° РєРѕРЅРІРµСЂС‚Р°С†РёРё СЃС‚СЂРѕРєРё.");
 		return NULL;
 	}
 	wSize = wcslen(wPath);
@@ -112,7 +114,7 @@ char** kar_file_create_absolute_directory_list(const char* path, size_t* count) 
 
 	if (file == INVALID_HANDLE_VALUE) {
 		free(wPath);
-		kar_error_register(1, "Ошибка. Невозможно найти файлы в каталоге %s.", path);
+		kar_error_register(1, "РћС€РёР±РєР°. РќРµРІРѕР·РјРѕР¶РЅРѕ РЅР°Р№С‚Рё С„Р°Р№Р»С‹ РІ РєР°С‚Р°Р»РѕРіРµ %s.", path);
 		return NULL;
 	}
 
@@ -136,13 +138,13 @@ char** kar_file_create_absolute_directory_list(const char* path, size_t* count) 
 	free(wPath);
 	if (file == INVALID_HANDLE_VALUE) {
 		KAR_FREE(result);
-		kar_error_register(1, "Ошибка. Невозможно найти файлы в каталоге %s.", path);
+		kar_error_register(1, "РћС€РёР±РєР°. РќРµРІРѕР·РјРѕР¶РЅРѕ РЅР°Р№С‚Рё С„Р°Р№Р»С‹ РІ РєР°С‚Р°Р»РѕРіРµ %s.", path);
 		return NULL;
 	}
 
 	size_t number = 0;
 
-	// TODO: Здесь надо скачивать это соединение "\\" через функции ОС.
+	// TODO: Р—РґРµСЃСЊ РЅР°РґРѕ СЃРєР°С‡РёРІР°С‚СЊ СЌС‚Рѕ СЃРѕРµРґРёРЅРµРЅРёРµ "\\" С‡РµСЂРµР· С„СѓРЅРєС†РёРё РћРЎ.
 	char* path2 = kar_string_create_concat(path, "\\");
 	if (!path2) {
 		KAR_FREE(result);
@@ -185,13 +187,13 @@ FILE* kar_file_system_create_handle(char* path) {
 	int wSize = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, NULL, 0);
 	LPWSTR wPath = malloc(wSize * sizeof(WCHAR));
 	if (!wPath) {
-		kar_error_register(1, "Ошибка выделения памяти.");
+		kar_error_register(1, "РћС€РёР±РєР° РІС‹РґРµР»РµРЅРёСЏ РїР°РјСЏС‚Рё.");
 		return NULL;
 	}
 	int hResult = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, wPath, wSize);
 	if (hResult == 0) {
 		free(wPath);
-		kar_error_register(1, "Ошибка конвертации строки.");
+		kar_error_register(1, "РћС€РёР±РєР° РєРѕРЅРІРµСЂС‚Р°С†РёРё СЃС‚СЂРѕРєРё.");
 		return NULL;
 	}
 	//FILE* result =  _wfopen(wPath, L"rb+");
@@ -204,13 +206,13 @@ char* kar_file_load(const char* path) {
 	int wSize = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, NULL, 0);
 	LPWSTR wPath = malloc(wSize * sizeof(WCHAR));
 	if (!wPath) {
-		kar_error_register(1, "Ошибка выделения памяти.");
+		kar_error_register(1, "РћС€РёР±РєР° РІС‹РґРµР»РµРЅРёСЏ РїР°РјСЏС‚Рё.");
 		return NULL;
 	}
 	int hResult = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, wPath, wSize);
 	if (hResult == 0) {
 		free(wPath);
-		kar_error_register(1, "Ошибка конвертации строки.");
+		kar_error_register(1, "РћС€РёР±РєР° РєРѕРЅРІРµСЂС‚Р°С†РёРё СЃС‚СЂРѕРєРё.");
 		return NULL;
 	}
 	FILE* f = _wfopen(wPath, L"rb+");
@@ -254,7 +256,7 @@ const char* kar_file_get_working_dir() {
 		free(working_dir);
 		return NULL;
 	}
-	int hResult = WideCharToMultiByte(CP_UTF8, 0, working_dir, -1, path, size, NULL, NULL);//Меняем строку кодировки ютф16 на ютф8
+	int hResult = WideCharToMultiByte(CP_UTF8, 0, working_dir, -1, path, size, NULL, NULL);//РњРµРЅСЏРµРј СЃС‚СЂРѕРєСѓ РєРѕРґРёСЂРѕРІРєРё СЋС‚С„16 РЅР° СЋС‚С„8
 	free(working_dir);
 	if (hResult == 0) {
 		free(path);

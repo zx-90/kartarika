@@ -11,6 +11,8 @@
 #include <stddef.h>
 #include <stdio.h>
 
+extern const char* KAR_FILE_SYSTEM_DELIMETER;
+
 bool kar_file_system_is_file(const char* path);
 bool kar_file_system_is_directory(const char* path);
 

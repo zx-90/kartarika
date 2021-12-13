@@ -19,6 +19,8 @@
 #include "core/alloc.h"
 #include "core/string.h"
 
+const char* KAR_FILE_SYSTEM_DELIMETER = "/";
+
 bool kar_file_system_is_file(const char* path) {
 	struct stat sts;
 	return (stat(path, &sts) == 0);

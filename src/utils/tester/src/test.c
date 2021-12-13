@@ -255,7 +255,7 @@ static KarError* fill_test(KarTest* test, const char* dir) {
 static KarCursor* compare_strings(char* str1, char* str2) {
 	KAR_CREATE(result, KarCursor);
 	kar_cursor_init(result);
-	
+
 	while(*str1) {
 		if (*str1 == '\r') {
 			str1++;
@@ -288,7 +288,7 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 	}
 	
 	// TODO: "/" Получать через ОС, и вообще перенести в file_system или куда-то туда.
-	char* path2 = kar_string_create_concat(dir, "\\");
+	char* path2 = kar_string_create_concat(dir, KAR_FILE_SYSTEM_DELIMETER);
 	KarModule* module = kar_module_create(test->project_file.path);
 	
 	{
