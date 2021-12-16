@@ -20,19 +20,41 @@
 
 const char* KAR_FILE_SYSTEM_DELIMETER = "\\";
 
-static DWORD get_file_attributes(const char* path){
-	int wSize = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, NULL, 0);
-	LPWSTR wPath = malloc(wSize * sizeof(WCHAR));
-	if (!wPath) {
-		return INVALID_FILE_ATTRIBUTES;
+static LPWSTR create_utf16_by_utf8(const char* utf8) {
+	int wSize = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, utf8, -1, NULL, 0);
+	KAR_CREATES(utf16, WCHAR, wSize);
+	if (!utf16) {
+		return NULL;
 	}
-	int hResult = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, wPath, wSize);
+	int hResult = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, utf8, -1, utf16, wSize);
 	if (hResult == 0) {
-		free(wPath);
+		KAR_FREE(utf16);
+		return NULL;
+	}
+	return utf16;
+}
+
+static char* create_utf8_by_utf16(LPWSTR utf16) {
+	int size = WideCharToMultiByte(CP_UTF8, 0, utf16, -1, NULL, 0, NULL, NULL);
+	KAR_CREATES(utf8, CHAR, size);
+	if (!utf8) {
+		return NULL;
+	}
+	int hResult = WideCharToMultiByte(CP_UTF8, 0, utf16, -1, utf8, size, NULL, NULL);
+	if (hResult == 0) {
+		KAR_FREE(utf8);
+		return NULL;
+	}
+	return utf8;
+}
+
+static DWORD get_file_attributes(const char* path){
+	LPWSTR wPath = create_utf16_by_utf8(path);
+	if (wPath == NULL) {
 		return INVALID_FILE_ATTRIBUTES;
 	}
 	DWORD ftyp = GetFileAttributesW(wPath);
-	free(wPath);
+	KAR_FREE(wPath);
 	return ftyp;
 }
 
@@ -59,66 +81,42 @@ bool kar_file_system_is_directory(const char* path) {
 }
 
 char* kar_file_system_get_basename(char* path) {
-	int wSize = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, NULL, 0);
-	LPWSTR wPath = malloc(wSize * sizeof(WCHAR));
-	if (!wPath) {
-		return NULL;
-	}
-	int hResult = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, wPath, wSize);
-	if (hResult == 0) {
-		free(wPath);
+	LPWSTR wPath = create_utf16_by_utf8(path);
+	if (wPath == NULL) {
 		return NULL;
 	}
 
 	LPCWSTR wPath2 = PathFindFileNameW(wPath);
 
-
-	int size2 = WideCharToMultiByte(CP_UTF8, 0, wPath2, -1, NULL, 0, NULL, NULL);
-	LPSTR path2 = malloc(size2 * sizeof(CHAR));
-	if (!path2) {
-		free(wPath);
-		return NULL;
-	}
-	hResult = WideCharToMultiByte(CP_UTF8, 0, wPath2, -1, path2, size2, NULL, NULL);
-	free(wPath);
-	if (hResult == 0) {
-		free(path2);
-		return NULL;
-	}
+	char* path2 = create_utf8_by_utf16(wPath2);
+	KAR_FREE(wPath);
 	return path2;
+	
 }
 
-char** kar_file_create_absolute_directory_list(const char* path, size_t* count) {
-	
-	WIN32_FIND_DATAW findData;
-	int wSize = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, NULL, 0);
-	LPWSTR wPath = malloc((wSize+4) * sizeof(WCHAR));
-	if (!wPath) {
-		kar_error_register(1, "Ошибка выделения памяти.");
+static LPWSTR create_utf16_path(const char* path) {
+	LPWSTR wPath = create_utf16_by_utf8(path);
+	if (wPath == NULL) {
 		return NULL;
 	}
-	int hResult = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, wPath, wSize);
-	if (hResult == 0) {
-		free(wPath);
-		kar_error_register(1, "Ошибка конвертации строки.");
-		return NULL;
-	}
-	wSize = wcslen(wPath);
+	int wSize = wcslen(wPath);
+	wPath = realloc(wPath, (wSize + 4) * sizeof(LPWSTR));
 	wPath[wSize] = L'\\';
-	wPath[wSize+1] = L'*';
-	wPath[wSize+2] = L'.';
-	wPath[wSize+3] = L'*';
-	wPath[wSize+4] = 0;
+	wPath[wSize + 1] = L'*';
+	wPath[wSize + 2] = L'.';
+	wPath[wSize + 3] = L'*';
+	wPath[wSize + 4] = 0;
+	return wPath;
+}
 
+static size_t get_file_count(LPWSTR wPath) {
+	WIN32_FIND_DATAW findData;
 	HANDLE file = FindFirstFileW(wPath, &findData);
-
 	if (file == INVALID_HANDLE_VALUE) {
-		free(wPath);
-		kar_error_register(1, "Ошибка. Невозможно найти файлы в каталоге %s.", path);
-		return NULL;
+		return -1;
 	}
 
-	*count = 0;
+	int count = 0;
 	do {
 		if (wcscmp(findData.cFileName, L".") == 0) {
 			continue;
@@ -126,16 +124,35 @@ char** kar_file_create_absolute_directory_list(const char* path, size_t* count) 
 		if (wcscmp(findData.cFileName, L"..") == 0) {
 			continue;
 		}
-		(*count)++;
+		count++;
 	} while (FindNextFileW(file, &findData));
 	FindClose(file);
-	if (count == 0) {
-
+	return count;
+}
+char** kar_file_create_absolute_directory_list(const char* path, size_t* count) {
+	
+	LPWSTR wPath = create_utf16_path(path);
+	if (wPath == NULL) {
+		kar_error_register(1, "Ошибка выделения памяти.");
+		return NULL;
 	}
 
+	*count = get_file_count(wPath);
+	if (*count == -1) {
+		KAR_FREE(wPath);
+		kar_error_register(1, "Ошибка. Невозможно найти файлы в каталоге %s.", path);
+		return NULL;
+	}
+	if (*count == 0) {
+		KAR_FREE(wPath);
+		KAR_CREATES(result, char*, 0);
+		return result;
+	}
+
+	WIN32_FIND_DATAW findData;
 	KAR_CREATES(result, char *, *count);
-	file = FindFirstFileW(wPath, &findData);
-	free(wPath);
+	HANDLE file = FindFirstFileW(wPath, &findData);
+	KAR_FREE(wPath);
 	if (file == INVALID_HANDLE_VALUE) {
 		KAR_FREE(result);
 		kar_error_register(1, "Ошибка. Невозможно найти файлы в каталоге %s.", path);
@@ -159,16 +176,9 @@ char** kar_file_create_absolute_directory_list(const char* path, size_t* count) 
 		if (wcscmp(findData.cFileName, L"..") == 0) {
 			continue;
 		}
-		int pathSize = WideCharToMultiByte(CP_UTF8, 0, findData.cFileName, -1, NULL, 0, NULL, NULL);
-		KAR_CREATES(name, char, pathSize);
-
-		hResult = WideCharToMultiByte(CP_UTF8, 0, findData.cFileName, -1, name, pathSize, NULL, NULL);
-		if (hResult == 0) {
-			KAR_FREE(name);
-			for (int i = 0; i < number; i++) {
-				KAR_FREE(result[i]);
-			}
-			KAR_FREE(result);
+		char* name = create_utf8_by_utf16(findData.cFileName);
+		if (name == NULL) {
+			kar_string_list_free(result, number);
 			*count = 0;
 			KAR_FREE(path2);
 			return NULL;
@@ -184,35 +194,20 @@ char** kar_file_create_absolute_directory_list(const char* path, size_t* count) 
 }
 
 FILE* kar_file_system_create_handle(char* path) {
-	int wSize = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, NULL, 0);
-	LPWSTR wPath = malloc(wSize * sizeof(WCHAR));
-	if (!wPath) {
+	LPWSTR wPath = create_utf16_by_utf8(path);
+	if (wPath == NULL) {
 		kar_error_register(1, "Ошибка выделения памяти.");
 		return NULL;
 	}
-	int hResult = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, wPath, wSize);
-	if (hResult == 0) {
-		free(wPath);
-		kar_error_register(1, "Ошибка конвертации строки.");
-		return NULL;
-	}
-	//FILE* result =  _wfopen(wPath, L"rb+");
 	HANDLE result = CreateFileW(wPath, GENERIC_READ, FILE_SHARE_READ,NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	free(wPath);
+	KAR_FREE(wPath);
 	return result;
 }
 
 char* kar_file_load(const char* path) {
-	int wSize = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, NULL, 0);
-	LPWSTR wPath = malloc(wSize * sizeof(WCHAR));
-	if (!wPath) {
+	LPWSTR wPath = create_utf16_by_utf8(path);
+	if (wPath == NULL) {
 		kar_error_register(1, "Ошибка выделения памяти.");
-		return NULL;
-	}
-	int hResult = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, path, -1, wPath, wSize);
-	if (hResult == 0) {
-		free(wPath);
-		kar_error_register(1, "Ошибка конвертации строки.");
 		return NULL;
 	}
 	FILE* f = _wfopen(wPath, L"rb+");
@@ -250,17 +245,7 @@ const char* kar_file_get_working_dir() {
 		return NULL;
 	}
 
-	int size = WideCharToMultiByte(CP_UTF8, 0, working_dir, -1, NULL, 0, NULL, NULL);
-	path = malloc(size * sizeof(CHAR));
-	if (!path) {
-		free(working_dir);
-		return NULL;
-	}
-	int hResult = WideCharToMultiByte(CP_UTF8, 0, working_dir, -1, path, size, NULL, NULL);//Меняем строку кодировки ютф16 на ютф8
+	char* path = create_utf8_by_utf16(working_dir);
 	free(working_dir);
-	if (hResult == 0) {
-		free(path);
-		return NULL;
-	}
 	return path;
 }

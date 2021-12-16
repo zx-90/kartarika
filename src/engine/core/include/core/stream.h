@@ -13,6 +13,7 @@
 typedef struct {
 	FILE* data;
 	bool good;
+	// TODO: поле используется только для windows, для linux лишнее 
 	bool eof;
 } KarStream;
 
