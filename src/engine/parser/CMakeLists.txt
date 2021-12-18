@@ -9,6 +9,7 @@ src/structure/brackets.c
 src/structure/lines.c
 src/structure/space.c
 
+src/arithmetic/operand.c
 src/arithmetic/path.c
 
 src/root/variable.c

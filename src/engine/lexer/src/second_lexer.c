@@ -8,6 +8,8 @@
 
 #include <string.h>
 
+#include "core/string.h"
+#include "core/alloc.h"
 #include "lexer/keyword.h"
 
 static void retype_if_check(KarToken* token, KarTokenType checkType, const char* str, KarTokenType newType) {
@@ -39,6 +41,7 @@ static bool check_for_number(KarToken* token, KarModule* module) {
 }
 
 static bool retype_all(KarToken* token, KarModule* module) {
+	// TODO: Не обязательно передавать KarModule. Достаточно KarModuleError.
 	// Значения переменных.
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_VAL_NULL, KAR_TOKEN_VAL_NULL);
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_VAL_TRUE, KAR_TOKEN_VAL_TRUE);
@@ -89,7 +92,8 @@ static bool retype_all(KarToken* token, KarModule* module) {
 	// Знаки
 	retype_if_check(token, KAR_TOKEN_SIGN, KAR_KEYWORD_SIGN_OPEN_BRACES, KAR_TOKEN_SIGN_OPEN_BRACES);
 	retype_if_check(token, KAR_TOKEN_SIGN, KAR_KEYWORD_SIGN_CLOSE_BRACES, KAR_TOKEN_SIGN_CLOSE_BRACES);
-	retype_if_check(token, KAR_TOKEN_SIGN, KAR_KEYWORD_SIGN_NULLABLE, KAR_TOKEN_SIGN_NULLABLE);
+	retype_if_check(token, KAR_TOKEN_SIGN, KAR_KEYWORD_SIGN_UNCLEAN, KAR_TOKEN_SIGN_UNCLEAN);
+	retype_if_check(token, KAR_TOKEN_SIGN, KAR_KEYWORD_SIGN_CLEAN, KAR_TOKEN_SIGN_CLEAN);
 	retype_if_check(token, KAR_TOKEN_SIGN, KAR_KEYWORD_SIGN_GET_FIELD, KAR_TOKEN_SIGN_GET_FIELD);
 	retype_if_check(token, KAR_TOKEN_SIGN, KAR_KEYWORD_SIGN_COMMA, KAR_TOKEN_SIGN_COMMA);
 	retype_if_check(token, KAR_TOKEN_SIGN, KAR_KEYWORD_SIGN_COLON, KAR_TOKEN_SIGN_COLON);
@@ -105,14 +109,17 @@ static bool retype_all(KarToken* token, KarModule* module) {
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_SIGN_AND, KAR_TOKEN_SIGN_AND);
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_SIGN_OR, KAR_TOKEN_SIGN_OR);
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_SIGN_NOT, KAR_TOKEN_SIGN_NOT);
-	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_SIGN_EQUAL, KAR_TOKEN_SIGN_EQUAL);
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_SIGN_GREATER, KAR_TOKEN_SIGN_GREATER);
+	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_SIGN_GREATER_OR_EQUAL, KAR_TOKEN_SIGN_GREATER_OR_EQUAL);
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_SIGN_LESS, KAR_TOKEN_SIGN_LESS);
+	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_SIGN_LESS_OR_EQUAL, KAR_TOKEN_SIGN_LESS_OR_EQUAL);
 	
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_SIGN_BIT_AND, KAR_TOKEN_SIGN_BIT_AND);
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_SIGN_BIT_OR, KAR_TOKEN_SIGN_BIT_OR);
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_SIGN_BIT_NOT, KAR_TOKEN_SIGN_BIT_NOT);
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_SIGN_BIT_XOR, KAR_TOKEN_SIGN_BIT_XOR);
+	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_SIGN_BIT_RIGHT, KAR_TOKEN_SIGN_BIT_RIGHT);
+	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_SIGN_BIT_LEFT, KAR_TOKEN_SIGN_BIT_LEFT);
 	
 	// Управление последовательностью выполенения.
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_COMMAND_BLOCK, KAR_TOKEN_COMMAND_BLOCK);
@@ -177,6 +184,49 @@ static bool foreach_retype(KarToken* token, KarModule* module) {
 	return retype_all(token, module);
 }
 
+static KarTokenType CONCAT_LIST[][3] = {
+	{ KAR_TOKEN_SIGN_MUL, KAR_TOKEN_SIGN_CLEAN, KAR_TOKEN_SIGN_MUL_CLEAN },
+	{ KAR_TOKEN_SIGN_DIV, KAR_TOKEN_SIGN_CLEAN, KAR_TOKEN_SIGN_DIV_CLEAN },
+	{ KAR_TOKEN_SIGN_MOD, KAR_TOKEN_SIGN_CLEAN, KAR_TOKEN_SIGN_MOD_CLEAN },
+	{ KAR_TOKEN_SIGN_ASSIGN, KAR_TOKEN_SIGN_ASSIGN, KAR_TOKEN_SIGN_EQUAL },
+	{ KAR_TOKEN_SIGN_CLEAN, KAR_TOKEN_SIGN_ASSIGN, KAR_TOKEN_SIGN_NOT_EQUAL }
+};
+static size_t CONCAT_LIST_SIZE = sizeof(CONCAT_LIST) / sizeof(KarTokenType[3]);
+
+static bool concat_signs(KarToken* token) {
+	if (token->children.count == 0) {
+		return true;
+	}
+	for (size_t i = 0; i < token->children.count - 1; ++i) {
+		KarToken* cur = kar_token_child(token, i);
+		KarToken* next = kar_token_child(token, i + 1);
+		KarTokenType curType = cur->type;
+		KarTokenType nextType = next->type;
+		for (size_t j = 0; j < CONCAT_LIST_SIZE; ++j) {
+			if (curType == CONCAT_LIST[j][0] && nextType == CONCAT_LIST[j][1]) {
+				cur->type = CONCAT_LIST[j][2];
+				char* cur_str = cur->str;
+				char* next_str = next->str;
+				char* cur_str_new = kar_string_create_concat(cur_str, next_str);
+				cur->str = cur_str_new;
+				KAR_FREE(cur_str);
+				kar_token_child_tear(token, i + 1);
+				KAR_FREE(next);
+			}
+		}
+	}
+	return true;
+}
+
+static bool foreach_concat_signs(KarToken* token) {
+	for (size_t i = 0; i < token->children.count; i++) {
+		if (!foreach_concat_signs(token->children.items[i])) {
+			return false;
+		}
+	}
+	return concat_signs(token);
+}
+
 bool kar_second_lexer_run(KarModule* module) {
-	return foreach_retype(module->token, module);
+	return foreach_retype(module->token, module) && foreach_concat_signs(module->token);
 }

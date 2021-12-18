@@ -1,1 +1,11 @@
-Пока не реализовано.
+MODULE(1, 1): [NULL]
+	FIELD_VAR(1, 1): [Кар]
+		VAR_MODIFIER(1, 1): [NULL]
+			VAR_MODIFIER_PUBLIC(1, 1): [открытое]
+			MODIFIER_STAT(1, 10): [стат]
+		BLOCK_BODY(1, 33): [NULL]
+			SIGN_NOT_EQUAL(1, 33): [!=]
+				SIGN_EQUAL(1, 28): [==]
+					IDENTIFIER(1, 26): [А]
+					IDENTIFIER(1, 31): [Б]
+				IDENTIFIER(1, 36): [В]

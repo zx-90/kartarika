@@ -19,12 +19,13 @@ bool kar_parser_run(KarModule* module) {
 	b = b && kar_parser_split_by_blocks(token, errors);
 	
 	// Парсинг до удаления пробелов.
-	b = b && kar_parser_make_path(token);
+	b = b && kar_parser_make_path(token, errors);
 	
 	// Удаление пробелов.
 	b = b && kar_parser_remove_spaces(token);
 	
 	// Парсинг после удаления пробелов.
+	b = b && kar_parser_make_operands(token, errors);
 	b = b && kar_parser_make_variable(token, errors);
 	b = b && kar_parser_make_return(token);
 	b = b && kar_parser_make_method(token, errors);

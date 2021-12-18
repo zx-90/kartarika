@@ -28,7 +28,7 @@ static bool extern_bracket(KarToken* token, KarArray* errors) {
 			size_t open = opens[opens_cursor];
 			kar_token_child_move_to_end(token, kar_token_child(token, open), open + 1, i - open - 1);
 			kar_token_child_erase(token, open + 1);
-			i = open + 1;
+			i = open;
 		}
 	}
 	if (opens_cursor != 0) {

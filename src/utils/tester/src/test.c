@@ -331,6 +331,10 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 				KAR_FREE(path2);
 				return kar_error_register(1, "Ошибка в лексере. Ожидалось, что лексер вернет ошибку, но он отработал нормально.");
 			}
+		} else if (!lexerResult) {
+			kar_module_free(module);
+			KAR_FREE(path2);
+			return kar_error_register(1, "Ошибка в лексере. Ожидалось, что лексер отработает нормально и продолжится тестирование следующих модулей.");
 		}
 	}
 	
@@ -379,6 +383,10 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 				KAR_FREE(path2);
 				return kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер вернет ошибку, но он отработал нормально.");
 			}
+		} else if (!parserResult) {
+			kar_module_free(module);
+			KAR_FREE(path2);
+			return kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер отработает нормально и продолжится тестирование следующих модулей.");
 		}
 	}
 	

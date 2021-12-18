@@ -7,37 +7,76 @@
 #include <stdbool.h>
 
 #include "core/token.h"
+#include "core/module_error.h"
 
-static bool make_path(KarToken* token) {
-	// TODO: Скобка может обозначать ещё рассчёт индекса массива, типа Товары.(3 + 4). Надо учитывать такой случай.
-	// Нахожение функции как "идентификатор + скобки" без пробелов между ними.
-	if (token->children.count < 2) {
+static bool make_call_func(KarToken* token) {
+	if (token->children.count == 0) {
 		return true;
 	}
-	size_t i;
-	for (i = token->children.count - 1; i >= 1; --i) {
-		if (kar_token_child(token, i - 1)->type == KAR_TOKEN_IDENTIFIER && kar_token_child(token, i)->type == KAR_TOKEN_SIGN_OPEN_BRACES) {
-			KarToken* child = kar_token_child_tear(token, i);
-			kar_token_child_add(kar_token_child(token, i - 1), child);
+
+	for (size_t i = token->children.count - 1; i >= 1; --i) {
+		KarToken* child = kar_token_child(token, i);
+		if (child->type != KAR_TOKEN_SIGN_OPEN_BRACES) {
+			continue;
 		}
-	}
-	// Нахождение пути как "идентификатор + точка + идентификатор" без пробелов между ними.
-	if (token->children.count < 3) {
-		return true;
-	}
-	for (i = token->children.count - 1; i >= 2; --i) {
-		if (kar_token_child(token, i - 1)->type == KAR_TOKEN_SIGN_GET_FIELD) {
-			KarToken* third = kar_token_child_tear(token, i);
-			KarToken* second = kar_token_child_tear(token, i - 1);
-			kar_token_child_add(second, third);
-			kar_token_child_add(kar_token_child(token, i - 2), second);
-			i -= 1;
+		
+		KarToken* prev = kar_token_child(token, i - 1);
+		if (prev->type != KAR_TOKEN_IDENTIFIER) {
+			continue;
 		}
+		
+		kar_token_child_tear(token, i);
+		kar_token_child_add(prev, child);
 	}
 	return true;
 }
 
-bool kar_parser_make_path(KarToken* token)
+static bool make_path(KarToken* token, KarArray* errors) {
+	for (size_t i = token->children.count; i > 0; --i) {
+		size_t num = i - 1;
+		KarToken* child = kar_token_child(token, num);
+		if (child->type != KAR_TOKEN_SIGN_GET_FIELD) {
+			continue;
+		}
+		
+		if (num == 0) {
+			kar_module_error_create_add(errors, &child->cursor, 1, "Нет первого операнда у операции \".\".");
+			return false;
+		}
+		if (num == token->children.count - 1) {
+			kar_module_error_create_add(errors, &child->cursor, 1, "Нет второго операнда у операции \"+\".");
+			return false;
+		}
+		KarToken* first = kar_token_child(token, num - 1);
+		KarToken* second = kar_token_child(token, num + 1);
+		if (first->type != KAR_TOKEN_IDENTIFIER && first->type != KAR_TOKEN_SIGN_OPEN_BRACES) {
+			kar_module_error_create_add(errors, &child->cursor, 1, "У операции \".\" нет первого операнда или он не корректен.");
+			return false;
+		}
+		if (second->type != KAR_TOKEN_IDENTIFIER && second->type != KAR_TOKEN_SIGN_OPEN_BRACES) {
+			kar_module_error_create_add(errors, &child->cursor, 1, "У операции \".\" нет второго операнда или он не корректен.");
+			return false;
+		}
+		kar_token_child_tear(token, num + 1);
+		kar_token_child_tear(token, num);
+		kar_token_child_add(first, child);
+		kar_token_child_add(child, second);
+		--i;
+	}
+	return true;
+}
+
+static bool foreach(KarToken* token, KarArray* errors) 
 {
-	return kar_token_child_foreach_bool(token, make_path);
+	for (size_t i = 0; i < token->children.count; i++) {
+		if (!foreach(token->children.items[i], errors)) {
+			return false;
+		}
+	}
+	return make_call_func(token) && make_path(token, errors);
+}
+
+bool kar_parser_make_path(KarToken* token, KarArray* errors)
+{
+	return foreach(token, errors);
 }

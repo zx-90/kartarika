@@ -1,1 +1,12 @@
-Пока не реализовано.
+MODULE(1, 1): [NULL]
+	FIELD_VAR(1, 1): [Кар]
+		VAR_MODIFIER(1, 1): [NULL]
+			VAR_MODIFIER_PUBLIC(1, 1): [открытое]
+			MODIFIER_STAT(1, 10): [стат]
+		BLOCK_BODY(1, 26): [NULL]
+			SIGN_OPEN_BRACES(1, 26): [(]
+				SIGN_BIT_LEFT(1, 41): [влево]
+					SIGN_BIT_LEFT(1, 33): [влево]
+						VAL_INTEGER(1, 27): [50000]
+						VAL_INTEGER(1, 39): [1]
+					VAL_INTEGER(1, 47): [3]

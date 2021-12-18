@@ -38,6 +38,7 @@
 #define KAR_KEYWORD_VAR_MODIFIER_PUBLIC "открытое"
 
 // Типы переменных.
+// TODO: Названия типов надо сделать с большой буквы.
 #define KAR_KEYWORD_TYPE_BOOL "буль"
 
 #define KAR_KEYWORD_TYPE_INTEGER "число"
@@ -67,7 +68,8 @@
 // Знаки
 #define KAR_KEYWORD_SIGN_OPEN_BRACES "("
 #define KAR_KEYWORD_SIGN_CLOSE_BRACES ")"
-#define KAR_KEYWORD_SIGN_NULLABLE "?"
+#define KAR_KEYWORD_SIGN_UNCLEAN "?"
+#define KAR_KEYWORD_SIGN_CLEAN "!"
 #define KAR_KEYWORD_SIGN_GET_FIELD "."
 #define KAR_KEYWORD_SIGN_COMMA ","
 #define KAR_KEYWORD_SIGN_COLON ":"
@@ -83,14 +85,17 @@
 #define KAR_KEYWORD_SIGN_AND "и"
 #define KAR_KEYWORD_SIGN_OR "или"
 #define KAR_KEYWORD_SIGN_NOT "не"
-#define KAR_KEYWORD_SIGN_EQUAL "равно"
 #define KAR_KEYWORD_SIGN_GREATER "больше"
+#define KAR_KEYWORD_SIGN_GREATER_OR_EQUAL "бир"
 #define KAR_KEYWORD_SIGN_LESS "меньше"
+#define KAR_KEYWORD_SIGN_LESS_OR_EQUAL "мир"
 
-#define KAR_KEYWORD_SIGN_BIT_AND "битИ"
-#define KAR_KEYWORD_SIGN_BIT_OR "битИли"
-#define KAR_KEYWORD_SIGN_BIT_NOT "битНе"
-#define KAR_KEYWORD_SIGN_BIT_XOR "битИИли"
+#define KAR_KEYWORD_SIGN_BIT_AND "би"
+#define KAR_KEYWORD_SIGN_BIT_OR "били"
+#define KAR_KEYWORD_SIGN_BIT_NOT "бне"
+#define KAR_KEYWORD_SIGN_BIT_XOR "билине"
+#define KAR_KEYWORD_SIGN_BIT_RIGHT "вправо"
+#define KAR_KEYWORD_SIGN_BIT_LEFT "влево"
 
 // Управление последовательностью выполенения.
 #define KAR_KEYWORD_COMMAND_BLOCK "блок"

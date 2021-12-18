@@ -11,10 +11,11 @@ bool kar_parser_extern_brackets(KarToken* token, KarArray* errors);
 bool kar_parser_split_by_lines(KarToken* token, KarArray* errors);
 bool kar_parser_split_by_blocks(KarToken* token, KarArray* errors);
 
-bool kar_parser_make_path(KarToken* token);
+bool kar_parser_make_path(KarToken* token, KarArray* errors);
 
 bool kar_parser_remove_spaces(KarToken* token);
 
+bool kar_parser_make_operands(KarToken* token, KarArray* errors);
 bool kar_parser_make_variable(KarToken* token, KarArray* errors);
 bool kar_parser_make_return(KarToken* token);
 bool kar_parser_make_method(KarToken* token, KarArray* errors);
