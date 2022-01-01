@@ -278,6 +278,10 @@ static KarCursor* compare_strings(char* str1, char* str2) {
 		}
 	}
 	
+	if (*str2) {
+		return result;
+	}
+	
 	KAR_FREE(result);
 	return NULL;
 }
@@ -350,10 +354,16 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 		bool parserResult = kar_parser_run(module);
 		if (test->parser_file.is) {
 			if (!parserResult) {
+				char* moduleResult = kar_token_create_print(module->token);
+				KarError* result = kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер отработает нормально.\n"
+					"Структура модуля:\n%s",
+					moduleResult
+				);
+				KAR_FREE(moduleResult);
 				kar_module_print_errors(module);
 				kar_module_free(module);
 				KAR_FREE(path2);
-				return kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер отработает нормально.");
+				return result;
 			}
 			
 			char* testResult = kar_token_create_print(module->token);
@@ -379,9 +389,15 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 			KAR_FREE(cursor);
 		} else if (test->parser_error_file.is) {
 			if (parserResult) {
+				char* moduleResult = kar_token_create_print(module->token);
+				KarError* result = kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер вернет ошибку, но он отработал нормально.\n"
+					"Структура модуля:\n%s",
+					moduleResult
+				);
+				KAR_FREE(moduleResult);
 				kar_module_free(module);
 				KAR_FREE(path2);
-				return kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер вернет ошибку, но он отработал нормально.");
+				return result;
 			}
 		} else if (!parserResult) {
 			kar_module_free(module);

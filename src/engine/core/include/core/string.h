@@ -25,4 +25,6 @@ char* kar_string_create_format_args(const char* format, size_t size, va_list arg
 char* kar_string_create_copy(const char* str);
 char* kar_string_create_concat(const char* str1, const char* str2);
 
+size_t kar_string_length(const char* str);
+
 #endif // KAR_STRING_H

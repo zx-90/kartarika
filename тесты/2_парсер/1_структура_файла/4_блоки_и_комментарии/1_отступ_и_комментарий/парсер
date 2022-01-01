@@ -7,15 +7,12 @@ MODULE(1, 1): [NULL]
 			VAR_INTEGER64(1, 24): [число]
 		BLOCK_BODY(2, 1): [NULL]
 			INDENT(2, 1): [	]
-				IDENTIFIER(2, 2): [кар1]
-					SIGN_OPEN_BRACES(2, 6): [(]
+				SIGN_CALL_METHOD(2, 2): [кар1]
 			INDENT(3, 1): [	]
 				COMMENT(3, 2): [ комментарий многострочный 
 
 
 	                ]
-				IDENTIFIER(6, 24): [кар1]
-					SIGN_OPEN_BRACES(6, 28): [(]
+				SIGN_CALL_METHOD(6, 24): [кар1]
 			INDENT(7, 1): [	]
-				IDENTIFIER(7, 2): [кар1]
-					SIGN_OPEN_BRACES(7, 6): [(]
+				SIGN_CALL_METHOD(7, 2): [кар1]

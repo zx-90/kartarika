@@ -95,3 +95,18 @@ char* kar_string_create_concat(const char* str1, const char* str2)
 	str[len] = 0;
 	return str;
 }
+
+size_t kar_string_length(const char* str) {
+	size_t res = 0;
+	while (*str) {
+		if ((*str & 0x80) == 0 ||
+			((*str ^ 0xC0) & 0xE0) == 0 ||
+			((*str ^ 0xE0) & 0xF0) == 0 ||
+			((*str ^ 0xF0) & 0xF8) == 0
+		) {
+			res++;
+		}
+		str++;
+	}
+	return res;
+}
