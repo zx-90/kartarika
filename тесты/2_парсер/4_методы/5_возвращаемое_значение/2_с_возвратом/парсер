@@ -1,1 +1,10 @@
-Пока не реализовано.
+MODULE(1, 1): [NULL]
+	METHOD(1, 1): [Затычка]
+		METHOD_MODIFIER(1, 1): [NULL]
+		METHOD_PARAMETERS(1, 14): [NULL]
+		METHOD_RETURN_TYPE(1, 17): [NULL]
+			VAR_INTEGER64(1, 17): [число]
+		BLOCK_BODY(2, 1): [NULL]
+			INDENT(2, 1): [	]
+				METHOD_RETURN(2, 2): [вернуть]
+					VAL_INTEGER(2, 10): [5]

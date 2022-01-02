@@ -11,6 +11,32 @@
 #include "core/token.h"
 #include "core/module_error.h"
 
+static bool kar_token_is_name(KarToken* token) {
+    return
+        token->type == KAR_TOKEN_IDENTIFIER &&
+        token->children.count == 0;
+    // TODO: добавить ещё тип класса. То есть проверить, что это путь.
+}
+
+static bool kar_token_is_type(KarToken* token) {
+    return
+        token->type == KAR_TOKEN_VAR_BOOL ||
+        token->type == KAR_TOKEN_VAR_FLOAT32 ||
+        token->type == KAR_TOKEN_VAR_FLOAT64 ||
+        token->type == KAR_TOKEN_VAR_FLOAT80 ||
+        token->type == KAR_TOKEN_VAR_INTEGER8 ||
+        token->type == KAR_TOKEN_VAR_INTEGER16 ||
+        token->type == KAR_TOKEN_VAR_INTEGER32 ||
+        token->type == KAR_TOKEN_VAR_INTEGER64 ||
+        token->type == KAR_TOKEN_VAR_UNSIGNED8 ||
+        token->type == KAR_TOKEN_VAR_UNSIGNED16 ||
+        token->type == KAR_TOKEN_VAR_UNSIGNED32 ||
+        token->type == KAR_TOKEN_VAR_UNSIGNED64 ||
+        token->type == KAR_TOKEN_VAR_STRING ||
+        token->type == KAR_TOKEN_IDENTIFIER;
+	// TODO: добавить ещё тип класса. То есть проверить, что это путь.
+}
+
 bool kar_parser_make_method(KarToken* token, KarArray* errors)
 {
 	for (size_t i = 0; i < token->children.count; ++i) {
@@ -119,7 +145,46 @@ bool kar_parser_make_method(KarToken* token, KarArray* errors)
 		
 		kar_token_child_erase(child, methodNamePos);
 		for (size_t i = 0; i < parameters->children.count; i++) {
-			kar_token_child(parameters, i)->type = KAR_TOKEN_METHOD_PARAMETER_CONST;
+			KarToken* parameter = kar_token_child(parameters, i);
+			if (parameter->children.count == 1) {
+				KarToken* mul = kar_token_child(parameter, 0);
+				if (mul->type != KAR_TOKEN_SIGN_MUL) {
+					kar_module_error_create_add(errors, &parameter->cursor, 1, "Некорректный параметр функции.");
+					return false;
+				}
+				if (mul->children.count != 2) {
+					kar_module_error_create_add(errors, &parameter->cursor, 1, "Некорректный параметр функции.");
+					return false;
+				}
+				parameter->type = KAR_TOKEN_METHOD_PARAMETER_VAR;
+				kar_token_child_tear(parameter, 0);
+				KarToken* type = kar_token_child_tear(mul, 0);
+				KarToken* name = kar_token_child_tear(mul, 0);
+				kar_token_child_add(parameter, type);
+				kar_token_child_add(parameter, name);
+				kar_token_free(mul);
+				
+			} else if (parameter->children.count == 2) {
+				parameter->type = KAR_TOKEN_METHOD_PARAMETER_CONST;
+			} else {
+				kar_module_error_create_add(errors, &parameter->cursor, 1, "Некорректный параметр функции.");
+				return false;
+			}
+			
+			if (parameter->children.count != 2) {
+				kar_module_error_create_add(errors, &parameter->cursor, 1, "Некорректный параметр функции.");
+				return false;
+			}
+			KarToken* type = kar_token_child(parameter, 0);
+			KarToken* name = kar_token_child(parameter, 1);
+			if (!kar_token_is_type(type)) {
+				kar_module_error_create_add(errors, &type->cursor, 1, "Некорректный тип параметра функции.");
+				return false;
+			}
+			if (!kar_token_is_name(name)) {
+				kar_module_error_create_add(errors, &name->cursor, 1, "Некорректное имя параметра функции.");
+				return false;
+			}
 		}
 		
 		size_t signColonPos = methodPos + 1;
@@ -134,16 +199,23 @@ bool kar_parser_make_method(KarToken* token, KarArray* errors)
 			KarToken* returnTypeToken = kar_token_child_tear(child, returnTypePos);
 			kar_token_child_add(returnType, returnTypeToken);
 			kar_token_child_insert(child, returnType, returnTypePos);
+			if (!kar_token_is_type(returnTypeToken)) {
+				kar_module_error_create_add(errors, &returnTypeToken->cursor, 1, "Некорректный тип возвращаемого значения функции.");
+				return false;
+			}
 			signColonPos += 1;
 		}
 		
-		if ( signColonPos == child->children.count ) {
+		if (signColonPos == child->children.count ) {
+			kar_module_error_create_add(errors, &kar_token_child(child, signColonPos - 1)->cursor, 1, "Пропущено двоеточие в конце строки.");
 			return false;
 		}
 		if (kar_token_child(child, signColonPos)->type != KAR_TOKEN_SIGN_COLON) { // проверить есть ли тело метода.
+			kar_module_error_create_add(errors, &kar_token_child(child, signColonPos)->cursor, 1, "Ожидался символ \":\".");
 			return false;
 		}
 		if ((signColonPos + 1) == child->children.count) {
+			kar_module_error_create_add(errors, &kar_token_child(child, signColonPos)->cursor, 1, "Неожиданное выражение в конце строки.");
 			return false;
 		}
 		kar_token_child_erase(child, signColonPos);
