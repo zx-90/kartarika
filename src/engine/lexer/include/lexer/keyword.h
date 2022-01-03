@@ -24,9 +24,9 @@
 #define KAR_KEYWORD_STRING_ESCAPE "\\"
 
 // Значения переменных.
-#define KAR_KEYWORD_VAL_NULL "пусто"
-#define KAR_KEYWORD_VAL_TRUE "да"
-#define KAR_KEYWORD_VAL_FALSE "нет"
+#define KAR_KEYWORD_VAL_NULL "Пусто"
+#define KAR_KEYWORD_VAL_TRUE "Да"
+#define KAR_KEYWORD_VAL_FALSE "Нет"
 
 // Объявления переменных.
 #define KAR_KEYWORD_DECLARATION_CONST "константа"
@@ -39,26 +39,26 @@
 
 // Типы переменных.
 // TODO: Названия типов надо сделать с большой буквы.
-#define KAR_KEYWORD_TYPE_BOOL "буль"
+#define KAR_KEYWORD_TYPE_BOOL "Буль"
 
-#define KAR_KEYWORD_TYPE_INTEGER "число"
-#define KAR_KEYWORD_TYPE_INTEGER8 "число8"
-#define KAR_KEYWORD_TYPE_INTEGER16 "число16"
-#define KAR_KEYWORD_TYPE_INTEGER32 "число32"
-#define KAR_KEYWORD_TYPE_INTEGER64 "число64"
+#define KAR_KEYWORD_TYPE_INTEGER "Число"
+#define KAR_KEYWORD_TYPE_INTEGER8 "Число8"
+#define KAR_KEYWORD_TYPE_INTEGER16 "Число16"
+#define KAR_KEYWORD_TYPE_INTEGER32 "Число32"
+#define KAR_KEYWORD_TYPE_INTEGER64 "Число64"
 
-#define KAR_KEYWORD_TYPE_UNSIGNED "счётное"
-#define KAR_KEYWORD_TYPE_UNSIGNED8 "счётное8"
-#define KAR_KEYWORD_TYPE_UNSIGNED16 "счётное16"
-#define KAR_KEYWORD_TYPE_UNSIGNED32 "счётное32"
-#define KAR_KEYWORD_TYPE_UNSIGNED64 "счётное64"
+#define KAR_KEYWORD_TYPE_UNSIGNED "Счётное"
+#define KAR_KEYWORD_TYPE_UNSIGNED8 "Счётное8"
+#define KAR_KEYWORD_TYPE_UNSIGNED16 "Счётное16"
+#define KAR_KEYWORD_TYPE_UNSIGNED32 "Счётное32"
+#define KAR_KEYWORD_TYPE_UNSIGNED64 "Счётное64"
 
-#define KAR_KEYWORD_TYPE_FLOAT "дробное"
-#define KAR_KEYWORD_TYPE_FLOAT32 "дробное32"
-#define KAR_KEYWORD_TYPE_FLOAT64 "дробное64"
-#define KAR_KEYWORD_TYPE_FLOAT80 "дробное80"
+#define KAR_KEYWORD_TYPE_FLOAT "Дробное"
+#define KAR_KEYWORD_TYPE_FLOAT32 "Дробное32"
+#define KAR_KEYWORD_TYPE_FLOAT64 "Дробное64"
+#define KAR_KEYWORD_TYPE_FLOAT80 "Дробное80"
 
-#define KAR_KEYWORD_TYPE_STRING "строка"
+#define KAR_KEYWORD_TYPE_STRING "Строка"
 
 // Составные переменные.
 #define KAR_KEYWORD_TYPE_ENUMERATION "перечисление"
@@ -99,7 +99,7 @@
 
 // Управление последовательностью выполенения.
 #define KAR_KEYWORD_COMMAND_BLOCK "блок"
-#define KAR_KEYWORD_COMMAND_PASS "пустой"
+#define KAR_KEYWORD_COMMAND_PASS "пропустить"
 
 #define KAR_KEYWORD_COMMAND_IF "если"
 #define KAR_KEYWORD_COMMANT_THEN "то"
@@ -115,7 +115,7 @@
 
 #define KAR_KEYWORD_COMMAND_WHILE "пока"
 
-#define KAR_KEYWORD_COMMAND_CONTINUE "пропустить"
+#define KAR_KEYWORD_COMMAND_CONTINUE "следующий"
 #define KAR_KEYWORD_COMMAND_BREAK "прервать"
 
 #define KAR_KEYWORD_COMMAND_OPEN "раскрыть"
