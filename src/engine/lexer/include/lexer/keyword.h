@@ -46,11 +46,11 @@
 // TODO: Названия типов надо сделать с большой буквы.
 #define KAR_KEYWORD_TYPE_BOOL "Буль"
 
-#define KAR_KEYWORD_TYPE_INTEGER "Число"
-#define KAR_KEYWORD_TYPE_INTEGER8 "Число8"
-#define KAR_KEYWORD_TYPE_INTEGER16 "Число16"
-#define KAR_KEYWORD_TYPE_INTEGER32 "Число32"
-#define KAR_KEYWORD_TYPE_INTEGER64 "Число64"
+#define KAR_KEYWORD_TYPE_INTEGER "Целое"
+#define KAR_KEYWORD_TYPE_INTEGER8 "Целое8"
+#define KAR_KEYWORD_TYPE_INTEGER16 "Целое16"
+#define KAR_KEYWORD_TYPE_INTEGER32 "Целое32"
+#define KAR_KEYWORD_TYPE_INTEGER64 "Целое64"
 
 #define KAR_KEYWORD_TYPE_UNSIGNED "Счётное"
 #define KAR_KEYWORD_TYPE_UNSIGNED8 "Счётное8"
