@@ -5,6 +5,7 @@ set(lib_lexer_SRC
 src/lexer.c
 src/first_lexer.c
 src/second_lexer.c
+src/check_alphabet.c
 
 )
 

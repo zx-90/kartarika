@@ -11,6 +11,7 @@
 #include "core/string.h"
 #include "core/alloc.h"
 #include "lexer/keyword.h"
+#include "lexer/check_alphabet.h"
 
 static void retype_if_check(KarToken* token, KarTokenType checkType, const char* str, KarTokenType newType) {
 	if (token->type == checkType && !strcmp(token->str, str)) {
@@ -86,6 +87,10 @@ static bool check_for_number(KarToken* token, KarModule* module) {
 
 static bool retype_all(KarToken* token, KarModule* module) {
 	// TODO: Не обязательно передавать KarModule. Достаточно KarModuleError.
+	if (token->type == KAR_TOKEN_IDENTIFIER && !kar_check_identifiers_alphabet(token->str)) {
+		kar_module_error_create_add(&module->errors, &token->cursor, 1, "Токен составлен из разных алфавитов.");
+		return false;
+	}
 	// Значения переменных.
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_VAL_NULL, KAR_TOKEN_VAL_NULL);
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_VAL_TRUE, KAR_TOKEN_VAL_TRUE);

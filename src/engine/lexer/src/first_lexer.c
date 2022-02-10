@@ -13,6 +13,7 @@
 #include "core/alloc.h"
 #include "core/module_error.h"
 #include "lexer/keyword.h"
+#include "lexer/check_alphabet.h"
 
 const char* ERROR_READ_STREAM = "Не могу прочитать модуль. Нет доступа к модулю, он повреждён или удалён.";
 const char* ERROR_SYMBOL_STRING = "Ошибочный символ. Возможно файл повреждён или сохранён не в кодировке UTF-8.";
@@ -87,13 +88,8 @@ static bool is_space(KarFirstLexer* lexer) {
 
 static bool is_identifier(KarFirstLexer* lexer) {
 	const char* str = kar_stream_cursor_get(lexer->streamCursor);
-	return
-		(strcmp(str, "0") >= 0 && strcmp(str, "9") <= 0) ||
-		(strcmp(str, "a") >= 0 && strcmp(str, "z") <= 0) ||
-		(strcmp(str, "A") >= 0 && strcmp(str, "Z") <= 0) ||
-		(strcmp(str, "_") == 0) ||
-		// Кириллица
-		(strcmp(str, "\xD0\x80") >= 0 && strcmp(str, "\xD4\xAF") <= 0);
+	// TODO: Нужно проверить 1 символ, а вызываемая функция проверяет целую строку. 
+	return kar_check_identifiers_alphabet(str);
 }
 
 static bool is_sign(KarFirstLexer* lexer) {
