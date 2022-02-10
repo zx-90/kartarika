@@ -1,4 +1,4 @@
-/* Copyright В© 2022 Abdullin Timur <abdtimurrif@gmail.com>
+/* Copyright © 2022 Abdullin Timur <abdtimurrif@gmail.com>
  *
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -10,9 +10,9 @@
 #include <stdint.h>
 #include <stddef.h>
 
-// РЎС‚СЂСѓРєС‚СѓСЂС‹ Р·Р°РїРѕР»РЅСЏСЋС‚СЃСЏ РЅР° РѕСЃРЅРѕРІРµ url: https://www.unicode.org/charts/
-// Р—Р°РїРѕР»РЅРµРЅРѕ РѕС‚ ARMENIAN РґРѕ LATIN. Р’ LATIN РЅРµ Р·Р°РїРѕР»РЅРµРЅС‹ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ СЃРёРјРІРѕР»С‹. РџР»СЋСЃ РІРЅРµ РѕС‡РµСЂРµРґРё Р·Р°РїРѕР»РЅРµРЅРѕ CHEROKEE.
-// TODO: Р—Р°РїРѕР»РЅРёС‚СЊ РґРѕ РєРѕРЅС†Р°.
+// Структуры заполняются на основе url: https://www.unicode.org/charts/
+// Заполнено от ARMENIAN до LATIN. В LATIN не заполнены дополнительные символы. Плюс вне очереди заполнено CHEROKEE.
+// TODO: Заполнить до конца.
 
 typedef enum {
 	KAR_SCRIPT_UNKNOWN,
@@ -39,7 +39,7 @@ typedef struct {
 	KAR_SCRIPT_NAME name;
 } KarScriptRange;
 
-// Р”РёР°РїР°Р·РѕРЅС‹ РґРѕР»Р¶РЅС‹ РёРґС‚Рё РїРѕ РІРѕР·СЂР°СЃС‚Р°РЅРёСЋ РІ СЌС‚РѕРј РјР°СЃСЃРёРІРµ.
+// Диапазоны должны идти по возрастанию в этом массиве.
 
 const KarScriptRange KAR_SCRIPT_RANGE_LIST[] = {
 	{0x0030, 0x0039, KAR_SCRIPT_COMMON},
@@ -134,6 +134,9 @@ const KarScriptRange KAR_SCRIPT_RANGE_LIST[] = {
 	{0x1083F, 0x1083F, KAR_SCRIPT_CYPRIOT_SYLLABARY},
 
 	{0x12F90, 0x12FF2, KAR_SCRIPT_CYPRO_MINOAN},
+
+	{0x13A0, 0x13F5, KAR_SCRIPT_CHEROKEE},
+	{0x13F8, 0x13FD, KAR_SCRIPT_CHEROKEE}
 };
 
 const size_t KAR_SCRIPT_RANGE_COUNT = sizeof(KAR_SCRIPT_RANGE_LIST) / sizeof(KarScriptRange);
