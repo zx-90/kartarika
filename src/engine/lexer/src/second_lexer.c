@@ -64,6 +64,7 @@ static enum KarExpPosition get_exp_status(const char* str) {
 }
 
 static bool check_for_number(KarToken* token, KarModule* module) {
+	// TODO: Плюс бесконеность, минус бесконечность, +0, -0, НеЧисло.
 	if (token->type != KAR_TOKEN_IDENTIFIER) {
 		return true;
 	}
