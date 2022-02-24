@@ -46,6 +46,10 @@ static bool retype_all(KarToken* token, KarModule* module) {
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_VAL_NULL, KAR_TOKEN_VAL_NULL);
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_VAL_TRUE, KAR_TOKEN_VAL_TRUE);
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_VAL_FALSE, KAR_TOKEN_VAL_FALSE);
+	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_VAL_NAN, KAR_TOKEN_VAL_NAN);
+	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_VAL_INFINITY, KAR_TOKEN_VAL_INFINITY);
+	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_VAL_PLUS_INFINITY, KAR_TOKEN_VAL_INFINITY);
+	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_VAL_MINUS_INFINITY, KAR_TOKEN_VAL_MINUS_INFINITY);
 	
 	// Число.
 	if (!check_for_number(token, module)) {
@@ -218,15 +222,44 @@ static bool concat_signs(KarToken* token) {
 	return true;
 }
 
-static bool foreach_concat_signs(KarToken* token) {
-	for (size_t i = 0; i < token->children.count; i++) {
-		if (!foreach_concat_signs(token->children.items[i])) {
-			return false;
-		}
+static bool find_floats(KarToken* token) {
+	if (token->children.count < 3) {
+		return true;
 	}
-	return concat_signs(token);
+	for (size_t i = 0; i < token->children.count - 2; ++i) {
+		KarToken* integer = kar_token_child(token, i);
+		KarToken* dot = kar_token_child(token, i + 1);
+		KarToken* fraction = kar_token_child(token, i + 2);
+
+		if (integer->type != KAR_TOKEN_VAL_INTEGER) {
+			continue;
+		}
+		if (dot->type != KAR_TOKEN_SIGN_GET_FIELD) {
+			continue;
+		}
+		if (fraction->type != KAR_TOKEN_VAL_INTEGER) {
+			continue;
+		}
+
+		integer->type = KAR_TOKEN_VAL_FLOAT;
+
+		char* integer_dot = kar_string_create_concat(integer->str, dot->str);
+		char* float_str = kar_string_create_concat(integer_dot, fraction->str);
+		KAR_FREE(integer_dot);
+		KAR_FREE(integer->str);
+		integer->str = float_str;
+
+		kar_token_child_tear(token, i + 2);
+		kar_token_child_tear(token, i + 1);
+		kar_token_free(dot);
+		kar_token_free(fraction);
+	}
+	return true;
 }
 
 bool kar_second_lexer_run(KarModule* module) {
-	return foreach_retype(module->token, module) && foreach_concat_signs(module->token);
+	return 
+		foreach_retype(module->token, module) && 
+		concat_signs(module->token) && 
+		find_floats(module->token);
 }

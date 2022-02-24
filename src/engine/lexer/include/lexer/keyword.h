@@ -27,6 +27,10 @@
 #define KAR_KEYWORD_VAL_NULL "Пусто"
 #define KAR_KEYWORD_VAL_TRUE "Да"
 #define KAR_KEYWORD_VAL_FALSE "Нет"
+#define KAR_KEYWORD_VAL_NAN "НеЧисло"
+#define KAR_KEYWORD_VAL_INFINITY "Бесконечность"
+#define KAR_KEYWORD_VAL_PLUS_INFINITY "ПлюсБесконечность"
+#define KAR_KEYWORD_VAL_MINUS_INFINITY "МинусБесконечность"
 
 // Объявления переменных.
 #define KAR_KEYWORD_DECLARATION_CONST "константа"

@@ -26,6 +26,9 @@ const char* kar_token_type_get_name(const KarTokenType type)
 		PROCESS_VAL(VAL_FALSE);
 		PROCESS_VAL(VAL_INTEGER);
 		PROCESS_VAL(VAL_FLOAT);
+		PROCESS_VAL(VAL_NAN);
+		PROCESS_VAL(VAL_INFINITY);
+		PROCESS_VAL(VAL_MINUS_INFINITY);
 		
 		// Поля
 		PROCESS_VAL(FIELD_CONST);
