@@ -12,7 +12,6 @@
 #include <string.h>
 
 // Временно, пока не подключили LLVM или LLVM-C под Windows.
-#ifdef __linux__ 
 
 #include <llvm-c/Core.h>
 #include <llvm-c/Target.h>
@@ -106,10 +105,8 @@ static bool generate_module(const KarToken* token, LLVMModuleRef module, LLVMBui
 	LLVMBuildRetVoid(builder);
 }*/
 
-#endif // LINUX
 
 bool kar_generator_run(KarModule* mod) {
-#ifdef __linux__ 
 	// TODO: обработка ошибок. Добавить.
 	LLVMContextRef context = LLVMContextCreate();
 	LLVMModuleRef module = LLVMModuleCreateWithNameInContext("asdf", context);
@@ -181,9 +178,10 @@ bool kar_generator_run(KarModule* mod) {
 	LLVMContextDispose(context);
 	
 	// TODO: Разобраться можно ли это как-то без clang делать. Только с помощью llvm.
+#ifdef __linux__
 	system("clang-9 asdf.o -o a.out");
-	return true;
 #elif _WIN32
-	return false;
-#endif // WIN32
+	system("link.exe /ENTRY:main asdf.o");
+#endif
+	return true;
 }

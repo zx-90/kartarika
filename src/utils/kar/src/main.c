@@ -19,10 +19,11 @@ int main(int argc, char** argv) {
 		fprintf(stderr, "Ошибка. Необходимо имя файла для запуска.\n");
 		return -1;
 	}
-	printf("%s\n", argv[1]);
+	char* filename = argv[1];
+	printf("%s\n", filename);
 	
-	KarStream* file = kar_stream_create(argv[1]);
-	KarModule* module = kar_module_create(argv[1]);
+	KarStream* file = kar_stream_create(filename);
+	KarModule* module = kar_module_create(filename);
 	
 	if (!kar_lexer_run(file, module)) {
 		fprintf(stderr, "Ошибка при парсинге файла в лексере.\n");

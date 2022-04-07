@@ -1,5 +1,6 @@
 # For internal use
 _build
+build
 sandbox
 *.old
 .kdev_include_paths
@@ -21,18 +22,6 @@ sandbox
 # Precompiled Headers
 *.gch
 *.pch
-
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
 
 # Executables
 *.exe

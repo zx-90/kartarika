@@ -35,8 +35,6 @@ void kar_stream_free(KarStream* stream) {
 		return;
 	}
 	// TODO: Почему-то программа рушится при попытке закрыть файл. Скорее всего где-то идет работа за границей памяти.
-	// TODO: проверять возвращаемое значение функции fclose.
-	//fclose(stream->data);
 	KAR_FREE(stream);
 }
 
@@ -51,9 +49,7 @@ bool kar_stream_eof(KarStream* stream) {
 	if (stream == NULL) {
 		return false;
 	}
-	// TODO: feof не работает для windows. Возможно нужно полностью удалить.
 	return stream->eof;
-	//return feof(stream->data);
 }
 
 char kar_stream_get(KarStream* stream) {
@@ -62,8 +58,8 @@ char kar_stream_get(KarStream* stream) {
 	}
 	DWORD read;
 	char result;
-	//int result = fgetc(stream->data);
 	if (!ReadFile(stream->data, &result, 1, &read, NULL)) {
+		stream->good = false;
 		return 0;
 	}
 	if (read == 0) {
