@@ -83,6 +83,27 @@ static void print_level(const KarToken* token, FILE* stream, size_t level) {
 	}
 }
 
+KarToken* kar_token_join_children(KarToken* token, size_t first, size_t count) {
+	KarToken* first_token = kar_token_child(token, first);
+
+	for (size_t i = 0; i < count - 1; ++i) {
+		KarToken* next_token = kar_token_child(token, first + 1);
+
+		char* join_str = kar_string_create_concat(first_token->str, next_token->str);
+		KAR_FREE(first_token->str);
+		first_token->str = join_str;
+
+		while (next_token->children.count != 0) {
+			KarToken* child = kar_token_child_tear(next_token, 0);
+			kar_token_child_add(first_token, child);
+		}
+
+		kar_token_child_tear(token, first + 1);
+		kar_token_free(next_token);
+	}
+	return first_token;
+}
+
 void kar_token_print(const KarToken* token, FILE* stream) {
 	print_level(token, stream, 0);
 }
