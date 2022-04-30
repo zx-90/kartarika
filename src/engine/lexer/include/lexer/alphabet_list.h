@@ -9,6 +9,10 @@
 
 #include <stdint.h>
 
+// Структуры заполняются на основе url: https://www.unicode.org/charts/
+// Заполнено от ARMENIAN до LATIN. В LATIN не заполнены дополнительные символы. Плюс вне очереди заполнено CHEROKEE.
+// TODO: Заполнить до конца.
+
 typedef enum {
 	KAR_SCRIPT_UNKNOWN,
 
@@ -33,6 +37,8 @@ typedef struct {
 	uint32_t end;
 	KAR_SCRIPT_NAME name;
 } KarScriptRange;
+
+// Диапазоны должны идти по возрастанию в этом массиве.
 
 const KarScriptRange KAR_SCRIPT_RANGE_LIST[] = {
 	{0x0030, 0x0039, KAR_SCRIPT_COMMON},
@@ -92,13 +98,16 @@ const KarScriptRange KAR_SCRIPT_RANGE_LIST[] = {
 	{0x2D27, 0x2D27, KAR_SCRIPT_GEORGIAN},
 	{0x2D2D, 0x2D2D, KAR_SCRIPT_GEORGIAN},
 
-	{0x2DE0, 0x2DFF, KAR_SCRIPT_CYRILLIC},
+	{0xA640, 0xA66E, KAR_SCRIPT_CYRILLIC},
+	{0xA673, 0xA673, KAR_SCRIPT_CYRILLIC},
+	{0xA67E, 0xA69D, KAR_SCRIPT_CYRILLIC},
 
-	{0xA640, 0xA69F, KAR_SCRIPT_CYRILLIC},
+	{0xAB70, 0xABBF, KAR_SCRIPT_CHEROKEE},
 
 	{0xFB00, 0xFB06, KAR_SCRIPT_ARMENIAN},
 	{0xFB13, 0xFB17, KAR_SCRIPT_ARMENIAN},
-	{0xFB1D, 0xFB36, KAR_SCRIPT_ARMENIAN},
+	{0xFB1D, 0xFB1D, KAR_SCRIPT_ARMENIAN},
+	{0xFB1F, 0xFB36, KAR_SCRIPT_ARMENIAN},
 	{0xFB38, 0xFB3C, KAR_SCRIPT_ARMENIAN},
 	{0xFB3E, 0xFB3E, KAR_SCRIPT_ARMENIAN},
 	{0xFB40, 0xFB41, KAR_SCRIPT_ARMENIAN},
@@ -124,12 +133,6 @@ const KarScriptRange KAR_SCRIPT_RANGE_LIST[] = {
 	{0x1083F, 0x1083F, KAR_SCRIPT_CYPRIOT_SYLLABARY},
 
 	{0x12F90, 0x12FF2, KAR_SCRIPT_CYPRO_MINOAN},
-
-	{0x1E000, 0x1E006, KAR_SCRIPT_GLAGOLITIC},
-	{0x1E008, 0x1E018, KAR_SCRIPT_GLAGOLITIC},
-	{0x1E01B, 0x1E021, KAR_SCRIPT_GLAGOLITIC},
-	{0x1E023, 0x1E024, KAR_SCRIPT_GLAGOLITIC},
-	{0x1E026, 0x1E02A, KAR_SCRIPT_GLAGOLITIC},
 };
 
 const size_t KAR_SCRIPT_RANGE_COUNT = sizeof(KAR_SCRIPT_RANGE_LIST) / sizeof(KarScriptRange);
