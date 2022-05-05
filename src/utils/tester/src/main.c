@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
 	kar_console_init();
 	char* test_path;
 	if (argc < 2) {
-		test_path = "тесты";
+		test_path = "тесты\\4_компилятор";
 	} else if (argc == 2) {
 		test_path = argv[1];
 	} else {

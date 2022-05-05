@@ -32,11 +32,11 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 		return false;
 	}
 	const KarToken* child3 = kar_token_child(child2, 0);
-	if (!kar_token_check_type_name(child3, KAR_TOKEN_IDENTIFIER, "Печатать")) {
+	if (!kar_token_check_type_name(child3, KAR_TOKEN_SIGN_CALL_METHOD, "Печатать")) {
 		return false;
 	}
 	const KarToken* child4 = kar_token_child(child3, 0);
-	if (!kar_token_check_type(child4, KAR_TOKEN_SIGN_OPEN_BRACES)) {
+	if (!kar_token_check_type(child4, KAR_TOKEN_SIGN_ARGUMENT)) {
 		return false;
 	}
 	const KarToken* child5 = kar_token_child(child4, 0);
@@ -58,14 +58,16 @@ static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilder
 	if (token->type != KAR_TOKEN_METHOD) {
 		return false;
 	}
-	if (!strcmp(token->str, "запустить")) {
+	if (!strcmp(token->str, "Запустить")) {
 		LLVMTypeRef func_type = LLVMFunctionType(LLVMVoidType(), NULL, 0, false);
 		LLVMValueRef main_func = LLVMAddFunction(module, "main", func_type);
 		LLVMBasicBlockRef entry = LLVMAppendBasicBlock(main_func, "entry");
 		LLVMPositionBuilderAtEnd(builder, entry);
+
+		KarToken* body = kar_token_child(token, token->children.count - 1);
 	
-		for (size_t i = 0; i < token->children.count; ++i) {
-			generate_identifier(kar_token_child(token, i), module, builder);
+		for (size_t i = 0; i < body->children.count; ++i) {
+			generate_identifier(kar_token_child(body, i), module, builder);
 		}
 		LLVMBuildRetVoid(builder);
 	} else {
