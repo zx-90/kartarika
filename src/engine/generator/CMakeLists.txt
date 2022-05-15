@@ -16,11 +16,6 @@ endif()
 if (WIN32)
 target_include_directories(generator PUBLIC ${ROOT_DIR}/third_party/include)
 target_link_libraries(generator ${ROOT_DIR}/third_party/lib/LLVM-C.lib)
-add_custom_command(
-		TARGET generator POST_BUILD 
-		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-		COMMAND ${CMAKE_COMMAND} -E copy ${ROOT_DIR}/third_party/lib/LLVM-C.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/LLVM-C.dll
-	)
 endif()
 
 target_link_libraries(generator core)

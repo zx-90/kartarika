@@ -15,9 +15,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_BINARY_DIR}/bin)
 endif()
 
+# TODO: Поменять проверку ОС на проверку типа компилятора.  
 if (UNIX)
 	add_compile_options(-Werror -Wall -Wextra -Wpedantic -Wcast-align -Wcast-qual -Wconversion -Wenum-compare -Wfloat-equal -Wredundant-decls -Wsign-conversion)
 elseif(WIN32)
+	# TODO: Добавить опции компилятора для более строгой проверки кода.
 	add_compile_options(/Y-)
 endif()
 

@@ -110,6 +110,8 @@ static bool generate_module(const KarToken* token, LLVMModuleRef module, LLVMBui
 
 bool kar_generator_run(KarModule* mod) {
 	// TODO: обработка ошибок. Добавить.
+	// TODO: Windows настроить кодировку консоли.
+	// TODO: Откомпилированная программа выдает лишнюю строчку в консоль.
 	LLVMContextRef context = LLVMContextCreate();
 	LLVMModuleRef module = LLVMModuleCreateWithNameInContext("asdf", context);
 	LLVMBuilderRef builder = LLVMCreateBuilderInContext(context);
@@ -183,7 +185,8 @@ bool kar_generator_run(KarModule* mod) {
 #ifdef __linux__
 	system("clang-9 asdf.o -o a.out");
 #elif _WIN32
-	system("link.exe /ENTRY:main asdf.o");
+	system("B:\\llvmexe\\LLVM\\bin\\clang.exe asdf.o -o a.exe");
+	/*system("B:\\llvmexe\\LLVM\\bin\\clang.exe link.exe /ENTRY:main asdf.o");*/
 #endif
 	return true;
 }

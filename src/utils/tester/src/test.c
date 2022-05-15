@@ -422,6 +422,7 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 		test->out_error_file.is ||
 		test->out_file.is
 	) {
+		// TODO: Компилировать и собирать исполняемый файл в отдельном каталоге.
 		bool generatorResult = kar_generator_run(module);
 		if (test->compiler_error_file.is) {
 			if (!generatorResult) {
@@ -442,10 +443,37 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 		test->out_file.is
 	) {
 		// TODO: Зависит от ОС. Перетащить в соответствующий модуль.
-		system("./a.out > out.txt 2> error.txt");
+		// TODO: Проверить откомпилировалась ли программа.
+		#ifdef __linux__
+				system("./a.out > out.txt 2> error.txt");
+		#elif _WIN32
+				system("a.exe > out.txt 2> error.txt");
+		#endif
+
+		char* gold_path = kar_string_create_concat(path2, kar_file_system_get_basename(test->out_file.path));
+		char* gold = kar_file_load(gold_path);
+		KAR_FREE(gold_path);
+		char* out = kar_file_load("out.txt");
+
+		KarCursor* cursor = compare_strings(out, gold);
+
+		if (cursor) {
+			KarError* result = kar_error_register(1, "Ошибка в выходном потоке. Вывод программы не совпадает с ожидаемым [%d;%d].\n"
+				"Эталон:\n%s\nВывод программы:\n%s",
+				cursor->line, cursor->column, gold, out
+			);
+			kar_module_free(module);
+			KAR_FREE(path2);
+			KAR_FREE(out);
+			KAR_FREE(gold);
+			KAR_FREE(cursor);
+			return result;
+		} 
+
 		// TODO: доделать.
 		if (test->out_file.is) {
 		}
+		// TODO: написать проверку для вывода в поток ошибок.
 	}
 
 	kar_module_free(module);
