@@ -271,7 +271,8 @@ static bool concat_signs(KarToken* token) {
 // floats
 // ----------------------------------------------------------------------------
 
-static bool find_floats_5(KarToken* token, KarArray* errors) {
+static bool find_floats_5(KarToken* token) {
+	
 	for (size_t i = 0; i < token->children.count - 4; ++i) {
 		if (token->children.count < 5) {
 			return true;
@@ -304,7 +305,7 @@ static bool find_floats_5(KarToken* token, KarArray* errors) {
 	return true;
 }
 
-static bool find_floats_3(KarToken* token, KarArray* errors) {
+static bool find_floats_3(KarToken* token) {
 	for (size_t i = 0; i < token->children.count - 2; ++i) {
 		if (token->children.count < 3) {
 			return true;
@@ -371,10 +372,10 @@ static bool find_floats_1(KarToken* token, KarArray* errors) {
 
 static bool find_floats(KarToken* token, KarArray* errors) {	
 	
-	if (!find_floats_5(token, errors)) {
+	if (!find_floats_5(token)) {
 		return false;
 	}
-	if (!find_floats_3(token, errors)) {
+	if (!find_floats_3(token)) {
 		return false;
 	}
 	if (!find_floats_2(token, errors)) {
