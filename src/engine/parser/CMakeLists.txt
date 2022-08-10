@@ -9,12 +9,13 @@ src/structure/brackets.c
 src/structure/lines.c
 src/structure/space.c
 
-src/arithmetic/operand.c
-src/arithmetic/path.c
-
 src/root/variable.c
-src/root/method/header.c
-src/root/method/return.c
+src/root/method.c
+
+src/algorithm/return.c
+
+src/expression/operand.c
+src/expression/path.c
 
 )
 

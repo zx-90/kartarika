@@ -1,4 +1,4 @@
-/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020-2022 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -6,37 +6,39 @@
 
 #include <stdbool.h>
 
-#include "core/alloc.h"
+#include "core/stack.h"
 #include "core/module_error.h"
 #include "core/token.h"
 
 static bool extern_bracket(KarToken* token, KarArray* errors) {
-	KAR_CREATES(opens, size_t, token->children.count);
-	size_t opens_cursor = 0;
+	KarStack* stack = kar_stack_create(token->children.count);
+	
 	for (size_t i = 0; i < token->children.count; ++i) {
 		if (kar_token_child(token, i)->type == KAR_TOKEN_SIGN_OPEN_BRACES) {
-			opens[opens_cursor] = i;
-			opens_cursor++;
+			kar_stack_push(stack, i);
 		}
 		if (kar_token_child(token, i)->type == KAR_TOKEN_SIGN_CLOSE_BRACES) {
-			if (opens_cursor == 0) {
-				KAR_FREE(opens);
+			if (kar_stack_is_empty(stack)) {
 				kar_module_error_create_add(errors, &kar_token_child(token, i)->cursor, 1, "У закрывающейся скобки нет соответствующей ей открывающейся.");
+				kar_stack_free(stack);
 				return false;
 			}
-			opens_cursor--;
-			size_t open = opens[opens_cursor];
+			size_t open = kar_stack_pop(stack);
 			kar_token_child_move_to_end(token, kar_token_child(token, open), open + 1, i - open - 1);
 			kar_token_child_erase(token, open + 1);
 			i = open;
 		}
 	}
-	if (opens_cursor != 0) {
-		kar_module_error_create_add(errors, &kar_token_child(token, opens[opens_cursor - 1])->cursor, 1, "У открывающейся скобки нет соответствующей ей закрывающейся.");
-		KAR_FREE(opens);
+	
+	if (!kar_stack_is_empty(stack)) {
+		while (!kar_stack_is_empty(stack)) {
+			kar_module_error_create_add(errors, &kar_token_child(token, kar_stack_pop(stack))->cursor, 1, "У открывающейся скобки нет соответствующей ей закрывающейся.");
+		}
+		kar_stack_free(stack);
 		return false;
 	}
-	KAR_FREE(opens);
+	
+	kar_stack_free(stack);
 	return true;
 }
 

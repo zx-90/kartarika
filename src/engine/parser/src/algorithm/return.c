@@ -9,6 +9,7 @@
 #include "core/token.h"
 
 static bool make_return(KarToken* token) {
+	// TODO: Проверить 2 варианта: "вернуть" и "вернуть ВЫРАЖЕНИЕ".
 	if (token->type == KAR_TOKEN_INDENT && (token->children.count > 0) && kar_token_child(token, 0)->type == KAR_TOKEN_METHOD_RETURN) {
 		kar_token_child_move_to_end(token, kar_token_child(token, 0), 1, token->children.count - 1);
 	}

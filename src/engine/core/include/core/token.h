@@ -26,6 +26,7 @@ typedef struct KarStructToken {
 #define kar_token_child(token, num) ((KarToken*)(token)->children.items[(num)])
 
 KarToken* kar_token_create();
+KarToken* kar_token_create_fill(KarTokenType type, KarCursor cursor, const char* str);
 void kar_token_free(KarToken* token);
 
 bool kar_token_check_type(const KarToken* token, const KarTokenType type);

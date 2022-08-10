@@ -191,7 +191,7 @@ bool kar_parser_make_method(KarToken* token, KarArray* errors)
 		size_t returnTypePos = methodPos + 1;
 		if (returnTypePos == child->children.count) {
 			return false;
-		// TODO: Надо проверять корректность типа возвращаемого знакчения. Это либо идентификатор, либо стандартный тип.
+		// TODO: Надо проверять корректность типа возвращаемого значения. Это либо идентификатор, либо стандартный тип.
 		} else if (kar_token_child(child, signColonPos)->type != KAR_TOKEN_SIGN_COLON) {
 			KarToken* returnType = kar_token_create();
 			returnType->type = KAR_TOKEN_METHOD_RETURN_TYPE;

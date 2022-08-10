@@ -9,6 +9,7 @@
 
 bool kar_parser_extern_brackets(KarToken* token, KarArray* errors);
 bool kar_parser_split_by_lines(KarToken* token, KarArray* errors);
+bool kar_parser_erase_empty_lines(KarToken* token);
 bool kar_parser_split_by_blocks(KarToken* token, KarArray* errors);
 
 bool kar_parser_make_path(KarToken* token, KarArray* errors);

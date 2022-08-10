@@ -319,6 +319,7 @@ bool kar_parser_make_operands(KarToken* token, KarArray* errors)
 	b = b && foreach_make_call_method(token, errors);
 
 	b = b && foreach_operator_before(token, KAR_TOKEN_SIGN_UNCLEAN, errors);
+	// TODO: Здесь и далее волшебные числа заменить на константу равную разеру массива.
 	b = b && foreach_two_operators(token, 1, OPERAND_LIST_CLEAN, errors);
 	
 	b = b && foreach_find_single(token, errors);

@@ -9,18 +9,21 @@
 #include "core/token.h"
 #include "core/module_error.h"
 
+//-----------------------------------------------------------------------------
+typedef struct {
+	KarToken* token;
+	size_t num;
+} KarTokenCursor;
+
+typedef struct {
+	KarToken* token;
+	int indent;
+} KarTokenIndent;
+
+//-----------------------------------------------------------------------------
+
 static bool is_empty_token(KarToken* token) {
 	return token->type == KAR_TOKEN_SPACE || token->type == KAR_TOKEN_COMMENT;
-}
-
-static bool is_empty_line(KarToken* token) {
-	for (size_t i = 0; i < token->children.count; ++i) {
-		KarToken* child = kar_token_child(token, i);
-		if (!is_empty_token(child)) {
-			return false;
-		}
-	}
-	return true;
 }
 
 static bool is_colon_end(KarToken* token) {
@@ -32,6 +35,28 @@ static bool is_colon_end(KarToken* token) {
 		return child->type == KAR_TOKEN_SIGN_COLON;
 	}
 	return false;
+}
+
+static KarToken* get_first_not_empty(KarToken* token) {
+	for (size_t i = 0; i < token->children.count; ++i) {
+		KarToken* child = kar_token_child(token, i);
+		if (is_empty_token(child)) {
+			continue;
+		}
+		return child;
+	}
+	return NULL;
+}
+
+static KarToken* get_last_not_empty(KarToken* token) {
+	for (size_t i = token->children.count; i > 0; --i) {
+		KarToken* child = kar_token_child(token, i - 1);
+		if (is_empty_token(child)) {
+			continue;
+		}
+		return child;
+	}
+	return NULL;
 }
 
 static int get_token_indent(KarToken* token) {
@@ -51,59 +76,78 @@ static int get_token_indent(KarToken* token) {
 	return indent;
 }
 
-static bool fill_block(
-	KarToken* rootToken,
-	size_t* num,
-	KarToken* parentToken,
-	int parentIndent,
+static KarToken* cursor_current(KarTokenCursor cursor) {
+	return kar_token_child(cursor.token, cursor.num);
+}
+
+static KarTokenIndent get_current_indent(KarTokenCursor root) {
+	KarToken* line = cursor_current(root);
+	KarTokenIndent current = {line, get_token_indent(line)};
+	return current;
+}
+
+static KarToken* get_parent(
+	KarTokenCursor root,
+	KarTokenIndent parentToken,
 	KarArray* errors
 	)
 {
-	// TODO: Правильный курсор на местоположение во всех ошибках проверить.
-	bool prev_colon_end = false;
-	int indent = get_token_indent(kar_token_child(rootToken, *num));
-	int currentIndent = indent;
-	if (*num == 0 && indent != 0) {
-		kar_module_error_create_add(errors, &kar_token_child(rootToken, *num)->cursor, 1, "Отступ в строке не соответствует ни одному предыдущему отступу.");
+	KarToken* parent;
+	if (root.token == parentToken.token) {
+		parent = kar_token_child(root.token, root.num - 1);
+	} else {
+		parent = kar_token_child(parentToken.token, parentToken.token->children.count - 1);
+	}
+	
+	KarToken* last_not_empty = get_last_not_empty(parent);
+	if (last_not_empty != NULL && last_not_empty->type != KAR_TOKEN_SIGN_COLON) {
+		kar_module_error_create_add(errors, &last_not_empty->cursor, 1, "Строка заголовка блока должна заканчиваться двоеточием.");
+		return NULL;
+	}
+	return parent;
+}
+
+static bool fill_block(KarTokenCursor root, KarTokenIndent parentToken, KarArray* errors);
+
+static bool fill_subblock(KarTokenCursor root, KarTokenIndent parentToken, int indent, KarArray* errors) {
+	KarToken* line = cursor_current(root);
+	
+	KarToken* parent = get_parent(root, parentToken, errors);
+	if (parent == NULL) {
 		return false;
 	}
-	while (true) {
-		if (*num == rootToken->children.count) {
-			return true;
-		}
-		KarToken* line = kar_token_child(rootToken, *num);
-		if (is_empty_line(line)) {
-			kar_token_child_erase(rootToken, *num);
-			continue;
-		}
+	
+	KarToken* block = kar_token_create_fill(KAR_TOKEN_BLOCK_BODY, line->cursor, NULL);
+	kar_token_child_add(parent, block);
+	KarTokenIndent block_indent = {block, indent};
+	if (!fill_block(root, block_indent, errors)) {
+		return false;
+	}
+	if (block->children.count == 0) {
+		kar_module_error_create_add(errors, &get_first_not_empty(line)->cursor, 1, "Не найдена ни одна команда в блоке.");
+		return false;
+	}
+	return true;
+}
 
-		currentIndent = get_token_indent(kar_token_child(rootToken, *num));
+static void fill_block_line(KarTokenCursor* root, KarTokenIndent parent) {
+	if (root->token == parent.token) {
+		root->num++;
+	} else {
+		kar_token_child_move_to_end(root->token, parent.token, root->num, 1);
+	}
+}
 
-		if (currentIndent > indent) {
-			if (*num == 0) {
-				kar_module_error_create_add(errors, &line->cursor, 1, "Отступ в строке не соответствует ни одному предыдущему отступу.");
-				return false;
-			}
-			KarToken* parent;
-			if (rootToken == parentToken) {
-				parent = kar_token_child(rootToken, (*num) - 1);
-			} else {
-				parent = kar_token_child(parentToken, parentToken->children.count - 1);
-			}
-			if (!is_colon_end(parent)) {
-				// TODO: Правильный курсор на местоположение, где должно находиться двоеточие.
-				kar_module_error_create_add(errors, &parent->cursor, 1, "Блок должен открываться двоеточием.");
-				return false;
-			}
-			KarToken* block = kar_token_create();
-			block->type = KAR_TOKEN_BLOCK_BODY;
-			block->cursor = line->cursor;
-			kar_token_child_add(parent, block);
-			if (!fill_block(rootToken, num, block, indent, errors)) {
-				return false;
-			}
-			if (block->children.count == 0) {
-				kar_module_error_create_add(errors, &line->cursor, 1, "Не найдена ни одна команда в блоке.");
+static bool fill_block(KarTokenCursor root, KarTokenIndent parent, KarArray* errors)
+{
+	bool prev_colon_end = false;
+	int indent = get_token_indent(cursor_current(root));
+	
+	while (root.num != root.token->children.count) {
+		KarTokenIndent current = get_current_indent(root);
+
+		if (current.indent > indent) {
+			if (!fill_subblock(root, parent, indent, errors)) {
 				return false;
 			}
 			prev_colon_end = false;
@@ -111,40 +155,38 @@ static bool fill_block(
 		}
 		
 		if (prev_colon_end) {
-			kar_module_error_create_add(errors, &line->cursor, 1, "Не найдена ни одна команда в блоке.");
+			kar_module_error_create_add(errors, &get_first_not_empty(current.token)->cursor, 1, "Не найдена ни одна команда в блоке.");
 			return false;
 		}
-		prev_colon_end = is_colon_end(line);
+		prev_colon_end = is_colon_end(current.token);
 		
-		if (currentIndent == indent) {
-			if (rootToken == parentToken) {
-				*num = *num + 1;
-			} else {
-				kar_token_child_tear(rootToken, *num);
-				kar_token_child_add(parentToken, line);
-			}
+		if (current.indent == indent) {
+			fill_block_line(&root, parent);
 			continue;
 		}
 		
-		if (currentIndent < indent) {
-			if (currentIndent > parentIndent) {
-				kar_module_error_create_add(errors, &kar_token_child(rootToken, *num)->cursor, 1, "Отступ в строке не соответствует ни одному предыдущему отступу.");
+		if (current.indent < indent) {
+			if (current.indent > parent.indent) {
+				kar_module_error_create_add(errors, &get_first_not_empty(current.token)->cursor, 1, "Отступ в строке не соответствует ни одному предыдущему отступу.");
 				return false;
 			}
 			return true;
 		}
 	}
-	return true;
+	return !prev_colon_end;
 }
 
 bool kar_parser_split_by_blocks(KarToken* token, KarArray* errors) {
 	if (token->children.count == 0) {
-		kar_module_error_create_add(errors, 0, 1, "Внутрення ошибка. В модуле нет ни одного токена.");
-		return false;
-	}
-	if (token->children.count == 1 && kar_token_child(token, 0)->type == KAR_TOKEN_INDENT) {
 		return true;
 	}
-	size_t curChild = 0;
-	return fill_block(token, &curChild, token, 0, errors);
+	
+	KarTokenCursor cursor = {token, 0};
+	KarTokenIndent indent = {token, get_token_indent(cursor_current(cursor))};
+	if (indent.indent != 0) {
+		kar_module_error_create_add(errors, &get_first_not_empty(cursor_current(cursor))->cursor, 1, "Отступ в строке не соответствует ни одному предыдущему отступу.");
+		return false;
+	}
+	
+	return fill_block(cursor, indent, errors);
 }

@@ -13,6 +13,7 @@ src/string_builder.c
 src/string.c
 ${lib_core_SRC_system}
 src/error.c
+src/stack.c
 
 src/cursor.c
 src/module_error.c

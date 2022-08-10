@@ -16,6 +16,7 @@ bool kar_parser_run(KarModule* module) {
 	// Парсинг структуры.
 	b = b && kar_parser_extern_brackets(token, errors);
 	b = b && kar_parser_split_by_lines(token, errors);
+	b = b && kar_parser_erase_empty_lines(token);
 	b = b && kar_parser_split_by_blocks(token, errors);
 	
 	// Парсинг до удаления пробелов.

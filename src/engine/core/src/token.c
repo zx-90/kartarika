@@ -28,6 +28,24 @@ KarToken* kar_token_create()
 	return token;
 }
 
+KarToken* kar_token_create_fill(KarTokenType type, KarCursor cursor, const char* str)
+{
+	KAR_CREATE(token, KarToken);
+	
+	token->type = type;
+	token->cursor = cursor;
+	if (str) {
+		size_t length = strlen(str);
+		KAR_ALLOCS(token->str, char, length + 1);
+		strcpy(token->str, str);
+	} else {
+		token->str = NULL;
+	}
+	kar_array_init(&token->children);
+	
+	return token;
+}
+
 void kar_token_free(KarToken* token)
 {
 	if (token->str) {
