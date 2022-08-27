@@ -7,6 +7,7 @@
 #include "parser/parser.h"
 
 #include "parser/elements.h"
+#include "parser/expression.h"
 
 bool kar_parser_run(KarModule* module) {
 	KarToken* token = module->token;

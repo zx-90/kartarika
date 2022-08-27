@@ -476,6 +476,9 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 		// TODO: написать проверку для вывода в поток ошибок.
 	}
 
+	// TODO: Эта строка для вывода всех сообщений об ошибках.
+	// kar_module_print_errors(module);
+	
 	kar_module_free(module);
 	KAR_FREE(path2);
 	printf("OK\n");

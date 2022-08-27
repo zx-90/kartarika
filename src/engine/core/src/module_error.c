@@ -30,8 +30,9 @@ void kar_module_error_free(KarModuleError* error) {
 }
 
 void kar_module_error_print(const char* module_name, KarModuleError* error) {
-	fprintf(stderr, "Ошибка номер %d\n", error->code);
-	fprintf(stderr, "\tМодуль: %s\n", module_name);
-	fprintf(stderr, "\tСтрока %d, столбец %d\n", error->cursor.line, error->cursor.column);
-	fprintf(stderr, "\t%s\n", error->description);
+	fprintf(stdout, "Ошибка номер %d\n", error->code);
+	fprintf(stdout, "\tМодуль: %s\n", module_name);
+	fprintf(stdout, "\tСтрока %d, столбец %d\n", error->cursor.line, error->cursor.column);
+	fprintf(stdout, "\t%s\n", error->description);
+	fflush(stdout);
 }

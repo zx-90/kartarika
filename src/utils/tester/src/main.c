@@ -15,6 +15,8 @@
 #include "core/console_system.h"
 
 int main(int argc, char **argv) {
+	// TODO: Добавить параметр для просмотра всех сообщений о ошибках.
+	// TODO: Добавить параметр для вывода структуры токенов.
 	kar_console_init();
 	char* test_path;
 	if (argc < 2) {

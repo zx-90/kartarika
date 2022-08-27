@@ -10,6 +10,8 @@
 #include "core/token.h"
 #include "core/module_error.h"
 
+#include "parser/expression.h"
+
 static size_t find_var_token(KarToken* token) {
 	size_t result;
 	for (result = 0; result < token->children.count; ++result) {
@@ -92,8 +94,7 @@ bool kar_parser_make_variable(KarToken* token, KarArray* errors)
 			kar_module_error_create_add(errors, &kar_token_child(child, variable)->cursor, 1, "Отсутствует имя переменной.");
 			return false;
 		}
-		// TODO: Проверить, что у идентификатора нет наследников, для случаев типа "Идентиф1.Идентиф2".
-		if (kar_token_child(child, varName)->type != KAR_TOKEN_IDENTIFIER ) {
+		if (kar_token_child(child, varName)->type != KAR_TOKEN_IDENTIFIER || kar_token_child(child, varName)->children.count > 0) {
 			kar_module_error_create_add(errors, &kar_token_child(child, variable)->cursor, 1, "Имя переменной должно быть идентификатором.");
 			return false;
 		}
@@ -113,15 +114,22 @@ bool kar_parser_make_variable(KarToken* token, KarArray* errors)
 		kar_token_child_erase(child, varAssign);
 		
 		size_t bodyNum = varAssign;
-		if (varAssign == child->children.count) {
-			kar_module_error_create_add(errors, &kar_token_child(child, variable)->cursor, 1, "Неожиданный конец присвоения. Отсутствует правая часть присвоения.");
+		if (bodyNum == child->children.count) {
+			// TODO: Надо положение курсора в конце строки вычислять.
+			kar_module_error_create_add(errors, &kar_token_child(child, bodyNum - 1)->cursor, 1, "Неожиданный конец присвоения. Отсутствует правая часть присвоения.");
 			return false;
 		}
-		KarToken* body = kar_token_create();
-		body->type = KAR_TOKEN_BLOCK_BODY;
-		body->cursor = kar_token_child(child, bodyNum)->cursor;
-		kar_token_child_insert(child, body, bodyNum);
-		kar_token_child_move_to_end(child, body, bodyNum + 1, child->children.count - bodyNum - 1);
+		if (child->children.count > bodyNum + 1) {
+			kar_module_error_create_add(errors, &kar_token_child(child, bodyNum + 1)->cursor, 1, "Слишком много выражений в правой части присвоения.");
+			return false;
+		}
+		if (!kar_parser_is_expression(kar_token_child(child, bodyNum))) {
+			kar_module_error_create_add(errors, &kar_token_child(child, bodyNum)->cursor, 1, "Некорректное выражение в правой части присвоения.");
+			return false;
+		}
+		KarToken* body = kar_token_create_fill(KAR_TOKEN_BLOCK_BODY, kar_token_child(child, bodyNum)->cursor, NULL);
+		kar_token_child_add(child, body);
+		kar_token_child_move_to_end(child, body, bodyNum, 1);
 	}
 	return true;
 }

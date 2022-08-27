@@ -16,6 +16,7 @@ src/algorithm/return.c
 
 src/expression/operand.c
 src/expression/path.c
+src/expression/check_expression.c
 
 )
 
