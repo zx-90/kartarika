@@ -1,0 +1,6 @@
+MODULE(1, 1): [NULL]
+	FIELD_CONST(1, 1): [имя]
+		VAR_MODIFIER(1, 1): [NULL]
+			MODIFIER_STAT(1, 1): [стат]
+		BLOCK_BODY(1, 18): [NULL]
+			VAL_INTEGER(1, 18): [1]

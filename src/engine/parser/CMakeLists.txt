@@ -10,6 +10,7 @@ src/structure/lines.c
 src/structure/space.c
 
 src/root/variable.c
+src/root/constant.c
 src/root/method.c
 
 src/algorithm/return.c

@@ -34,7 +34,7 @@
 #define KAR_KEYWORD_VAL_MINUS_INFINITY "МинусБесконечность"
 
 // Объявления переменных.
-#define KAR_KEYWORD_DECLARATION_CONST "константа"
+#define KAR_KEYWORD_DECLARATION_CONST "конст"
 #define KAR_KEYWORD_DECLARATION_VAR "поле"
 
 #define KAR_KEYWORD_VAR_MODIFIER_DYNAMIC "динамическое"
@@ -43,7 +43,6 @@
 #define KAR_KEYWORD_VAR_MODIFIER_PUBLIC "открытое"
 
 // Типы переменных.
-// TODO: Названия типов надо сделать с большой буквы.
 #define KAR_KEYWORD_TYPE_BOOL "Буль"
 
 #define KAR_KEYWORD_TYPE_INTEGER "Целое"
