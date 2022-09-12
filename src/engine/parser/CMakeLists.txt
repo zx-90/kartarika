@@ -4,20 +4,24 @@ set(lib_parser_SRC
 
 src/parser.c
 
+src/structure/_structure.c
 src/structure/blocks.c
 src/structure/brackets.c
 src/structure/lines.c
-src/structure/space.c
 
+src/expression/_expression.c
+src/expression/path.c
+src/expression/space.c
+src/expression/operand.c
+
+src/root/_root.c
 src/root/variable.c
-src/root/constant.c
 src/root/method.c
 
+src/algorithm/_algorithm.c
 src/algorithm/return.c
 
-src/expression/operand.c
-src/expression/path.c
-src/expression/check_expression.c
+src/base/check.c
 
 )
 

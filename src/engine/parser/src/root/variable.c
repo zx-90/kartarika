@@ -10,7 +10,17 @@
 #include "core/token.h"
 #include "core/module_error.h"
 
-#include "parser/expression.h"
+#include "parser/base.h"
+
+static size_t find_const_token(KarToken* token) {
+	size_t result;
+	for (result = 0; result < token->children.count; ++result) {
+		if (kar_token_child(token, result)->type == KAR_TOKEN_FIELD_CONST) {
+			return result;
+		}
+	}
+	return result;
+}
 
 static size_t find_var_token(KarToken* token) {
 	size_t result;
@@ -22,7 +32,7 @@ static size_t find_var_token(KarToken* token) {
 	return result;
 }
 
-static bool collect_modifiers(KarToken* token, size_t variable, KarArray* errors)
+static bool parse_modifiers(KarToken* token, size_t variable, KarArray* errors)
 {
 	KarToken* modifiers = kar_token_create_fill(KAR_TOKEN_VAR_MODIFIER, kar_token_child(token, 0)->cursor, NULL);
 	kar_token_child_insert(token, modifiers, 0);
@@ -70,66 +80,134 @@ static bool collect_modifiers(KarToken* token, size_t variable, KarArray* errors
 	return true;
 }
 
-bool kar_parser_make_variable(KarToken* token, KarArray* errors)
-{
-	// TODO: Добавить обработку константы.
-	for (size_t i = 0; i < token->children.count; ++i) {
-		KarToken* child = kar_token_child(token, i);
-		
-		size_t variable = find_var_token(child);
-		if (variable == child->children.count) {
-			continue;
-		}
-		
-		if (!collect_modifiers(child, variable, errors)) {
-			return false;
-		}
-		variable = 1;
-		
-		// Удаление ключевого слова "поле" или "конст".
-		kar_token_child_erase(child, variable);
+static void parse_keyword(KarToken* token) {
+	const size_t CHILD_INDEX = 1;
+	kar_token_child_erase(token, CHILD_INDEX);
+}
 
-		size_t varName = variable;
-		if (varName == child->children.count) {
-			kar_module_error_create_add(errors, &kar_token_child(child, variable)->cursor, 1, "Отсутствует имя переменной.");
-			return false;
-		}
-		if (kar_token_child(child, varName)->type != KAR_TOKEN_IDENTIFIER || kar_token_child(child, varName)->children.count > 0) {
-			kar_module_error_create_add(errors, &kar_token_child(child, variable)->cursor, 1, "Имя переменной должно быть идентификатором.");
-			return false;
-		}
-		child->type = KAR_TOKEN_FIELD_VAR;
-		child->str = kar_string_create_copy(kar_token_child(child, varName)->str);
-		kar_token_child_erase(child, variable);
-		
-		size_t varAssign = variable;
-		if (varAssign == child->children.count) {
-			kar_module_error_create_add(errors, &kar_token_child(child, variable)->cursor, 1, "Неожиданный конец присвоения. Переменная должны быть инициализирована.");
-			return false;
-		}
-		if (kar_token_child(child, varAssign)->type != KAR_TOKEN_SIGN_ASSIGN) {
-			kar_module_error_create_add(errors, &kar_token_child(child, variable)->cursor, 1, "Переменная должна быть инициализирована.");
-			return false;
-		}
-		kar_token_child_erase(child, varAssign);
-		
-		size_t bodyNum = varAssign;
-		if (bodyNum == child->children.count) {
-			// TODO: Надо положение курсора в конце строки вычислять.
-			kar_module_error_create_add(errors, &kar_token_child(child, bodyNum - 1)->cursor, 1, "Неожиданный конец присвоения. Отсутствует правая часть присвоения.");
-			return false;
-		}
-		if (child->children.count > bodyNum + 1) {
-			kar_module_error_create_add(errors, &kar_token_child(child, bodyNum + 1)->cursor, 1, "Слишком много выражений в правой части присвоения.");
-			return false;
-		}
-		if (!kar_parser_is_expression(kar_token_child(child, bodyNum))) {
-			kar_module_error_create_add(errors, &kar_token_child(child, bodyNum)->cursor, 1, "Некорректное выражение в правой части присвоения.");
-			return false;
-		}
-		KarToken* body = kar_token_create_fill(KAR_TOKEN_BLOCK_BODY, kar_token_child(child, bodyNum)->cursor, NULL);
-		kar_token_child_add(child, body);
-		kar_token_child_move_to_end(child, body, bodyNum, 1);
+static bool parse_const_name(KarToken* token, KarArray* errors) {
+	const size_t CHILD_INDEX = 1;
+	if (CHILD_INDEX == token->children.count) {
+		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX)->cursor, 1, "Отсутствует имя переменной.");
+		return false;
 	}
+	if (kar_token_child(token, CHILD_INDEX)->type != KAR_TOKEN_IDENTIFIER || kar_token_child(token, CHILD_INDEX)->children.count > 0) {
+		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX)->cursor, 1, "Имя переменной должно быть идентификатором.");
+		return false;
+	}
+	token->type = KAR_TOKEN_FIELD_CONST;
+	token->str = kar_string_create_copy(kar_token_child(token, CHILD_INDEX)->str);
+	kar_token_child_erase(token, CHILD_INDEX);
 	return true;
+}
+
+static bool parse_var_name(KarToken* token, KarArray* errors) {
+	const size_t CHILD_INDEX = 1;
+	if (CHILD_INDEX == token->children.count) {
+		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX)->cursor, 1, "Отсутствует имя переменной.");
+		return false;
+	}
+	if (kar_token_child(token, CHILD_INDEX)->type != KAR_TOKEN_IDENTIFIER || kar_token_child(token, CHILD_INDEX)->children.count > 0) {
+		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX)->cursor, 1, "Имя переменной должно быть идентификатором.");
+		return false;
+	}
+	token->type = KAR_TOKEN_FIELD_VAR;
+	token->str = kar_string_create_copy(kar_token_child(token, CHILD_INDEX)->str);
+	kar_token_child_erase(token, CHILD_INDEX);
+	return true;
+}
+
+static bool parse_equation_sign(KarToken* token, KarArray* errors) {
+	size_t CHILD_INDEX = 1;
+	if (CHILD_INDEX == token->children.count) {
+		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX)->cursor, 1, "Неожиданный конец присвоения. Переменная должны быть инициализирована.");
+		return false;
+	}
+	if (kar_token_child(token, CHILD_INDEX)->type != KAR_TOKEN_SIGN_ASSIGN) {
+		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX)->cursor, 1, "Переменная должна быть инициализирована.");
+		return false;
+	}
+	kar_token_child_erase(token, CHILD_INDEX);
+	return true;
+}
+
+static bool parse_expression(KarToken* token, KarArray* errors) {
+	size_t CHILD_INDEX = 1;
+	if (CHILD_INDEX == token->children.count) {
+		// TODO: Надо положение курсора в конце строки вычислять.
+		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX - 1)->cursor, 1, "Неожиданный конец присвоения. Отсутствует правая часть присвоения.");
+		return false;
+	}
+	if (token->children.count > CHILD_INDEX + 1) {
+		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX + 1)->cursor, 1, "Слишком много выражений в правой части присвоения.");
+		return false;
+	}
+	if (!kar_parser_is_expression(kar_token_child(token, CHILD_INDEX))) {
+		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX)->cursor, 1, "Некорректное выражение в правой части присвоения.");
+		return false;
+	}
+	KarToken* body = kar_token_create_fill(KAR_TOKEN_BLOCK_BODY, kar_token_child(token, CHILD_INDEX)->cursor, NULL);
+	kar_token_child_add(token, body);
+	kar_token_child_move_to_end(token, body, CHILD_INDEX, 1);
+	return true;
+}
+
+// ----------------------------------------------------------------------------
+
+KarParserStatus kar_parser_make_constant(KarToken* token, KarArray* errors)
+{
+	size_t variable = find_const_token(token);
+	if (variable == token->children.count) {
+		return KAR_PARSER_STATUS_NOT_PARSED;
+	}
+	
+	if (!parse_modifiers(token, variable, errors)) {
+		return KAR_PARSER_STATUS_ERROR;
+	}
+	variable = 1;
+	
+	parse_keyword(token);
+	
+	if (!parse_const_name(token, errors)) {
+		return KAR_PARSER_STATUS_ERROR;
+	}
+	
+	if (!parse_equation_sign(token,errors)) {
+		return KAR_PARSER_STATUS_ERROR;
+	}
+	
+	if (!parse_expression(token,errors)) {
+		return KAR_PARSER_STATUS_ERROR;
+	}
+	
+	return KAR_PARSER_STATUS_PARSED;
+}
+
+KarParserStatus kar_parser_make_variable(KarToken* token, KarArray* errors)
+{
+	size_t variable = find_var_token(token);
+	if (variable == token->children.count) {
+		return KAR_PARSER_STATUS_NOT_PARSED;
+	}
+	
+	if (!parse_modifiers(token, variable, errors)) {
+		return KAR_PARSER_STATUS_ERROR;
+	}
+	variable = 1;
+	
+	parse_keyword(token);
+	
+	if (!parse_var_name(token, errors)) {
+		return KAR_PARSER_STATUS_ERROR;
+	}
+	
+	if (!parse_equation_sign(token,errors)) {
+		return KAR_PARSER_STATUS_ERROR;
+	}
+	
+	if (!parse_expression(token,errors)) {
+		return KAR_PARSER_STATUS_ERROR;
+	}
+	
+	return KAR_PARSER_STATUS_PARSED;
 }
