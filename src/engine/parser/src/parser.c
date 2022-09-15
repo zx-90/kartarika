@@ -10,8 +10,6 @@ bool kar_parser_parse_structure(KarToken* token, KarArray* errors);
 bool kar_parser_parse_expression(KarToken* token, KarArray* errors);
 bool kar_parser_parse_root(KarToken* token, KarArray* errors);
 
-bool kar_parser_parse_algorithm(KarToken* token);
-
 bool kar_parser_run(KarModule* module) {
 	KarToken* token = module->token;
 	KarArray* errors = &module->errors;
@@ -20,7 +18,6 @@ bool kar_parser_run(KarModule* module) {
 	b = b && kar_parser_parse_structure(token, errors);
 	b = b && kar_parser_parse_expression(token, errors);
 	b = b && kar_parser_parse_root(token, errors);
-	b = b && kar_parser_parse_algorithm(token);
 	
 	return b;
 }

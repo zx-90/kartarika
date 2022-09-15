@@ -211,6 +211,31 @@ static bool parse_colon(KarToken* token, KarArray* errors) {
 	return true;
 }
 
+static bool parse_algorithm(KarToken* token, KarArray* errors) {
+	const size_t CHILD_INDEX = 3;
+	if (token->children.count == CHILD_INDEX) {
+		// TODO: Надо указать курсор на конец токена.
+		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX - 1)->cursor, 1, "Отсутствует алгоритм метода.");
+		return false;
+	}
+	if (token->children.count > CHILD_INDEX + 1) {
+		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX + 1)->cursor, 1, "Слишком много алгоритмов или других элементов в методе.");
+		return false;
+	}
+	
+	// TODO: Возможно эти 2 блока если на самом деле являются частью проверки алгоритма. Надо перенести туда.
+	if (kar_token_child(token, CHILD_INDEX)->type != KAR_TOKEN_BLOCK_BODY) {
+		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX)->cursor, 1, "Здесь ожидалось найти тело метода.");
+		return false;
+	}
+	if (kar_token_child(token, CHILD_INDEX)->children.count == 0) {
+		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX)->cursor, 1, "В теле метода должна быть хотя бы одна команда.");
+		return false;
+	}
+	
+	return kar_parser_parse_algorithm(token/*, errors*/);
+}
+
 // ----------------------------------------------------------------------------
 
 KarParserStatus kar_parser_make_method(KarToken* token, KarArray* errors)
@@ -243,7 +268,9 @@ KarParserStatus kar_parser_make_method(KarToken* token, KarArray* errors)
 		return KAR_PARSER_STATUS_ERROR;
 	}
 	
-	// TODO: Проверка тела метода на алгоритм и парсинг его.
+	if (!parse_algorithm(token, errors)) {
+		return KAR_PARSER_STATUS_ERROR;
+	}
 	
 	return KAR_PARSER_STATUS_PARSED;
 }
