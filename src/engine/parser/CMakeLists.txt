@@ -10,6 +10,7 @@ src/structure/brackets.c
 src/structure/lines.c
 
 src/expression/_expression.c
+src/expression/call_method.c
 src/expression/path.c
 src/expression/space.c
 src/expression/operand.c

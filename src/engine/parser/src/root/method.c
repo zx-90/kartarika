@@ -108,12 +108,34 @@ static bool parse_method_name(KarToken* token, KarArray* errors) {
 		kar_module_error_create_add(errors, &kar_token_child(token, token->children.count - 1)->cursor, 1, "Неожиданный конец строки. Ожидалось имя метода.");
 		return false;
 	}
-	if (kar_token_child(token, CHILD_INDEX)->type != KAR_TOKEN_SIGN_CALL_METHOD) {
-		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX)->cursor, 1, "Некорректное имя метода. Ожидалось, что будет идентификатор.");
+	
+	KarToken* methodParams = kar_token_child(token, CHILD_INDEX);
+	if (methodParams->type != KAR_TOKEN_SIGN_CALL_METHOD) {
+		kar_module_error_create_add(errors, &methodParams->cursor, 1, "Некорректное имя метода. Ожидалось, что будет идентификатор.");
 		return false;
 	}
+	if (methodParams->children.count < 1) {
+		kar_module_error_create_add(errors, &methodParams->cursor, 1, "Не возможно найти имя метода.");
+		return false;
+	}
+	
+	KarToken* methodName = kar_token_child(methodParams, 0);
+	if (methodName->type != KAR_TOKEN_IDENTIFIER) {
+		kar_module_error_create_add(errors, &methodName->cursor, 1, "Не корректное имя метода.");
+		return false;
+	}
+	
 	token->type = KAR_TOKEN_METHOD;
-	token->str = kar_string_create_copy(kar_token_child(token, CHILD_INDEX)->str);
+	token->str = kar_string_create_copy(methodName->str);
+	kar_token_child_erase(methodParams, 0);
+	
+	/*if (methodParams->children.count > 0) {
+		methodParams->cursor = kar_token_child(methodParams, 0)->cursor;
+	} else {*/
+		// TODO: Сделать функцию в cursor.c, которая бы по строке вычисляла положение курсора с учетом символов новой строки.
+		methodParams->cursor.column +=  (int)kar_string_length(token->str);
+	//}
+	
 	return true;
 }
 
@@ -121,7 +143,6 @@ static bool parse_method_parameters(KarToken* token, KarArray* errors) {
 	const size_t CHILD_INDEX = 1;
 	KarToken* parameters = kar_token_child_tear(token, CHILD_INDEX);
 	parameters->type = KAR_TOKEN_METHOD_PARAMETERS;
-	parameters->cursor.column += (int)kar_string_length(parameters->str);
 	KAR_FREE(parameters->str)
 	parameters->str = NULL;
 	kar_token_child_insert(token, parameters, 1);

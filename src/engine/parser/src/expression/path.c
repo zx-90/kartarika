@@ -1,4 +1,4 @@
-/* Copyright © 2020 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2022 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -8,28 +8,6 @@
 
 #include "core/token.h"
 #include "core/module_error.h"
-
-static bool make_call_func(KarToken* token) {
-	if (token->children.count == 0) {
-		return true;
-	}
-
-	for (size_t i = token->children.count - 1; i >= 1; --i) {
-		KarToken* child = kar_token_child(token, i);
-		if (child->type != KAR_TOKEN_SIGN_OPEN_BRACES) {
-			continue;
-		}
-		
-		KarToken* prev = kar_token_child(token, i - 1);
-		if (prev->type != KAR_TOKEN_IDENTIFIER) {
-			continue;
-		}
-		
-		kar_token_child_tear(token, i);
-		kar_token_child_add(prev, child);
-	}
-	return true;
-}
 
 static bool make_path(KarToken* token, KarArray* errors) {
 	for (size_t i = token->children.count; i > 0; --i) {
@@ -49,11 +27,11 @@ static bool make_path(KarToken* token, KarArray* errors) {
 		}
 		KarToken* first = kar_token_child(token, num - 1);
 		KarToken* second = kar_token_child(token, num + 1);
-		if (first->type != KAR_TOKEN_IDENTIFIER && first->type != KAR_TOKEN_SIGN_OPEN_BRACES) {
+		if (first->type != KAR_TOKEN_IDENTIFIER && first->type != KAR_TOKEN_SIGN_CALL_METHOD) {
 			kar_module_error_create_add(errors, &child->cursor, 1, "У операции \".\" нет первого операнда или он не корректен.");
 			return false;
 		}
-		if (second->type != KAR_TOKEN_IDENTIFIER && second->type != KAR_TOKEN_SIGN_OPEN_BRACES) {
+		if (second->type != KAR_TOKEN_IDENTIFIER && second->type != KAR_TOKEN_SIGN_CALL_METHOD) {
 			kar_module_error_create_add(errors, &child->cursor, 1, "У операции \".\" нет второго операнда или он не корректен.");
 			return false;
 		}
@@ -73,7 +51,7 @@ static bool foreach(KarToken* token, KarArray* errors)
 			return false;
 		}
 	}
-	return make_call_func(token) && make_path(token, errors);
+	return make_path(token, errors);
 }
 
 bool kar_parser_make_path(KarToken* token, KarArray* errors)

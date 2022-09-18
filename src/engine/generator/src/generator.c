@@ -1,4 +1,4 @@
-/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020-2022 Evgeny Zaytsev <zx_90@mail.ru>
  * Copyright © 2021,2022 Abdullin Timur <abdtimurrif@gmail.com>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
@@ -32,10 +32,14 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 		return false;
 	}
 	const KarToken* child3 = kar_token_child(child2, 0);
-	if (!kar_token_check_type_name(child3, KAR_TOKEN_SIGN_CALL_METHOD, "Печатать")) {
+	if (!kar_token_check_type(child3, KAR_TOKEN_SIGN_CALL_METHOD)) {
 		return false;
 	}
-	const KarToken* child4 = kar_token_child(child3, 0);
+	const KarToken* child4a = kar_token_child(child3, 0);
+	if (!kar_token_check_type_name(child4a, KAR_TOKEN_IDENTIFIER, "Печатать")) {
+		return false;
+	}
+	const KarToken* child4 = kar_token_child(child3, 1);
 	if (!kar_token_check_type(child4, KAR_TOKEN_SIGN_ARGUMENT)) {
 		return false;
 	}

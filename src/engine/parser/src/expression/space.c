@@ -21,6 +21,8 @@ static bool remove_space(KarToken* token) {
 		{
 			kar_token_child_erase(token, i);
 			i--;
+		} else {
+			remove_space(child);
 		}
 	}
 	return true;

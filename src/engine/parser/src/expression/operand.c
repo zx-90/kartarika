@@ -1,4 +1,4 @@
-/* Copyright © 2021 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2021,2022 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -22,75 +22,6 @@ static bool is_token_type_in_list(KarTokenType type, size_t num, const KarTokenT
 		}
 	}
 	return false;
-}
-
-// ----------------------------------------------------------------------------
-// Обработка вызова функции.
-// ----------------------------------------------------------------------------
-
-static bool make_call_method(KarToken* token, KarArray* errors) {
-	if (token->type != KAR_TOKEN_IDENTIFIER) {
-		return true;
-	}
-	if (token->children.count == 0) {
-		return true;
-	}
-	
-	KarToken* braces = kar_token_child(token, 0);
-	if (braces->type != KAR_TOKEN_SIGN_OPEN_BRACES) {
-		return true;
-	}
-	if (token->children.count > 1 && kar_token_child(token, 1)->type != KAR_TOKEN_SIGN_GET_FIELD) {
-		kar_module_error_create_add(errors, &(kar_token_child(token, 1))->cursor, 1, "Неожиданный символ при вызове функции.");
-		return false;
-	}
-	braces = kar_token_child_tear(token, 0);
-	
-	token->type = KAR_TOKEN_SIGN_CALL_METHOD;
-	
-	KarToken* currentArg = NULL;
-	size_t currentPlace = 0;
-	while (braces->children.count > 0) {
-		KarToken* curItem = kar_token_child_tear(braces, 0);
-		if (curItem->type == KAR_TOKEN_SIGN_COMMA) {
-			if (currentArg == NULL) {
-				kar_module_error_create_add(errors, &curItem->cursor, 1, "Неожиданное появление знака \",\".");
-				kar_token_free(curItem);
-				kar_token_free(braces);
-				return false;
-			}
-			if (braces->children.count == 0) {
-				kar_module_error_create_add(errors, &curItem->cursor, 1, "Нет операнда слева у знака \",\".");
-				kar_token_free(curItem);
-				kar_token_free(braces);
-				return false;
-			}
-			kar_token_free(curItem);
-			currentArg = NULL;
-			continue;
-		}
-		if (currentArg == NULL) {
-			currentArg = kar_token_create();
-			currentArg->type = KAR_TOKEN_SIGN_ARGUMENT;
-			currentArg->cursor = curItem->cursor;
-			kar_token_child_insert(token, currentArg, currentPlace);
-			currentPlace++;
-		}
-		kar_token_child_add(currentArg, curItem);
-	}
-		
-	kar_token_free(braces);
-	return true;
-}
-
-static bool foreach_make_call_method(KarToken* token, KarArray* errors) 
-{
-	for (size_t i = 0; i < token->children.count; i++) {
-		if (!foreach_make_call_method(token->children.items[i], errors)) {
-			return false;
-		}
-	}
-	return make_call_method(token, errors);
 }
 
 // ----------------------------------------------------------------------------
@@ -316,8 +247,6 @@ bool kar_parser_make_operands(KarToken* token, KarArray* errors)
 {
 	bool b = true;
 	
-	b = b && foreach_make_call_method(token, errors);
-
 	b = b && foreach_operator_before(token, KAR_TOKEN_SIGN_UNCLEAN, errors);
 	// TODO: Здесь и далее волшебные числа заменить на константу равную разеру массива.
 	b = b && foreach_two_operators(token, 1, OPERAND_LIST_CLEAN, errors);
