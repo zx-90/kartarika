@@ -9,9 +9,7 @@
 // TODO: Проработать проверку на краткое имя, полное имя (путь) для выражений и полное имя для типов.
 bool kar_token_is_name(KarToken* token) {
     return
-        token->type == KAR_TOKEN_IDENTIFIER &&
-        token->children.count == 0;
-    // TODO: добавить ещё тип класса. То есть проверить, что это путь.
+        token->type == KAR_TOKEN_IDENTIFIER;
 }
 
 bool kar_token_is_type(KarToken* token) {
@@ -29,7 +27,8 @@ bool kar_token_is_type(KarToken* token) {
         token->type == KAR_TOKEN_VAR_UNSIGNED32 ||
         token->type == KAR_TOKEN_VAR_UNSIGNED64 ||
         token->type == KAR_TOKEN_VAR_STRING ||
-        token->type == KAR_TOKEN_IDENTIFIER;
+        token->type == KAR_TOKEN_IDENTIFIER ||
+        token->type == KAR_TOKEN_SIGN_GET_FIELD;
 	// TODO: добавить ещё тип класса. То есть проверить, что это путь.
 }
 

@@ -117,6 +117,8 @@ static bool fill_subblock(KarTokenCursor root, KarTokenIndent parentToken, int i
 		return false;
 	}
 	
+	// TODO: Курсор неправильно определяется для выражений. Надо брать курсор из первого наследника первого наследника и т.д.
+	//       Тоже самое посмотреть для скобок, вызова метода и других элементов, внутри которых может находиться выражение.
 	KarToken* block = kar_token_create_fill(KAR_TOKEN_BLOCK_BODY, line->cursor, NULL);
 	kar_token_child_add(parent, block);
 	KarTokenIndent block_indent = {block, indent};

@@ -24,14 +24,14 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 		return false;
 	}
 	const KarToken* child1 = kar_token_child(token, 0);
-	if (!kar_token_check_type_name(child1, KAR_TOKEN_IDENTIFIER, "Кар")) {
+	if (!kar_token_check_type(child1, KAR_TOKEN_SIGN_GET_FIELD)) {
 		return false;
 	}
 	const KarToken* child2 = kar_token_child(child1, 0);
-	if (!kar_token_check_type(child2, KAR_TOKEN_SIGN_GET_FIELD)) {
+	if (!kar_token_check_type_name(child2, KAR_TOKEN_IDENTIFIER, "Кар")) {
 		return false;
 	}
-	const KarToken* child3 = kar_token_child(child2, 0);
+	const KarToken* child3 = kar_token_child(child1, 1);
 	if (!kar_token_check_type(child3, KAR_TOKEN_SIGN_CALL_METHOD)) {
 		return false;
 	}

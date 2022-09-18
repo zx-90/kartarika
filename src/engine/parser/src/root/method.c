@@ -46,7 +46,7 @@ static bool parse_modifiers(KarToken* token, size_t methodPos, KarArray* errors)
 			token->type != KAR_TOKEN_METHOD_MODIFIER_INHERITED &&
 			token->type != KAR_TOKEN_METHOD_MODIFIER_OVERLOAD
 		) {
-			kar_module_error_create_add(errors, &token->cursor, 1, "Некорректный модификатор при объявлении функции.");
+			kar_module_error_create_add(errors, &token->cursor, 1, "Некорректный модификатор при объявлении метода.");
 			return false;
 		}
 		if (
@@ -54,7 +54,7 @@ static bool parse_modifiers(KarToken* token, size_t methodPos, KarArray* errors)
 			token->type == KAR_TOKEN_METHOD_MODIFIER_DYNAMIC
 		) {
 			if (static_modifier) {
-				kar_module_error_create_add(errors, &token->cursor, 1, "Объявлено более одного модификатора статичности при объявлении функции.");
+				kar_module_error_create_add(errors, &token->cursor, 1, "Объявлено более одного модификатора статичности при объявлении метода.");
 				return false;
 			} else {
 				static_modifier = true;
@@ -66,7 +66,7 @@ static bool parse_modifiers(KarToken* token, size_t methodPos, KarArray* errors)
 			token->type == KAR_TOKEN_METHOD_MODIFIER_PUBLIC
 		) {
 			if (inherit_modifier) {
-				kar_module_error_create_add(errors, &token->cursor, 1, "Объявлено более одного модификатора области видимости при объявлении функции.");
+				kar_module_error_create_add(errors, &token->cursor, 1, "Объявлено более одного модификатора области видимости при объявлении метода.");
 				return false;
 			} else {
 				inherit_modifier = true;
@@ -77,7 +77,7 @@ static bool parse_modifiers(KarToken* token, size_t methodPos, KarArray* errors)
 			token->type == KAR_TOKEN_METHOD_MODIFIER_INHERITED
 		) {
 			if (finalize_modifier) {
-				kar_module_error_create_add(errors, &token->cursor, 1, "Объявлено более одного модификатора финализации при объявлении функции.");
+				kar_module_error_create_add(errors, &token->cursor, 1, "Объявлено более одного модификатора финализации при объявлении метода.");
 				return false;
 			} else {
 				finalize_modifier = true;
@@ -87,7 +87,7 @@ static bool parse_modifiers(KarToken* token, size_t methodPos, KarArray* errors)
 			token->type == KAR_TOKEN_METHOD_MODIFIER_OVERLOAD
 		) {
 			if (overload_modifier) {
-				kar_module_error_create_add(errors, &token->cursor, 1, "Объявлено более одного модификатора перегрузки при объявлении функции.");
+				kar_module_error_create_add(errors, &token->cursor, 1, "Объявлено более одного модификатора перегрузки при объявлении метода.");
 				return false;
 			} else {
 				overload_modifier = true;
@@ -152,11 +152,11 @@ static bool parse_method_parameters(KarToken* token, KarArray* errors) {
 		if (parameter->children.count == 1) {
 			KarToken* mul = kar_token_child(parameter, 0);
 			if (mul->type != KAR_TOKEN_SIGN_MUL) {
-				kar_module_error_create_add(errors, &parameter->cursor, 1, "Некорректный параметр функции.");
+				kar_module_error_create_add(errors, &parameter->cursor, 1, "Некорректный параметр метода.");
 				return false;
 			}
 			if (mul->children.count != 2) {
-				kar_module_error_create_add(errors, &parameter->cursor, 1, "Некорректный параметр функции.");
+				kar_module_error_create_add(errors, &parameter->cursor, 1, "Некорректный параметр метода.");
 				return false;
 			}
 			parameter->type = KAR_TOKEN_METHOD_PARAMETER_VAR;
@@ -170,22 +170,22 @@ static bool parse_method_parameters(KarToken* token, KarArray* errors) {
 		} else if (parameter->children.count == 2) {
 			parameter->type = KAR_TOKEN_METHOD_PARAMETER_CONST;
 		} else {
-			kar_module_error_create_add(errors, &parameter->cursor, 1, "Некорректный параметр функции.");
+			kar_module_error_create_add(errors, &parameter->cursor, 1, "Некорректный параметр метода.");
 			return false;
 		}
 		
 		if (parameter->children.count != 2) {
-			kar_module_error_create_add(errors, &parameter->cursor, 1, "Некорректный параметр функции.");
+			kar_module_error_create_add(errors, &parameter->cursor, 1, "Некорректный параметр метода.");
 			return false;
 		}
 		KarToken* type = kar_token_child(parameter, 0);
 		KarToken* name = kar_token_child(parameter, 1);
 		if (!kar_token_is_type(type)) {
-			kar_module_error_create_add(errors, &type->cursor, 1, "Некорректный тип параметра функции.");
+			kar_module_error_create_add(errors, &type->cursor, 1, "Некорректный тип параметра метода.");
 			return false;
 		}
 		if (!kar_token_is_name(name)) {
-			kar_module_error_create_add(errors, &name->cursor, 1, "Некорректное имя параметра функции.");
+			kar_module_error_create_add(errors, &name->cursor, 1, "Некорректное имя параметра метода.");
 			return false;
 		}
 	}

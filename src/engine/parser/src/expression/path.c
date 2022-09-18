@@ -31,13 +31,13 @@ static bool make_path(KarToken* token, KarArray* errors) {
 			kar_module_error_create_add(errors, &child->cursor, 1, "У операции \".\" нет первого операнда или он не корректен.");
 			return false;
 		}
-		if (second->type != KAR_TOKEN_IDENTIFIER && second->type != KAR_TOKEN_SIGN_CALL_METHOD) {
+		if (second->type != KAR_TOKEN_IDENTIFIER && second->type != KAR_TOKEN_SIGN_CALL_METHOD && second->type != KAR_TOKEN_SIGN_GET_FIELD) {
 			kar_module_error_create_add(errors, &child->cursor, 1, "У операции \".\" нет второго операнда или он не корректен.");
 			return false;
 		}
 		kar_token_child_tear(token, num + 1);
-		kar_token_child_tear(token, num);
-		kar_token_child_add(first, child);
+		kar_token_child_tear(token, num - 1);
+		kar_token_child_add(child, first);
 		kar_token_child_add(child, second);
 		--i;
 	}
