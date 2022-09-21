@@ -180,11 +180,11 @@ static bool parse_method_parameters(KarToken* token, KarArray* errors) {
 		}
 		KarToken* type = kar_token_child(parameter, 0);
 		KarToken* name = kar_token_child(parameter, 1);
-		if (!kar_token_is_type(type)) {
+		if (!kar_token_is_type(type->type)) {
 			kar_module_error_create_add(errors, &type->cursor, 1, "Некорректный тип параметра метода.");
 			return false;
 		}
-		if (!kar_token_is_name(name)) {
+		if (!kar_token_is_name(name->type)) {
 			kar_module_error_create_add(errors, &name->cursor, 1, "Некорректное имя параметра метода.");
 			return false;
 		}
@@ -204,7 +204,7 @@ static bool parse_return_type(KarToken* token, KarArray* errors) {
 	if (kar_token_child(token, CHILD_INDEX)->type != KAR_TOKEN_SIGN_COLON) {
 		KarToken* returnTypeToken = kar_token_child_tear(token, CHILD_INDEX);
 		kar_token_child_add(returnType, returnTypeToken);
-		if (!kar_token_is_type(returnTypeToken)) {
+		if (!kar_token_is_type(returnTypeToken->type)) {
 			kar_module_error_create_add(errors, &returnTypeToken->cursor, 1, "Некорректный тип возвращаемого значения функции.");
 			return false;
 		}

@@ -165,12 +165,18 @@ const char* kar_token_type_get_name(const KarTokenType type)
 	return "[UNKNOWN]";
 }
 
+bool kar_token_type_is_identifier(const KarTokenType type) {
+	return type == KAR_TOKEN_IDENTIFIER;
+}
+
 bool kar_token_type_is_value(const KarTokenType type) {
-	return
-		type == KAR_TOKEN_VAL_STRING ||
-		type == KAR_TOKEN_VAL_NULL ||
-		type == KAR_TOKEN_VAL_TRUE ||
-		type == KAR_TOKEN_VAL_FALSE ||
-		type == KAR_TOKEN_VAL_INTEGER ||
-		type == KAR_TOKEN_VAL_FLOAT;
+	return type >= KAR_TOKEN_VAL_STRING && type <= KAR_TOKEN_VAL_MINUS_INFINITY;
+}
+
+bool kar_token_type_is_variable(const KarTokenType type) {
+	return type >= KAR_TOKEN_VAR_BOOL && type <= KAR_TOKEN_VAR_STRING;
+}
+
+bool kar_token_type_is_sign(const KarTokenType type) {
+	return type >= KAR_TOKEN_SIGN_OPEN_BRACES && type <= KAR_TOKEN_SIGN_BIT_LEFT;
 }

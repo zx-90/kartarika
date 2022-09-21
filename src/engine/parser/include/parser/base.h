@@ -13,9 +13,9 @@ typedef enum {
 	KAR_PARSER_STATUS_NOT_PARSED
 } KarParserStatus;
 
-bool kar_parser_is_expression(KarToken* token);
-bool kar_token_is_name(KarToken* token);
-bool kar_token_is_type(KarToken* token);
+bool kar_parser_is_expression(KarTokenType type);
+bool kar_token_is_name(KarTokenType type);
+bool kar_token_is_type(KarTokenType type);
 
 bool kar_parser_parse_algorithm(KarToken* token);
 

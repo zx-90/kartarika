@@ -9,6 +9,12 @@
 #include "core/token.h"
 #include "core/module_error.h"
 
+static bool is_method_operator(KarTokenType type) {
+	return
+		kar_token_type_is_identifier(type) ||
+		kar_token_type_is_variable(type);
+}
+
 static bool make_call_method(KarToken* token) {
 	if (token->children.count == 0) {
 		return true;
@@ -21,11 +27,9 @@ static bool make_call_method(KarToken* token) {
 		}
 		
 		KarToken* prev = kar_token_child(token, i - 1);
-		if (prev->type != KAR_TOKEN_IDENTIFIER) {
+		if (!is_method_operator(prev->type)) {
 			continue;
 		}
-		
-		
 		
 		child->type = KAR_TOKEN_SIGN_CALL_METHOD;
 		child->cursor = prev->cursor;

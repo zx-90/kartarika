@@ -142,7 +142,7 @@ static bool parse_expression(KarToken* token, KarArray* errors) {
 		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX + 1)->cursor, 1, "Слишком много выражений в правой части присвоения.");
 		return false;
 	}
-	if (!kar_parser_is_expression(kar_token_child(token, CHILD_INDEX))) {
+	if (!kar_parser_is_expression(kar_token_child(token, CHILD_INDEX)->type)) {
 		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX)->cursor, 1, "Некорректное выражение в правой части присвоения.");
 		return false;
 	}

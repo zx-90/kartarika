@@ -169,6 +169,9 @@ typedef enum {
 
 const char* kar_token_type_get_name(const KarTokenType type);
 
+bool kar_token_type_is_identifier(const KarTokenType type);
 bool kar_token_type_is_value(const KarTokenType type);
+bool kar_token_type_is_variable(const KarTokenType type);
+bool kar_token_type_is_sign(const KarTokenType type);
 
 #endif // KAR_TOKEN_TYPE_H

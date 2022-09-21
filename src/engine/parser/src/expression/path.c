@@ -9,6 +9,8 @@
 #include "core/token.h"
 #include "core/module_error.h"
 
+#include "parser/base.h"
+
 static bool make_path(KarToken* token, KarArray* errors) {
 	for (size_t i = token->children.count; i > 0; --i) {
 		size_t num = i - 1;
@@ -27,11 +29,11 @@ static bool make_path(KarToken* token, KarArray* errors) {
 		}
 		KarToken* first = kar_token_child(token, num - 1);
 		KarToken* second = kar_token_child(token, num + 1);
-		if (first->type != KAR_TOKEN_IDENTIFIER && first->type != KAR_TOKEN_SIGN_CALL_METHOD) {
+		if (!kar_parser_is_expression(first->type)) {
 			kar_module_error_create_add(errors, &child->cursor, 1, "У операции \".\" нет первого операнда или он не корректен.");
 			return false;
 		}
-		if (second->type != KAR_TOKEN_IDENTIFIER && second->type != KAR_TOKEN_SIGN_CALL_METHOD && second->type != KAR_TOKEN_SIGN_GET_FIELD) {
+		if (!kar_parser_is_expression(second->type)) {
 			kar_module_error_create_add(errors, &child->cursor, 1, "У операции \".\" нет второго операнда или он не корректен.");
 			return false;
 		}

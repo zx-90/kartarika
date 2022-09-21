@@ -6,36 +6,23 @@
 
 #include "core/token.h"
 
-// TODO: Проработать проверку на краткое имя, полное имя (путь) для выражений и полное имя для типов.
-bool kar_token_is_name(KarToken* token) {
+bool kar_token_is_name(KarTokenType type) {
     return
-        token->type == KAR_TOKEN_IDENTIFIER;
+        kar_token_type_is_identifier(type);
 }
 
-bool kar_token_is_type(KarToken* token) {
+bool kar_token_is_type(KarTokenType type) {
     return
-        token->type == KAR_TOKEN_VAR_BOOL ||
-        token->type == KAR_TOKEN_VAR_FLOAT32 ||
-        token->type == KAR_TOKEN_VAR_FLOAT64 ||
-        token->type == KAR_TOKEN_VAR_FLOAT80 ||
-        token->type == KAR_TOKEN_VAR_INTEGER8 ||
-        token->type == KAR_TOKEN_VAR_INTEGER16 ||
-        token->type == KAR_TOKEN_VAR_INTEGER32 ||
-        token->type == KAR_TOKEN_VAR_INTEGER64 ||
-        token->type == KAR_TOKEN_VAR_UNSIGNED8 ||
-        token->type == KAR_TOKEN_VAR_UNSIGNED16 ||
-        token->type == KAR_TOKEN_VAR_UNSIGNED32 ||
-        token->type == KAR_TOKEN_VAR_UNSIGNED64 ||
-        token->type == KAR_TOKEN_VAR_STRING ||
-        token->type == KAR_TOKEN_IDENTIFIER ||
-        token->type == KAR_TOKEN_SIGN_GET_FIELD;
-	// TODO: добавить ещё тип класса. То есть проверить, что это путь.
+        kar_token_type_is_identifier(type) ||
+        kar_token_type_is_variable(type) ||
+        type == KAR_TOKEN_SIGN_GET_FIELD;
 }
 
-bool kar_parser_is_expression(KarToken* token)
+bool kar_parser_is_expression(KarTokenType type)
 {
-	// TODO: Написать функцию и добавить тесты. Проверка на то,
-	//       является ли токен вместе со всеми потомками корректным выражением.
-	KarTokenType type = token->type;
-	return type != KAR_TOKEN_MODIFIER_STAT;
+	return
+		kar_token_type_is_identifier(type) ||
+		kar_token_type_is_value(type) ||
+		kar_token_type_is_variable(type) ||
+		kar_token_type_is_sign(type);
 }

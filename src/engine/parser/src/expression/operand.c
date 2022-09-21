@@ -10,6 +10,7 @@
 #include "core/module_error.h"
 #include "core/string.h"
 #include "core/alloc.h"
+#include "parser/base.h"
 
 // ----------------------------------------------------------------------------
 // Общие функции.
@@ -45,6 +46,14 @@ static bool make_two_operators(KarToken* token, size_t num, const KarTokenType* 
 		}
 		KarToken* first = kar_token_child(token, i - 1);
 		KarToken* second = kar_token_child(token, i + 1);
+		if (!kar_parser_is_expression(first->type)) {
+			kar_module_error_create_add(errors, &child->cursor, 1, "Первый оператор не корректен.");
+			return false;
+		}
+		if (!kar_parser_is_expression(second->type)) {
+			kar_module_error_create_add(errors, &child->cursor, 1, "Второй оператор не корректен.");
+			return false;
+		}
 		if (is_token_type_in_list(second->type, num, operands)) {
 			kar_module_error_create_add(errors, &child->cursor, 1, "Следующий операнд того же порядка что и текущий.");
 			return false;
@@ -86,6 +95,11 @@ static bool make_operator_before(KarToken* token, KarTokenType operator, KarArra
 		}
 		
 		KarToken* operator = kar_token_child(token, i - 1);
+		if (!kar_parser_is_expression(operator->type)) {
+			kar_module_error_create_add(errors, &child->cursor, 1, "Оператор не корректен.");
+			return false;
+		}
+		
 		kar_token_child_tear(token, i - 1);
 		kar_token_child_add(child, operator);
 		i--;
@@ -122,6 +136,11 @@ static bool make_operator_after(KarToken* token, size_t op_num, const KarTokenTy
 		}
 		
 		KarToken* operator = kar_token_child(token, i + 1);
+		if (!kar_parser_is_expression(operator->type)) {
+			kar_module_error_create_add(errors, &child->cursor, 1, "Оператор не корректен.");
+			return false;
+		}
+		
 		kar_token_child_tear(token, i + 1);
 		kar_token_child_add(child, operator);
 	}
