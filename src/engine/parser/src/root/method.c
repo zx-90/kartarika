@@ -254,7 +254,7 @@ static bool parse_algorithm(KarToken* token, KarArray* errors) {
 		return false;
 	}
 	
-	return kar_parser_parse_algorithm(token/*, errors*/);
+	return kar_parser_parse_algorithm(kar_token_child(token, CHILD_INDEX), errors);
 }
 
 // ----------------------------------------------------------------------------
