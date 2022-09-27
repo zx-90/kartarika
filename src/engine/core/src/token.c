@@ -102,6 +102,16 @@ static void print_level(const KarToken* token, FILE* stream, size_t level) {
 	}
 }
 
+size_t kar_token_child_find(KarToken* token, const KarTokenType type) {
+	size_t pos;
+	for (pos = 0; pos < token->children.count; ++pos) {
+		if (kar_token_child(token, pos)->type == type) {
+			break;
+		}
+	}
+	return pos;
+}
+
 KarToken* kar_token_join_children(KarToken* token, size_t first, size_t count) {
 	KarToken* first_token = kar_token_child(token, first);
 

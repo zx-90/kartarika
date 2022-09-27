@@ -37,6 +37,8 @@ void kar_token_add_str(KarToken* token, const char* str);
 
 KAR_TREE_HEADER(token_child, KarToken);
 
+size_t kar_token_child_find(KarToken* token, const KarTokenType type);
+
 KarToken* kar_token_join_children(KarToken* token, size_t first, size_t count);
 
 void kar_token_print(const KarToken* token, FILE* stream);
