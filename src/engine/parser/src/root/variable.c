@@ -1,4 +1,4 @@
-/* Copyright © 2021 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2021,2022 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -11,26 +11,6 @@
 #include "core/module_error.h"
 
 #include "parser/base.h"
-
-static size_t find_const_token(KarToken* token) {
-	size_t result;
-	for (result = 0; result < token->children.count; ++result) {
-		if (kar_token_child(token, result)->type == KAR_TOKEN_FIELD_CONST) {
-			return result;
-		}
-	}
-	return result;
-}
-
-static size_t find_var_token(KarToken* token) {
-	size_t result;
-	for (result = 0; result < token->children.count; ++result) {
-		if (kar_token_child(token, result)->type == KAR_TOKEN_FIELD_VAR) {
-			return result;
-		}
-	}
-	return result;
-}
 
 static bool parse_modifiers(KarToken* token, size_t variable, KarArray* errors)
 {
@@ -156,7 +136,7 @@ static bool parse_expression(KarToken* token, KarArray* errors) {
 
 KarParserStatus kar_parser_make_constant(KarToken* token, KarArray* errors)
 {
-	size_t variable = find_const_token(token);
+	size_t variable = kar_token_child_find(token, KAR_TOKEN_FIELD_CONST);
 	if (variable == token->children.count) {
 		return KAR_PARSER_STATUS_NOT_PARSED;
 	}
@@ -185,7 +165,7 @@ KarParserStatus kar_parser_make_constant(KarToken* token, KarArray* errors)
 
 KarParserStatus kar_parser_make_variable(KarToken* token, KarArray* errors)
 {
-	size_t variable = find_var_token(token);
+	size_t variable = kar_token_child_find(token, KAR_TOKEN_FIELD_VAR);
 	if (variable == token->children.count) {
 		return KAR_PARSER_STATUS_NOT_PARSED;
 	}

@@ -8,23 +8,14 @@
 #include "core/module_error.h"
 #include "parser/base.h"
 
-static size_t find_pass_token(KarToken* token) {
-	size_t methodPos;
-	for (methodPos = 0; methodPos < token->children.count; ++methodPos) {
-		if (kar_token_child(token, methodPos)->type == KAR_TOKEN_COMMAND_PASS) {
-			break;
-		}
-	}
-	return methodPos;
-}
-
 KarParserStatus kar_parser_make_empty_block(KarToken* token, KarArray* errors) {
+	// TODO: Написать тесты на команду пропустить.
 	if (token->children.count != 1) {
 		return KAR_PARSER_STATUS_NOT_PARSED;
 	}
 	KarToken* command = kar_token_child(token, 0);
 	
-	size_t tokenNum = find_pass_token(command);
+	size_t tokenNum = kar_token_child_find(command, KAR_TOKEN_COMMAND_PASS);
 	if (tokenNum == command->children.count) {
 		return KAR_PARSER_STATUS_NOT_PARSED;
 	}

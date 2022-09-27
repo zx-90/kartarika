@@ -1,4 +1,4 @@
-/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020-2022 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -12,16 +12,6 @@
 #include "core/module_error.h"
 
 #include "parser/base.h"
-
-static size_t find_method_token(KarToken* token) {
-	size_t methodPos;
-	for (methodPos = 0; methodPos < token->children.count; ++methodPos) {
-		if (kar_token_child(token, methodPos)->type == KAR_TOKEN_METHOD) {
-			break;
-		}
-	}
-	return methodPos;
-}
 
 static bool parse_modifiers(KarToken* token, size_t methodPos, KarArray* errors) {
 	KarToken* modifiers = kar_token_create();
@@ -261,7 +251,7 @@ static bool parse_algorithm(KarToken* token, KarArray* errors) {
 
 KarParserStatus kar_parser_make_method(KarToken* token, KarArray* errors)
 {
-	size_t methodPos = find_method_token(token);
+	size_t methodPos = kar_token_child_find(token, KAR_TOKEN_METHOD);
 	if (methodPos == token->children.count) {
 		return KAR_PARSER_STATUS_NOT_PARSED;
 	}
