@@ -14,6 +14,10 @@ KarParserStatus kar_parser_make_declaration(KarToken* token, KarArray* errors) {
 	if (returnPos == token->children.count) {
 		return KAR_PARSER_STATUS_NOT_PARSED;
 	}
+	if (returnPos != 0) {
+		kar_module_error_create_add(errors, &kar_token_child(token, returnPos)->cursor, 1, "Ключевое слово \"поле\" должно стоять в начале команды.");
+		return KAR_PARSER_STATUS_ERROR;
+	}
 	
 	if (token->children.count == 1) {
 		// TODO: курсор в конце токена.
