@@ -22,6 +22,8 @@ src/root/method.c
 src/algorithm/_algorithm.c
 src/algorithm/expression.c
 src/algorithm/return.c
+src/algorithm/declaration.c
+src/algorithm/assign.c
 src/algorithm/block.c
 src/algorithm/pass.c
 
