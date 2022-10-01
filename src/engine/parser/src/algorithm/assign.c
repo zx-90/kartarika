@@ -9,38 +9,46 @@
 #include "parser/base.h"
 
 KarParserStatus kar_parser_make_assign(KarToken* token, KarArray* errors) {
-	if (token) {}
-	if (errors) {}
-	return KAR_PARSER_STATUS_NOT_PARSED;
-	/*size_t returnPos = kar_token_child_find(token, KAR_TOKEN_FIELD_VAR);
+	size_t returnPos = kar_token_child_find(token, KAR_TOKEN_SIGN_ASSIGN);
 	
 	if (returnPos == token->children.count) {
 		return KAR_PARSER_STATUS_NOT_PARSED;
 	}
+	if (returnPos < 1) {
+		kar_module_error_create_add(errors, &kar_token_child(token, returnPos)->cursor, 1, "Отсутствует левая часть присвоения.");
+		return KAR_PARSER_STATUS_ERROR;
+	}
+	if (returnPos > 1) {
+		kar_module_error_create_add(errors, &kar_token_child(token, 1)->cursor, 1, "Лишние токены в левой части присвоения.");
+		return KAR_PARSER_STATUS_ERROR;
+	}
+	KarToken* assign = kar_token_child(token, 1);
 	
-	KarToken* returnToken = kar_token_child(token, returnPos);
-	if (returnPos != 0) {
-		kar_module_error_create_add(errors, &returnToken->cursor, 1, "Ключевое слово вернуть должно стоять в начале команды.");
+	KarToken* name = kar_token_child(token, 0);
+	if (!kar_parser_is_expression(name->type)) {
+		kar_module_error_create_add(errors, &name->cursor, 1, "Не корректное имя переменной.");
 		return KAR_PARSER_STATUS_ERROR;
 	}
 	
-	// Вернуть без параментра.
-	if (token->children.count == 1) {
-		return KAR_PARSER_STATUS_PARSED;
+	if (token->children.count == 2) {
+		// TODO: курсор в конце токена.
+		kar_module_error_create_add(errors, &assign->cursor, 1, "Отсутствует правая часть присвоения.");
+		return KAR_PARSER_STATUS_ERROR;
 	}
-	
-	KarToken* expression = kar_token_child(token, 1);
+	KarToken* expression = kar_token_child(token, 2);
 	if (!kar_parser_is_expression(expression->type)) {
-		kar_module_error_create_add(errors, &expression->cursor, 1, "Здесь ожидалось выражение.");
+		kar_module_error_create_add(errors, &expression->cursor, 1, "Не корректное выражение.");
 		return KAR_PARSER_STATUS_ERROR;
 	}
 	
-	if (token->children.count > 2) {
-		kar_module_error_create_add(errors, &kar_token_child(token, 2)->cursor, 1, "Здесь ожидался конец команды.");
+	if (token->children.count > 3) {
+		// TODO: курсор в конце токена.
+		kar_module_error_create_add(errors, &kar_token_child(token, 3)->cursor, 1, "Здесь ожидался конец команды.");
 		return KAR_PARSER_STATUS_ERROR;
 	}
 	
-	kar_token_child_move_to_end(token, returnToken, 1, 1);
+	kar_token_child_erase(token, 1);
+	token->type = KAR_TOKEN_SIGN_ASSIGN;
 	
-	return KAR_PARSER_STATUS_PARSED;*/
+	return KAR_PARSER_STATUS_PARSED;
 }
