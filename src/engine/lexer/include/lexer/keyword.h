@@ -64,11 +64,6 @@
 
 #define KAR_KEYWORD_TYPE_STRING "Строка"
 
-// Составные переменные.
-#define KAR_KEYWORD_TYPE_ENUMERATION "перечисление"
-#define KAR_KEYWORD_TYPE_STRUCTURE "структура"
-#define KAR_KEYWORD_TYPE_UNION "объединение"
-
 // Знаки
 #define KAR_KEYWORD_SIGN_OPEN_BRACES "("
 #define KAR_KEYWORD_SIGN_CLOSE_BRACES ")"
@@ -101,28 +96,22 @@
 #define KAR_KEYWORD_SIGN_BIT_RIGHT "вправо"
 #define KAR_KEYWORD_SIGN_BIT_LEFT "влево"
 
-// Управление последовательностью выполенения.
+// Команды алгоритма.
+#define KAR_KEYWORD_COMMAND_RETURN "вернуть"
+
 #define KAR_KEYWORD_COMMAND_BLOCK "блок"
 #define KAR_KEYWORD_COMMAND_PASS "пропустить"
 
 #define KAR_KEYWORD_COMMAND_IF "если"
-#define KAR_KEYWORD_COMMANT_THEN "то"
 #define KAR_KEYWORD_COMMAND_ELSE "иначе"
 
-#define KAR_KEYWORD_COMMAND_FOR "цикл"
-#define KAR_KEYWORD_COMMAND_FROM "от"
-#define KAR_KEYWORD_COMMAND_TO "до"
-#define KAR_KEYWORD_COMMAND_STEP "шаг"
+#define KAR_KEYWORD_COMMAND_CLEAN "раскрыть"
+#define KAR_KEYWORD_COMMAND_CLEAN_AS "как"
 
-#define KAR_KEYWORD_COMMAND_FOREACH "пройти"
-#define KAR_KEYWORD_COMMAND_GET "взять"
-
+#define KAR_KEYWORD_COMMAND_REPEAT "повторить"
 #define KAR_KEYWORD_COMMAND_WHILE "пока"
-
 #define KAR_KEYWORD_COMMAND_CONTINUE "следующий"
 #define KAR_KEYWORD_COMMAND_BREAK "прервать"
-
-#define KAR_KEYWORD_COMMAND_OPEN "раскрыть"
 
 #define KAR_KEYWORD_DECLARATION_METHOD "метод"
 
@@ -137,19 +126,5 @@
 #define KAR_KEYWORD_METHOD_MODIFIER_INHERITED "наследуемый"
 
 #define KAR_KEYWORD_METHOD_MODIFIER_OVERLOAD "перегруженный"
-
-//KAR_TOKEN_METHOD_ARGUMENT_CONST,
-//KAR_TOKEN_METHOD_ARGUMENT_VAR,
-//KAR_TOKEN_METHOD_ARGUMENT_POINTER,
-
-#define KAR_KEYWORD_METHOD_RETURN "вернуть"
-
-// Класс
-
-// Шаблон класса
-
-// Тест
-#define KAR_KEYWORD_TEST "тест"
-#define KAR_KEYWORD_TEST_CHECK "проверить"
 
 #endif // KAR_KEYWORD_H

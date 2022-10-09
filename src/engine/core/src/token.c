@@ -133,6 +133,14 @@ KarToken* kar_token_join_children(KarToken* token, size_t first, size_t count) {
 	return first_token;
 }
 
+KarToken* kar_token_get_first_grandchild(KarToken* token) {
+	KarToken* result = token;
+	while (result->children.count != 0) {
+		result = kar_token_child(result, 0);
+	}
+	return result;
+}
+
 void kar_token_print(const KarToken* token, FILE* stream) {
 	print_level(token, stream, 0);
 }

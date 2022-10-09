@@ -58,6 +58,10 @@ KarParserStatus kar_parser_make_declaration(KarToken* token, KarArray* errors) {
 		return KAR_PARSER_STATUS_ERROR;
 	}
 	
+	token->type = KAR_TOKEN_COMMAND_DECLARATION;
+	kar_token_set_str(token, NULL);
+	token->cursor = kar_token_child(token, 0)->cursor;
+
 	kar_token_child_tear(token, 3);
 	kar_token_child_tear(token, 1);
 	
@@ -65,7 +69,6 @@ KarParserStatus kar_parser_make_declaration(KarToken* token, KarArray* errors) {
 	kar_token_child_erase(token, 0);
 	kar_token_child_erase(token, 0);
 	
-	token->type = KAR_TOKEN_FIELD_VAR;
 	kar_token_child_add(token, name);
 	kar_token_child_add(token, expression);
 	

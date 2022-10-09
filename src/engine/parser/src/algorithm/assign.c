@@ -47,8 +47,10 @@ KarParserStatus kar_parser_make_assign(KarToken* token, KarArray* errors) {
 		return KAR_PARSER_STATUS_ERROR;
 	}
 	
+	token->type = KAR_TOKEN_COMMAND_ASSIGN;
+	token->cursor = kar_token_get_first_grandchild(token)->cursor;
+	kar_token_set_str(token, NULL);
 	kar_token_child_erase(token, 1);
-	token->type = KAR_TOKEN_SIGN_ASSIGN;
 	
 	return KAR_PARSER_STATUS_PARSED;
 }

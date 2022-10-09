@@ -20,7 +20,7 @@
 #include <llvm-c/BitWriter.h>
 
 static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder) {
-	if (token->type != KAR_TOKEN_INDENT) {
+	if (token->type != KAR_TOKEN_COMMAND_EXPRESSION) {
 		return false;
 	}
 	const KarToken* child1 = kar_token_child(token, 0);

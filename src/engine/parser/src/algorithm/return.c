@@ -8,8 +8,15 @@
 #include "core/module_error.h"
 #include "parser/base.h"
 
+static void prepare_return(KarToken* token) {
+	token->type = KAR_TOKEN_COMMAND_RETURN;
+	token->cursor = kar_token_child(token, 0)->cursor;
+	kar_token_set_str(token, NULL);
+	kar_token_child_erase(token, 0);
+}
+
 KarParserStatus kar_parser_make_return(KarToken* token, KarArray* errors) {
-	size_t returnPos = kar_token_child_find(token, KAR_TOKEN_METHOD_RETURN);
+	size_t returnPos = kar_token_child_find(token, KAR_TOKEN_COMMAND_RETURN);
 	
 	if (returnPos == token->children.count) {
 		return KAR_PARSER_STATUS_NOT_PARSED;
@@ -23,6 +30,7 @@ KarParserStatus kar_parser_make_return(KarToken* token, KarArray* errors) {
 	
 	// Вернуть без параментра.
 	if (token->children.count == 1) {
+		prepare_return(token);
 		return KAR_PARSER_STATUS_PARSED;
 	}
 	
@@ -37,7 +45,7 @@ KarParserStatus kar_parser_make_return(KarToken* token, KarArray* errors) {
 		return KAR_PARSER_STATUS_ERROR;
 	}
 	
-	kar_token_child_move_to_end(token, returnToken, 1, 1);
+	prepare_return(token);
 	
 	return KAR_PARSER_STATUS_PARSED;
 }
