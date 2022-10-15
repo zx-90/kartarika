@@ -51,6 +51,7 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 	LLVMTypeRef type = LLVMPointerType(LLVMInt8Type(), 0);
 	LLVMTypeRef puts_type = LLVMFunctionType(LLVMInt32Type(), &type, 1, false);
 	// TODO: Проверить, возможно printf будет неправильно работать с % (По аналогии с языком C/C++).
+	// TODO: Выдает ошибку если вызвать Кар.Печатать 2 раза
 	LLVMValueRef puts_func = LLVMAddFunction(module, "printf", puts_type);
 	
 	LLVMValueRef out_string = LLVMBuildGlobalStringPtr(builder, child5->str, "helloWorld");
