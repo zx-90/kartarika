@@ -10,6 +10,7 @@
 
 KarParserStatus kar_parser_make_empty_block(KarToken* token, KarArray* errors) {
 	// TODO: Написать тесты на команду пропустить.
+	// TODO: Заменить токен INDENT на токен COMMAND_PASS.
 	if (token->children.count != 1) {
 		return KAR_PARSER_STATUS_NOT_PARSED;
 	}
@@ -21,13 +22,19 @@ KarParserStatus kar_parser_make_empty_block(KarToken* token, KarArray* errors) {
 	}
 	
 	if (tokenNum != 0) {
-		kar_module_error_create_add(errors, &token->cursor, 1, "Неизвестные токены перед командой пропустить.");
+		kar_module_error_create_add(errors, &command->cursor, 1, "Неизвестные токены перед командой пропустить.");
 		return KAR_PARSER_STATUS_ERROR;
 	}
 	if (command->children.count > 1) {
-		kar_module_error_create_add(errors, &kar_token_child(token, 1)->cursor, 1, "Неизвестные токены после команды пропустить.");
+		kar_module_error_create_add(errors, &kar_token_child(command, 1)->cursor, 1, "Неизвестные токены после команды пропустить.");
 		return KAR_PARSER_STATUS_ERROR;
 	}
+	
+	KarToken* keyword = kar_token_child(command, 0);
+	command->type = keyword->type;
+	command->cursor = keyword->cursor;
+	kar_token_set_str(command, NULL);
+	kar_token_child_erase(command, 0);
 	
 	return KAR_PARSER_STATUS_PARSED;
 }

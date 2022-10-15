@@ -13,7 +13,7 @@ KarParserStatus kar_parser_make_return(KarToken* token, KarArray* errors);
 KarParserStatus kar_parser_make_declaration(KarToken* token, KarArray* errors);
 KarParserStatus kar_parser_make_assign(KarToken* token, KarArray* errors);
 
-KarParserStatus kar_parser_make_block(KarToken* token);
+KarParserStatus kar_parser_make_block(KarToken* token, KarArray* errors);
 KarParserStatus kar_parser_make_empty_block(KarToken* token, KarArray* errors);
 
 bool kar_parser_parse_command(KarToken* token, KarArray* errors) {
@@ -47,7 +47,7 @@ bool kar_parser_parse_command(KarToken* token, KarArray* errors) {
 		return false;
 	}
 	
-	status = kar_parser_make_block(token);
+	status = kar_parser_make_block(token, errors);
 	if (status == KAR_PARSER_STATUS_PARSED) {
 		return true;
 	} else if (status == KAR_PARSER_STATUS_ERROR) {
