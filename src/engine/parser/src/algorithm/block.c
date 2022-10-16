@@ -8,8 +8,6 @@
 #include "core/module_error.h"
 #include "parser/base.h"
 
-//bool kar_parser_parse_algorithm(KarToken* token, KarArray* errors);
-
 KarParserStatus kar_parser_make_block(KarToken* token, KarArray* errors) {
 	size_t blockPos = kar_token_child_find(token, KAR_TOKEN_COMMAND_BLOCK);
 	
