@@ -27,6 +27,7 @@ src/algorithm/assign.c
 src/algorithm/block.c
 src/algorithm/pass.c
 src/algorithm/clean.c
+src/algorithm/if.c
 
 src/base/check.c
 

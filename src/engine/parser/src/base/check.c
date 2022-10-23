@@ -26,3 +26,42 @@ bool kar_parser_is_expression(KarTokenType type)
 		kar_token_type_is_variable(type) ||
 		kar_token_type_is_sign(type);
 }
+
+bool kar_parser_check_ifelse(KarToken* token) {
+	if (token->children.count != 5) {
+		return false;
+	}
+	if (kar_token_child(token, 0)->type != KAR_TOKEN_COMMAND_ELSE) {
+		return false;
+	}
+	if (kar_token_child(token, 1)->type != KAR_TOKEN_COMMAND_IF) {
+		return false;
+	}
+	if (!kar_parser_is_expression(kar_token_child(token, 2)->type)) {
+		return false;
+	}
+	if (kar_token_child(token, 3)->type != KAR_TOKEN_SIGN_COLON) {
+		return false;
+	}
+	if (kar_token_child(token, 4)->type != KAR_TOKEN_BLOCK_BODY) {
+		return false;
+	}
+	return true;
+}
+
+bool kar_parser_check_else(KarToken* token) {
+	if (token->children.count != 3) {
+		return false;
+	}
+	if (kar_token_child(token, 0)->type != KAR_TOKEN_COMMAND_ELSE) {
+		return false;
+	}
+	if (kar_token_child(token, 1)->type != KAR_TOKEN_SIGN_COLON) {
+		return false;
+	}
+	if (kar_token_child(token, 2)->type != KAR_TOKEN_BLOCK_BODY) {
+		return false;
+	}
+	return true;
+}
+

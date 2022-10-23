@@ -16,6 +16,8 @@ typedef enum {
 bool kar_parser_is_expression(KarTokenType type);
 bool kar_token_is_name(KarTokenType type);
 bool kar_token_is_type(KarTokenType type);
+bool kar_parser_check_ifelse(KarToken* token);
+bool kar_parser_check_else(KarToken* token);
 
 bool kar_parser_parse_algorithm(KarToken* token, KarArray* errors);
 

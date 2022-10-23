@@ -8,22 +8,6 @@
 #include "core/module_error.h"
 #include "parser/base.h"
 
-static bool kar_check_else(KarToken* token) {
-	if (token->children.count != 3) {
-		return false;
-	}
-	if (kar_token_child(token, 0)->type != KAR_TOKEN_COMMAND_ELSE) {
-		return false;
-	}
-	if (kar_token_child(token, 1)->type != KAR_TOKEN_SIGN_COLON) {
-		return false;
-	}
-	if (kar_token_child(token, 2)->type != KAR_TOKEN_BLOCK_BODY) {
-		return false;
-	}
-	return true;
-}
-
 KarParserStatus kar_parser_make_clean(KarToken* parent, size_t commandNum, KarArray* errors) {
 	
 	KarToken* token = kar_token_child(parent, commandNum);
@@ -119,7 +103,7 @@ KarParserStatus kar_parser_make_clean(KarToken* parent, size_t commandNum, KarAr
 		return KAR_PARSER_STATUS_PARSED;
 	}
 	KarToken* elseToken = kar_token_child(parent, commandNum + 1);
-	if (!kar_check_else(elseToken)) {
+	if (!kar_parser_check_else(elseToken)) {
 		return KAR_PARSER_STATUS_PARSED;
 	}
 	KarToken* elseBody = kar_token_child_tear(elseToken, 2);
