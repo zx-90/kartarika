@@ -108,7 +108,6 @@
 #define KAR_KEYWORD_COMMAND_CLEAN "раскрыть"
 #define KAR_KEYWORD_COMMAND_AS "как"
 
-#define KAR_KEYWORD_COMMAND_REPEAT "повторить"
 #define KAR_KEYWORD_COMMAND_WHILE "пока"
 #define KAR_KEYWORD_COMMAND_CONTINUE "следующий"
 #define KAR_KEYWORD_COMMAND_BREAK "прервать"

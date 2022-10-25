@@ -28,6 +28,7 @@ src/algorithm/block.c
 src/algorithm/pass.c
 src/algorithm/clean.c
 src/algorithm/if.c
+src/algorithm/while.c
 
 src/base/check.c
 

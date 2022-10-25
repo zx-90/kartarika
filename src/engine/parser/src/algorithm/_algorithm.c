@@ -17,6 +17,7 @@ KarParserStatus kar_parser_make_block(KarToken* token, KarArray* errors);
 KarParserStatus kar_parser_make_empty_block(KarToken* token, KarArray* errors);
 KarParserStatus kar_parser_make_clean(KarToken* parent, size_t commandNum, KarArray* errors);
 KarParserStatus kar_parser_make_if(KarToken* parent, size_t commandNum, KarArray* errors);
+KarParserStatus kar_parser_make_while(KarToken* token, KarArray* errors);
 
 bool kar_parser_parse_command(KarToken* parent, size_t commandNum, KarArray* errors) {
 	KarParserStatus status;
@@ -65,6 +66,13 @@ bool kar_parser_parse_command(KarToken* parent, size_t commandNum, KarArray* err
 	}
 	
 	status = kar_parser_make_if(parent, commandNum, errors);
+	if (status == KAR_PARSER_STATUS_PARSED) {
+		return true;
+	} else if (status == KAR_PARSER_STATUS_ERROR) {
+		return false;
+	}
+	
+	status = kar_parser_make_while(token, errors);
 	if (status == KAR_PARSER_STATUS_PARSED) {
 		return true;
 	} else if (status == KAR_PARSER_STATUS_ERROR) {
