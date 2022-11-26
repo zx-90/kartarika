@@ -14,6 +14,7 @@ src/expression/call_method.c
 src/expression/path.c
 src/expression/space.c
 src/expression/operand.c
+src/expression/after.c
 
 src/root/_root.c
 src/root/variable.c
