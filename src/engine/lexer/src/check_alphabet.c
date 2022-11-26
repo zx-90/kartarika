@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "core/string.h"
 #include "lexer/alphabet_list.h"
 
 static KAR_SCRIPT_NAME get_script_name(uint32_t buffer) {
@@ -33,32 +34,13 @@ static KAR_SCRIPT_NAME get_script_name(uint32_t buffer) {
 	return KAR_SCRIPT_UNKNOWN;
 }
 
-static uint32_t get_unicode(const char* text, size_t* shift) {
-	if (!(text[0] & 0x80)) {
-		*shift += 1;
-		return text[0] & 0x7F;
-	}
-	if ((text[0] & 0xC0) && !(text[0] & 0x20) && (text[1] & 0x80) && !(text[1] & 0x40)) {
-		*shift += 2;
-		return (uint32_t)(text[0] & 0x1F) * 0x40 + (text[1] & 0x3F);
-	}
-	if ((text[0] & 0xE0) && !(text[0] & 0x10) && (text[1] & 0x80) && !(text[1] & 0x40) && (text[2] & 0x80) && !(text[2] & 0x40)) {
-		*shift += 3;
-		return (uint32_t)(text[0] & 0x0F) * 0x40 * 0x40 + (uint32_t)(text[1] & 0x3F) * 0x40 + (text[2] & 0x3F);
-	}
-	if ((text[0] & 0xF0) && !(text[0] & 0x08) && (text[1] & 0x80) && !(text[1] & 0x40) && (text[2] & 0x80) && !(text[2] & 0x40) && (text[3] & 0x80) && !(text[3] & 0x40)) {
-		*shift += 4;
-		return (uint32_t)(text[0] & 0x0F) * 0x40 * 0x40 * 0x40 + (uint32_t)(text[1] & 0x3F) * 0x40 * 0x40 + (uint32_t)(text[2] & 0x3F) * 0x40 + (text[3] & 0x3F);
-	}
-	return 0;
-}
-
 bool kar_check_identifiers_alphabet(const char* text) {
 	uint32_t buffer = 0;
+	size_t len = strlen(text);
 	KAR_SCRIPT_NAME currentName = KAR_SCRIPT_UNKNOWN;
 	KAR_SCRIPT_NAME name = KAR_SCRIPT_UNKNOWN;
-	for (size_t count = 0; count < strlen(text);) {
-		buffer = get_unicode(&text[count], &count);
+	for (size_t count = 0; count < len;) {
+		buffer = kar_string_get_unicode(&text[count], &count);
 		currentName = get_script_name(buffer);
 		if (currentName == KAR_SCRIPT_UNKNOWN) {
 			return false;

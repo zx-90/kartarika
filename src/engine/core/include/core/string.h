@@ -9,6 +9,7 @@
 
 #include <stdarg.h>
 #include <stddef.h>
+#include <stdint.h>
 
 typedef const char* KarString;
 
@@ -26,5 +27,6 @@ char* kar_string_create_copy(const char* str);
 char* kar_string_create_concat(const char* str1, const char* str2);
 
 size_t kar_string_length(const char* str);
+uint32_t kar_string_get_unicode(const char* text, size_t* shift);
 
 #endif // KAR_STRING_H

@@ -63,12 +63,41 @@ static enum KarExpPosition get_exp_status(const char* str) {
 	return result;
 }
 
+bool is_hexadecimal(char* str) {
+	size_t len = strlen(str);
+	if (len < 4) {
+		return false;
+	}
+	if ((memcmp(str, "0ш", 3) != 0) && (memcmp(str, "0Ш", 3) != 0)) {
+		return false;
+	}
+	
+	uint32_t buffer = 0;
+	for (size_t count = 3; count < len;) {
+		buffer = kar_string_get_unicode(&str[count], &count);
+		if (buffer < 0x0030 || 
+			(buffer > 0x0039 && buffer < 0x0410) ||
+			(buffer > 0x0415 &&	buffer < 0x0430) ||
+			buffer > 0x0435) {
+			
+			return false;
+		}
+	}
+	
+	return true;
+}
+
 static bool check_for_number(KarToken* token, KarModule* module) {
 	// TODO: Плюс бесконеность, минус бесконечность, +0, -0, НеЧисло.
 	if (token->type != KAR_TOKEN_IDENTIFIER) {
 		return true;
 	}
 	if (!is_cypher(token->str[0])) {
+		return true;
+	}
+	
+	if (is_hexadecimal(token->str)) {
+		token->type = KAR_TOKEN_VAL_HEXADECIMAL;
 		return true;
 	}
 
