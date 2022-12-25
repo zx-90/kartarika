@@ -25,6 +25,7 @@ char* kar_string_create_format_args(const char* format, size_t size, va_list arg
 
 char* kar_string_create_copy(const char* str);
 char* kar_string_create_concat(const char* str1, const char* str2);
+char *kar_string_create_replace(char* orig, char* rep, char* with);
 
 size_t kar_string_length(const char* str);
 uint32_t kar_string_get_unicode(const char* text, size_t* shift);

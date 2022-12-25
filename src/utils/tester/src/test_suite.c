@@ -70,7 +70,6 @@ static KarError* run_dir(const char* path) {
 }
 
 KarError* kar_test_suite_run(const char* path) {
-
 	if (!kar_file_system_is_directory(path)) {
 		return kar_error_register(1, "Ошибка при поиске тестов. Объект \"%s\" не является каталогом.", path);
 	}

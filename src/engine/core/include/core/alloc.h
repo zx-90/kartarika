@@ -18,12 +18,16 @@
 // TODO: При написании "Ошибка выделении памяти." добавить информацию о месте ошибки и типе переменных.
 
 #define KAR_CREATE(var, type)\
-    type* (var) = (type*)malloc(sizeof(type)); if (!(var)) { fprintf(stderr, "Ошибка выделения памяти."); exit(1); } \
-    fprintf(stderr, "ALLOC: %p, TYPE: %s,  AT: %s:%d\n", (void*)(var), #type, __FILE__, __LINE__); fflush(stderr);
+    type* (var) = (type*)malloc(sizeof(type)); \
+    fprintf(stderr, "ALLOC: %p, TYPE: %s,  AT: %s:%d\n", (void*)(var), #type, __FILE__, __LINE__); \
+    if (!(var)) { fprintf(stderr, "Ошибка выделения памяти."); exit(1); } \
+	fflush(stderr);
 
 #define KAR_CREATES(var, type, count)\
-    type* (var) = (type*)malloc(sizeof(type) * (count)); if (!(var)) { fprintf(stderr, "Ошибка выделения памяти."); exit(1); } \
-    fprintf(stderr, "ALLOC: %p, TYPE: %s x %ld,  AT: %s:%d\n", (void*)(var), #type, (count), __FILE__, __LINE__); fflush(stderr);
+    type* (var) = (type*)malloc(sizeof(type) * (count)); \
+    fprintf(stderr, "ALLOC: %p, TYPE: %s x %ld,  AT: %s:%d\n", (void*)(var), #type, (count), __FILE__, __LINE__); \
+    if (!(var)) { fprintf(stderr, "Ошибка выделения памяти."); exit(1); } \
+	fflush(stderr);
 
 #define KAR_ALLOC(var, type)\
     (var) = (type*)malloc(sizeof(type)); if (!(var)) { fprintf(stderr, "Ошибка выделения памяти."); exit(1); } \

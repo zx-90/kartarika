@@ -133,7 +133,7 @@ static bool parse_method_parameters(KarToken* token, KarArray* errors) {
 	const size_t CHILD_INDEX = 1;
 	KarToken* parameters = kar_token_child_tear(token, CHILD_INDEX);
 	parameters->type = KAR_TOKEN_METHOD_PARAMETERS;
-	KAR_FREE(parameters->str)
+	KAR_FREE(parameters->str);
 	parameters->str = NULL;
 	kar_token_child_insert(token, parameters, 1);
 	

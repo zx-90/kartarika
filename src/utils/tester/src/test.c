@@ -53,10 +53,7 @@ KarTest* kar_test_create() {
 	kar_path_element_init(&result->lexer_file);
 	kar_path_element_init(&result->parser_error_file);
 	kar_path_element_init(&result->parser_file);
-	kar_path_element_init(&result->analyzer_error_file);
-	kar_path_element_init(&result->analyzer_file);
 	kar_path_element_init(&result->compiler_error_file);
-	kar_path_element_init(&result->out_error_file);
 	kar_path_element_init(&result->out_file);
 	kar_path_element_init(&result->comment_file);
 	
@@ -69,10 +66,7 @@ void kar_test_free(KarTest* test) {
 	kar_path_element_clear(&test->lexer_file);
 	kar_path_element_clear(&test->parser_error_file);
 	kar_path_element_clear(&test->parser_file);
-	kar_path_element_clear(&test->analyzer_error_file);
-	kar_path_element_clear(&test->analyzer_file);
 	kar_path_element_clear(&test->compiler_error_file);
-	kar_path_element_clear(&test->out_error_file);
 	kar_path_element_clear(&test->out_file);
 	kar_path_element_clear(&test->comment_file);
 	
@@ -114,31 +108,22 @@ static KarError* check_for_test_directory(KarTest* test, char** files, size_t fi
 			error = check_file_object(file, true, &test->parser_error_file);
 		} else if (!strcmp(filename, KAR_PARSER_FILENAME)) {
 			error = check_file_object(file, true, &test->parser_file);
-		} else if (!strcmp(filename, KAR_ANALYZER_ERROR_FILENAME)) {
-			error = check_file_object(file, true, &test->analyzer_error_file);
-		} else if (!strcmp(filename, KAR_ANALYZER_FILENAME)) {
-			error = check_file_object(file, true, &test->analyzer_file);
 		} else if (!strcmp(filename, KAR_COMPILER_ERROR_FILENAME)) {
 			error = check_file_object(file, true, &test->compiler_error_file);
-		} else if (!strcmp(filename, KAR_OUT_ERROR_FILENAME)) {
-			error = check_file_object(file, true, &test->out_error_file);
 		} else if (!strcmp(filename, KAR_OUT_FILENAME)) {
 			error = check_file_object(file, true, &test->out_file);
 		} else if (!strcmp(filename, KAR_COMMENT_FILENAME)) {
 			error = check_file_object(file, true, &test->comment_file);
 		} else {
 			return kar_error_register(1,
-				"Объект %s лишний для тестового каталога.\nДопустимые имена: %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s.",
+				"Объект %s лишний для тестового каталога.\nДопустимые имена: %s, %s, %s, %s, %s, %s, %s, %s.",
 				filename,
 				KAR_PROJECT_FILENAME,
 				KAR_LEXER_ERROR_FILENAME, 
 				KAR_LEXER_FILENAME,
 				KAR_PARSER_ERROR_FILENAME,
 				KAR_PARSER_FILENAME,
-				KAR_ANALYZER_ERROR_FILENAME,
-				KAR_ANALYZER_FILENAME,
 				KAR_COMPILER_ERROR_FILENAME,
-				KAR_OUT_ERROR_FILENAME,
 				KAR_OUT_FILENAME,
 				KAR_COMMENT_FILENAME
 			);
@@ -157,9 +142,7 @@ static KarError* check_for_integrity(KarTest* test) {
 	if (
 		!test->lexer_error_file.is && !test->lexer_file.is &&
 		!test->parser_error_file.is && !test->parser_file.is &&
-		!test->analyzer_error_file.is && !test->analyzer_file.is &&
-		!test->compiler_error_file.is &&
-		!test->out_error_file.is && !test->out_file.is
+		!test->compiler_error_file.is && !test->out_file.is
 	) {
 		return kar_error_register(1, "В тесте нет ни одного шаблона для сравнения. Нет выходных данных для сравнения результата тестов.");
 	}
@@ -174,17 +157,8 @@ static KarError* check_for_integrity(KarTest* test) {
 		if (test->parser_file.is) {
 			return kar_error_register(1, "В тесте присутствуют одновременно %s и %s. Если лексер выдает ошибку, то парсер уже не запускается.", KAR_LEXER_ERROR_FILENAME, KAR_PARSER_FILENAME);
 		}
-		if (test->analyzer_error_file.is) {
-			return kar_error_register(1, "В тесте присутствуют одновременно %s и %s. Если лексер выдает ошибку, то анализатор уже не запускается.", KAR_LEXER_ERROR_FILENAME, KAR_ANALYZER_ERROR_FILENAME);
-		}
-		if (test->analyzer_file.is) {
-			return kar_error_register(1, "В тесте присутствуют одновременно %s и %s. Если лексер выдает ошибку, то анализатор уже не запускается.", KAR_LEXER_ERROR_FILENAME, KAR_ANALYZER_FILENAME);
-		}
 		if (test->compiler_error_file.is) {
 			return kar_error_register(1, "В тесте присутствуют одновременно %s и %s. Если лексер выдает ошибку, то компилятор уже не запускается.", KAR_LEXER_ERROR_FILENAME, KAR_COMPILER_ERROR_FILENAME);
-		}
-		if (test->out_error_file.is) {
-			return kar_error_register(1, "В тесте присутствуют одновременно %s и %s. Если лексер выдает ошибку, то программа не скомпилируется и не запустится.", KAR_LEXER_ERROR_FILENAME, KAR_OUT_ERROR_FILENAME);
 		}
 		if (test->out_file.is) {
 			return kar_error_register(1, "В тесте присутствуют одновременно %s и %s. Если лексер выдает ошибку, то программа не скомпилируется и не запустится.", KAR_LEXER_ERROR_FILENAME, KAR_OUT_FILENAME);
@@ -195,42 +169,15 @@ static KarError* check_for_integrity(KarTest* test) {
 		if (test->parser_file.is) {
 			return kar_error_register(1, "В тесте присутствуют одновременно %s и %s. Результат работы парсера не может быть одновременно положительным и отрицательным.", KAR_PARSER_ERROR_FILENAME, KAR_PARSER_FILENAME);
 		}
-		if (test->analyzer_error_file.is) {
-			return kar_error_register(1, "В тесте присутствуют одновременно %s и %s. Если парсер выдает ошибку, то анализатор уже не запускается.", KAR_PARSER_ERROR_FILENAME, KAR_ANALYZER_ERROR_FILENAME);
-		}
-		if (test->analyzer_file.is) {
-			return kar_error_register(1, "В тесте присутствуют одновременно %s и %s. Если парсер выдает ошибку, то анализатор уже не запускается.", KAR_PARSER_ERROR_FILENAME, KAR_ANALYZER_FILENAME);
-		}
 		if (test->compiler_error_file.is) {
 			return kar_error_register(1, "В тесте присутствуют одновременно %s и %s. Если парсер выдает ошибку, то компилятор уже не запускается.", KAR_PARSER_ERROR_FILENAME, KAR_COMPILER_ERROR_FILENAME);
-		}
-		if (test->out_error_file.is) {
-			return kar_error_register(1, "В тесте присутствуют одновременно %s и %s. Если парсер выдает ошибку, то программа не скомпилируется и не запустится.", KAR_PARSER_ERROR_FILENAME, KAR_OUT_ERROR_FILENAME);
 		}
 		if (test->out_file.is) {
 			return kar_error_register(1, "В тесте присутствуют одновременно %s и %s. Если парсер выдает ошибку, то программа не скомпилируется и не запустится.", KAR_PARSER_ERROR_FILENAME, KAR_OUT_FILENAME);
 		}
 	}
 	
-	if (test->analyzer_error_file.is) {
-		if (test->analyzer_file.is) {
-			return kar_error_register(1, "В тесте присутствуют одновременно %s и %s. Результат работы анализатора не может быть одновременно положительным и отрицательным.", KAR_ANALYZER_ERROR_FILENAME, KAR_ANALYZER_FILENAME);
-		}
-		if (test->compiler_error_file.is) {
-			return kar_error_register(1, "В тесте присутствуют одновременно %s и %s. Если анализатор выдает ошибку, то компилятор уже не запускается.", KAR_ANALYZER_ERROR_FILENAME, KAR_COMPILER_ERROR_FILENAME);
-		}
-		if (test->out_error_file.is) {
-			return kar_error_register(1, "В тесте присутствуют одновременно %s и %s. Если анализатор выдает ошибку, то программа не скомпилируется и не запустится.", KAR_ANALYZER_ERROR_FILENAME, KAR_OUT_ERROR_FILENAME);
-		}
-		if (test->out_file.is) {
-			return kar_error_register(1, "В тесте присутствуют одновременно %s и %s. Если анализатор выдает ошибку, то программа не скомпилируется и не запустится.", KAR_ANALYZER_ERROR_FILENAME, KAR_OUT_FILENAME);
-		}
-	}
-	
 	if (test->compiler_error_file.is) {
-		if (test->out_error_file.is) {
-			return kar_error_register(1, "В тесте присутствуют одновременно %s и %s. Если компилятор выдает ошибку, то программа не скомпилируется и не запустится.", KAR_COMPILER_ERROR_FILENAME, KAR_OUT_ERROR_FILENAME);
-		}
 		if (test->out_file.is) {
 			return kar_error_register(1, "В тесте присутствуют одновременно %s и %s. Если компилятор выдает ошибку, то программа не скомпилируется и не запустится.", KAR_COMPILER_ERROR_FILENAME, KAR_OUT_FILENAME);
 		}
@@ -345,10 +292,7 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 	if (
 		test->parser_error_file.is ||
 		test->parser_file.is ||
-		test->analyzer_error_file.is ||
-		test->analyzer_file.is ||
 		test->compiler_error_file.is ||
-		test->out_error_file.is ||
 		test->out_file.is
 	) {
 		bool parserResult = kar_parser_run(module);
@@ -407,47 +351,33 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 	}
 	
 	if (
-		test->analyzer_error_file.is ||
-		test->analyzer_file.is ||
 		test->compiler_error_file.is ||
-		test->out_error_file.is ||
-		test->out_file.is
-	) {
-		// TODO: Здесь должно быть тестирование анализатора.
-		
-	}
-
-	if (
-		test->compiler_error_file.is ||
-		test->out_error_file.is ||
 		test->out_file.is
 	) {
 		// TODO: Компилировать и собирать исполняемый файл в отдельном каталоге.
 		bool generatorResult = kar_generator_run(module);
-		if (test->compiler_error_file.is) {
-			if (!generatorResult) {
-				// TODO: Возможно в файле сообщения об ошибке можно добавить формат для сравнения результатов.
-				kar_module_free(module);
-				KAR_FREE(path2);
-				return NULL;
-			} else {
+		if (generatorResult) {
+			if (test->compiler_error_file.is) {
 				kar_module_free(module);
 				KAR_FREE(path2);
 				return kar_error_register(1, "Ошибка в компиляторе. Ожидалось, что компилятор вернет ошибку, но он отработал нормально.");
 			}
+		} else {
+			if (!test->compiler_error_file.is) {
+				kar_module_free(module);
+				KAR_FREE(path2);
+				return kar_error_register(1, "Ошибка в компиляторе. Ожидалось, что компилятор отработает нормально, но он вернул ошибку.");
+			}
 		}
 	}
 	
-	if (
-		test->out_error_file.is ||
-		test->out_file.is
-	) {
+	if (test->out_file.is) {
 		// TODO: Зависит от ОС. Перетащить в соответствующий модуль.
 		// TODO: Проверить откомпилировалась ли программа.
 		#ifdef __linux__
-				system("./a.out > out.txt 2> error.txt");
+				system("./a.out > out.txt 2> out.txt");
 		#elif _WIN32
-				system("a.exe > out.txt 2> error.txt");
+				system("a.exe > out.txt 2> out.txt");
 		#endif
 
 		char* gold_path = kar_string_create_concat(path2, kar_file_system_get_basename(test->out_file.path));
@@ -459,7 +389,7 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 
 		if (cursor) {
 			KarError* result = kar_error_register(1, "Ошибка в выходном потоке. Вывод программы не совпадает с ожидаемым [%d;%d].\n"
-				"Эталон:\n%s\nВывод программы:\n%s",
+				"Эталон:\n%s\nВывод программы:\n%s\n",
 				cursor->line, cursor->column, gold, out
 			);
 			kar_module_free(module);
@@ -469,11 +399,8 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 			KAR_FREE(cursor);
 			return result;
 		} 
-
-		// TODO: доделать.
-		if (test->out_file.is) {
-		}
-		// TODO: написать проверку для вывода в поток ошибок.
+	} else {
+		
 	}
 
 	// TODO: Эта строка для вывода всех сообщений об ошибках.

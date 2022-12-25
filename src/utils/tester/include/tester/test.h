@@ -16,11 +16,8 @@
 #define KAR_LEXER_FILENAME "лексер"
 #define KAR_PARSER_ERROR_FILENAME "парсер.ошибка"
 #define KAR_PARSER_FILENAME "парсер"
-#define KAR_ANALYZER_ERROR_FILENAME "анализатор.ошибка"
-#define KAR_ANALYZER_FILENAME "анализатор"
 #define KAR_COMPILER_ERROR_FILENAME "компилятор.ошибка"
-#define KAR_OUT_ERROR_FILENAME "выход.ошибка"
-#define KAR_OUT_FILENAME "выход"
+#define KAR_OUT_FILENAME "вывод"
 #define KAR_COMMENT_FILENAME "коммент"
 
 typedef struct {
@@ -37,12 +34,7 @@ typedef struct {
 	KarPathElement parser_error_file;
 	KarPathElement parser_file;
 	
-	KarPathElement analyzer_error_file;
-	KarPathElement analyzer_file;
-	
 	KarPathElement compiler_error_file;
-
-	KarPathElement out_error_file;
 	KarPathElement out_file;
 	
 	KarPathElement comment_file;
