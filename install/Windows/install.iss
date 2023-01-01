@@ -1,21 +1,26 @@
-; Имя приложения
-#define   Name       "Картарика"
-; Версия приложения
+; Copyright В© 2022 Abdullin Timur <abdtimurrif@gmail.com>
+; 
+; Distributed under the terms of the GNU LGPL v3 license. See accompanying
+; file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
+
+; РРјСЏ РїСЂРёР»РѕР¶РµРЅРёСЏ
+#define   Name       "РљР°СЂС‚Р°СЂРёРєР°"
+; Р’РµСЂСЃРёСЏ РїСЂРёР»РѕР¶РµРЅРёСЏ
 #define   Version    "0.1"
-; Фирма-разработчик
+; Р¤РёСЂРјР°-СЂР°Р·СЂР°Р±РѕС‚С‡РёРє
 #define   Publisher  "Kartarika"
-; Сафт фирмы разработчика
+; РЎР°С„С‚ С„РёСЂРјС‹ СЂР°Р·СЂР°Р±РѕС‚С‡РёРєР°
 #define   URL        "http://kartarika.ru"
-; Имя исполняемого модуля
+; РРјСЏ РёСЃРїРѕР»РЅСЏРµРјРѕРіРѕ РјРѕРґСѓР»СЏ
 #define   ExeName    "kar.exe"
 
 [Setup]
 
-; Уникальный идентификатор приложения, 
-;сгенерированный через Tools -> Generate GUID
+; РЈРЅРёРєР°Р»СЊРЅС‹Р№ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РїСЂРёР»РѕР¶РµРЅРёСЏ, 
+;СЃРіРµРЅРµСЂРёСЂРѕРІР°РЅРЅС‹Р№ С‡РµСЂРµР· Tools -> Generate GUID
 AppId={{B7F1DC74-A423-4002-8567-CBD5E4A19D44}
 
-; Прочая информация, отображаемая при установке
+; РџСЂРѕС‡Р°СЏ РёРЅС„РѕСЂРјР°С†РёСЏ, РѕС‚РѕР±СЂР°Р¶Р°РµРјР°СЏ РїСЂРё СѓСЃС‚Р°РЅРѕРІРєРµ
 AppName={#Name}
 AppVersion={#Version}
 AppPublisher={#Publisher}
@@ -23,25 +28,25 @@ AppPublisherURL={#URL}
 AppSupportURL={#URL}
 AppUpdatesURL={#URL}
 
-; Путь установки по-умолчанию
+; РџСѓС‚СЊ СѓСЃС‚Р°РЅРѕРІРєРё РїРѕ-СѓРјРѕР»С‡Р°РЅРёСЋ
 DefaultDirName={pf}\{#Name}
-; Имя группы в меню "Пуск"
+; РРјСЏ РіСЂСѓРїРїС‹ РІ РјРµРЅСЋ "РџСѓСЃРє"
 DefaultGroupName={#Name}
 
-; Каталог, куда будет записан собранный setup и имя исполняемого файла
+; РљР°С‚Р°Р»РѕРі, РєСѓРґР° Р±СѓРґРµС‚ Р·Р°РїРёСЃР°РЅ СЃРѕР±СЂР°РЅРЅС‹Р№ setup Рё РёРјСЏ РёСЃРїРѕР»РЅСЏРµРјРѕРіРѕ С„Р°Р№Р»Р°
 OutputDir=..\..\build\bin\install
 OutputBaseFileName=install
 
-; Файл иконки
+; Р¤Р°Р№Р» РёРєРѕРЅРєРё
 SetupIconFile=..\Resources\kartarika.ico
 
-; Параметры сжатия
+; РџР°СЂР°РјРµС‚СЂС‹ СЃР¶Р°С‚РёСЏ
 Compression=lzma
 SolidCompression=yes
 
 LicenseFile="../../LICENSE"
 [Tasks]
-; Создание иконки на рабочем столе
+; РЎРѕР·РґР°РЅРёРµ РёРєРѕРЅРєРё РЅР° СЂР°Р±РѕС‡РµРј СЃС‚РѕР»Рµ
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Languages]
@@ -50,10 +55,10 @@ Name: "english"; MessagesFile: "compiler:Default.isl";
 
 [Files]
 
-; Исполняемый файл
+; РСЃРїРѕР»РЅСЏРµРјС‹Р№ С„Р°Р№Р»
 Source: "..\..\build\bin\kar.exe"; DestDir: "{app}"; AfterInstall: EnvAddPath(ExpandConstant('{app}')); Flags: ignoreversion; 
 
-; Прилагающиеся ресурсы
+; РџСЂРёР»Р°РіР°СЋС‰РёРµСЃСЏ СЂРµСЃСѓСЂСЃС‹
 Source: "..\..\build\bin\LLVM-C.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 
