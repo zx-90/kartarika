@@ -84,9 +84,9 @@
 #define KAR_KEYWORD_SIGN_AND "и"
 #define KAR_KEYWORD_SIGN_OR "или"
 #define KAR_KEYWORD_SIGN_NOT "не"
-#define KAR_KEYWORD_SIGN_GREATER "больше"
+#define KAR_KEYWORD_SIGN_GREATER "бш"
 #define KAR_KEYWORD_SIGN_GREATER_OR_EQUAL "бир"
-#define KAR_KEYWORD_SIGN_LESS "меньше"
+#define KAR_KEYWORD_SIGN_LESS "мш"
 #define KAR_KEYWORD_SIGN_LESS_OR_EQUAL "мир"
 
 #define KAR_KEYWORD_SIGN_BIT_AND "би"
