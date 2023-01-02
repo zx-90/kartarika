@@ -1,13 +1,13 @@
-MODULE(1, 1): [NULL]
+MODULE(1, 1): --
 	FIELD_VAR(1, 1): [Кар]
-		VAR_MODIFIER(1, 1): [NULL]
-			VAR_MODIFIER_PUBLIC(1, 1): [NULL]
-			MODIFIER_STAT(1, 10): [NULL]
-		BLOCK_BODY(1, 37): [NULL]
-			SIGN_BIT_OR(1, 37): [NULL]
-				SIGN_BIT_XOR(1, 28): [NULL]
+		VAR_MODIFIER(1, 1): --
+			VAR_MODIFIER_PUBLIC(1, 1): --
+			MODIFIER_STAT(1, 10): --
+		BLOCK_BODY(1, 37): --
+			SIGN_BIT_OR(1, 37): --
+				SIGN_BIT_XOR(1, 28): --
 					IDENTIFIER(1, 26): [А]
 					IDENTIFIER(1, 35): [Б]
-				SIGN_BIT_XOR(1, 44): [NULL]
+				SIGN_BIT_XOR(1, 44): --
 					IDENTIFIER(1, 42): [В]
 					IDENTIFIER(1, 51): [Г]

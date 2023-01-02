@@ -1,10 +1,10 @@
-MODULE(1, 1): [NULL]
+MODULE(1, 1): --
 	FIELD_VAR(1, 1): [Кар]
-		VAR_MODIFIER(1, 1): [NULL]
-			VAR_MODIFIER_PUBLIC(1, 1): [NULL]
-			MODIFIER_STAT(1, 10): [NULL]
-		BLOCK_BODY(1, 26): [NULL]
-			SIGN_NOT(1, 26): [NULL]
-				SIGN_CLEAN(1, 35): [NULL]
+		VAR_MODIFIER(1, 1): --
+			VAR_MODIFIER_PUBLIC(1, 1): --
+			MODIFIER_STAT(1, 10): --
+		BLOCK_BODY(1, 26): --
+			SIGN_NOT(1, 26): --
+				SIGN_CLEAN(1, 35): --
 					IDENTIFIER(1, 29): [Поле1]
-					VAL_FALSE(1, 37): [NULL]
+					VAL_FALSE(1, 37): --

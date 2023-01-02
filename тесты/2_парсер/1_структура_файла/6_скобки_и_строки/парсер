@@ -1,20 +1,20 @@
-MODULE(1, 1): [NULL]
+MODULE(1, 1): --
 	METHOD(1, 1): [Запустить]
-		METHOD_MODIFIER(1, 1): [NULL]
-			MODIFIER_STAT(1, 1): [NULL]
-		METHOD_PARAMETERS(1, 21): [NULL]
-		METHOD_RETURN_TYPE(3, 3): [NULL]
-			VAR_INTEGER64(3, 3): [NULL]
-		BLOCK_BODY(4, 1): [NULL]
-			COMMAND_EXPRESSION(4, 2): [NULL]
-				SIGN_GET_FIELD(4, 5): [NULL]
+		METHOD_MODIFIER(1, 1): --
+			MODIFIER_STAT(1, 1): --
+		METHOD_PARAMETERS(1, 21): --
+		METHOD_RETURN_TYPE(3, 3): --
+			VAR_INTEGER64(3, 3): --
+		BLOCK_BODY(4, 1): --
+			COMMAND_EXPRESSION(4, 2): --
+				SIGN_GET_FIELD(4, 5): --
 					IDENTIFIER(4, 2): [Кар]
-					SIGN_CALL_METHOD(4, 6): [NULL]
+					SIGN_CALL_METHOD(4, 6): --
 						IDENTIFIER(4, 6): [Печатать]
-						SIGN_ARGUMENT(6, 3): [NULL]
+						SIGN_ARGUMENT(6, 3): --
 							VAL_INTEGER(6, 3): [45]
-						SIGN_ARGUMENT(7, 1): [NULL]
+						SIGN_ARGUMENT(7, 1): --
 							VAL_STRING(7, 1): [Привет, мир!!!
  +            +]
-			COMMAND_RETURN(10, 2): [NULL]
+			COMMAND_RETURN(10, 2): --
 				VAL_INTEGER(10, 10): [0]

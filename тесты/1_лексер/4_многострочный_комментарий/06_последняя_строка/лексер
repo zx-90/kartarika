@@ -1,6 +1,6 @@
-MODULE(1, 1): [NULL]
+MODULE(1, 1): --
 	INDENT(1, 1): []
 	INDENT(2, 1): []
 	IDENTIFIER(2, 1): [Кар]
-	COMMENT(2, 4): [NULL]
+	COMMENT(2, 4): --
 	IDENTIFIER(2, 35): [Кар2]

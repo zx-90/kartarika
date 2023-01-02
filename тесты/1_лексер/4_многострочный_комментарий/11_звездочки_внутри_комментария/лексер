@@ -1,5 +1,5 @@
-MODULE(1, 1): [NULL]
+MODULE(1, 1): --
 	INDENT(1, 1): []
 	INDENT(2, 1): []
-	COMMENT(2, 1): [NULL]
+	COMMENT(2, 1): --
 	INDENT(3, 1): []

@@ -1,13 +1,13 @@
-MODULE(1, 1): [NULL]
+MODULE(1, 1): --
 	FIELD_VAR(1, 1): [Кар]
-		VAR_MODIFIER(1, 1): [NULL]
-			VAR_MODIFIER_PUBLIC(1, 1): [NULL]
-			MODIFIER_STAT(1, 10): [NULL]
-		BLOCK_BODY(1, 42): [NULL]
-			SIGN_BIT_RIGHT(1, 42): [NULL]
-				SIGN_PLUS(1, 33): [NULL]
+		VAR_MODIFIER(1, 1): --
+			VAR_MODIFIER_PUBLIC(1, 1): --
+			MODIFIER_STAT(1, 10): --
+		BLOCK_BODY(1, 42): --
+			SIGN_BIT_RIGHT(1, 42): --
+				SIGN_PLUS(1, 33): --
 					IDENTIFIER(1, 26): [Число1]
 					IDENTIFIER(1, 35): [Число2]
-				SIGN_MINUS(1, 51): [NULL]
+				SIGN_MINUS(1, 51): --
 					VAL_INTEGER(1, 49): [2]
 					VAL_INTEGER(1, 53): [1]

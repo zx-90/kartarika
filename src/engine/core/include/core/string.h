@@ -13,8 +13,6 @@
 
 typedef const char* KarString;
 
-#define KAR_STRING_NULL_PROTECT(str) ((str) ? (str) : "NULL")
-
 void kar_string_list_free(char** list, size_t count);
 
 void kar_string_list_quick_sort(char** list, size_t length);

@@ -1,41 +1,41 @@
-MODULE(1, 1): [NULL]
+MODULE(1, 1): --
 	METHOD(1, 1): [Запустить]
-		METHOD_MODIFIER(1, 1): [NULL]
-			MODIFIER_STAT(1, 1): [NULL]
-		METHOD_PARAMETERS(1, 21): [NULL]
-		METHOD_RETURN_TYPE(1, 23): [NULL]
-		BLOCK_BODY(2, 1): [NULL]
-			COMMAND_IF(2, 2): [NULL]
-				SIGN_EQUAL(2, 9): [NULL]
+		METHOD_MODIFIER(1, 1): --
+			MODIFIER_STAT(1, 1): --
+		METHOD_PARAMETERS(1, 21): --
+		METHOD_RETURN_TYPE(1, 23): --
+		BLOCK_BODY(2, 1): --
+			COMMAND_IF(2, 2): --
+				SIGN_EQUAL(2, 9): --
 					IDENTIFIER(2, 7): [А]
 					VAL_INTEGER(2, 12): [3]
-				BLOCK_BODY(3, 1): [NULL]
-					COMMAND_EXPRESSION(3, 3): [NULL]
-						SIGN_GET_FIELD(3, 6): [NULL]
+				BLOCK_BODY(3, 1): --
+					COMMAND_EXPRESSION(3, 3): --
+						SIGN_GET_FIELD(3, 6): --
 							IDENTIFIER(3, 3): [Кар]
-							SIGN_CALL_METHOD(3, 7): [NULL]
+							SIGN_CALL_METHOD(3, 7): --
 								IDENTIFIER(3, 7): [Печатать]
-								SIGN_ARGUMENT(3, 16): [NULL]
+								SIGN_ARGUMENT(3, 16): --
 									IDENTIFIER(3, 16): [Б]
-				SIGN_EQUAL(4, 15): [NULL]
+				SIGN_EQUAL(4, 15): --
 					IDENTIFIER(4, 13): [А]
 					VAL_INTEGER(4, 18): [4]
-				BLOCK_BODY(5, 1): [NULL]
-					COMMAND_EXPRESSION(5, 3): [NULL]
-						SIGN_GET_FIELD(5, 6): [NULL]
+				BLOCK_BODY(5, 1): --
+					COMMAND_EXPRESSION(5, 3): --
+						SIGN_GET_FIELD(5, 6): --
 							IDENTIFIER(5, 3): [Кар]
-							SIGN_CALL_METHOD(5, 7): [NULL]
+							SIGN_CALL_METHOD(5, 7): --
 								IDENTIFIER(5, 7): [Печатать]
-								SIGN_ARGUMENT(5, 16): [NULL]
+								SIGN_ARGUMENT(5, 16): --
 									IDENTIFIER(5, 16): [В]
-				SIGN_EQUAL(6, 15): [NULL]
+				SIGN_EQUAL(6, 15): --
 					IDENTIFIER(6, 13): [А]
 					VAL_INTEGER(6, 18): [5]
-				BLOCK_BODY(7, 1): [NULL]
-					COMMAND_EXPRESSION(7, 3): [NULL]
-						SIGN_GET_FIELD(7, 6): [NULL]
+				BLOCK_BODY(7, 1): --
+					COMMAND_EXPRESSION(7, 3): --
+						SIGN_GET_FIELD(7, 6): --
 							IDENTIFIER(7, 3): [Кар]
-							SIGN_CALL_METHOD(7, 7): [NULL]
+							SIGN_CALL_METHOD(7, 7): --
 								IDENTIFIER(7, 7): [Печатать]
-								SIGN_ARGUMENT(7, 16): [NULL]
+								SIGN_ARGUMENT(7, 16): --
 									IDENTIFIER(7, 16): [Г]

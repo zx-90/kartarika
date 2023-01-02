@@ -1,3 +1,3 @@
-MODULE(1, 1): [NULL]
+MODULE(1, 1): --
 	INDENT(1, 1): []
 	VAL_FLOAT(1, 1): [2с3]
