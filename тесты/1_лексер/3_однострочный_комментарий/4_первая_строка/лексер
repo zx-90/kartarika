@@ -1,4 +1,4 @@
 MODULE(1, 1): [NULL]
 	INDENT(1, 1): []
-	COMMENT(1, 1): [ Однострочный комментарий]
+	COMMENT(1, 1): [NULL]
 	INDENT(2, 1): []

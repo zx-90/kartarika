@@ -112,11 +112,31 @@ size_t kar_token_child_find(KarToken* token, const KarTokenType type) {
 	return pos;
 }
 
+static void restore_str(KarToken* token) {
+	// TODO: Возможно стоит дописать для других типов.
+	if (token->str != NULL) {
+		return;
+	}
+	if (token->type == KAR_TOKEN_SIGN_GET_FIELD) {
+		kar_token_set_str(token, ".");
+	} else if (token->type == KAR_TOKEN_SIGN_PLUS) {
+		kar_token_set_str(token, "+");
+	} else if (token->type == KAR_TOKEN_SIGN_MINUS) {
+		kar_token_set_str(token, "-");
+	} else if (token->type == KAR_TOKEN_SIGN_SINGLE_PLUS) {
+		kar_token_set_str(token, "+");
+	} else if (token->type == KAR_TOKEN_SIGN_SINGLE_MINUS) {
+		kar_token_set_str(token, "-");
+	}
+}
+
 KarToken* kar_token_join_children(KarToken* token, size_t first, size_t count) {
 	KarToken* first_token = kar_token_child(token, first);
+	restore_str(first_token);
 
 	for (size_t i = 0; i < count - 1; ++i) {
 		KarToken* next_token = kar_token_child(token, first + 1);
+		restore_str(next_token);
 
 		char* join_str = kar_string_create_concat(first_token->str, next_token->str);
 		KAR_FREE(first_token->str);

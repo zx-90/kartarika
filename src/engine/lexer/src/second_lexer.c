@@ -17,6 +17,7 @@
 static void retype_if_check(KarToken* token, KarTokenType checkType, const char* str, KarTokenType newType) {
 	if (token->type == checkType && !strcmp(token->str, str)) {
 		token->type = newType;
+		kar_token_set_str(token, NULL);
 	}
 }
 
@@ -171,9 +172,9 @@ static bool retype_all(KarToken* token, KarModule* module) {
 	// Знаки
 	retype_if_check(token, KAR_TOKEN_SIGN, KAR_KEYWORD_SIGN_OPEN_BRACES, KAR_TOKEN_SIGN_OPEN_BRACES);
 	retype_if_check(token, KAR_TOKEN_SIGN, KAR_KEYWORD_SIGN_CLOSE_BRACES, KAR_TOKEN_SIGN_CLOSE_BRACES);
+	retype_if_check(token, KAR_TOKEN_SIGN, KAR_KEYWORD_SIGN_GET_FIELD, KAR_TOKEN_SIGN_GET_FIELD);
 	retype_if_check(token, KAR_TOKEN_SIGN, KAR_KEYWORD_SIGN_UNCLEAN, KAR_TOKEN_SIGN_UNCLEAN);
 	retype_if_check(token, KAR_TOKEN_SIGN, KAR_KEYWORD_SIGN_CLEAN, KAR_TOKEN_SIGN_CLEAN);
-	retype_if_check(token, KAR_TOKEN_SIGN, KAR_KEYWORD_SIGN_GET_FIELD, KAR_TOKEN_SIGN_GET_FIELD);
 	retype_if_check(token, KAR_TOKEN_SIGN, KAR_KEYWORD_SIGN_COMMA, KAR_TOKEN_SIGN_COMMA);
 	retype_if_check(token, KAR_TOKEN_SIGN, KAR_KEYWORD_SIGN_COLON, KAR_TOKEN_SIGN_COLON);
 	
@@ -264,7 +265,7 @@ static bool concat_signs(KarToken* token) {
 		for (size_t j = 0; j < CONCAT_LIST_SIZE; ++j) {
 			if (curType == CONCAT_LIST[j][0] && nextType == CONCAT_LIST[j][1]) {
 				cur->type = CONCAT_LIST[j][2];
-				kar_token_join_children(token, i, 2);
+				kar_token_child_erase(token, i+1);
 			}
 		}
 	}

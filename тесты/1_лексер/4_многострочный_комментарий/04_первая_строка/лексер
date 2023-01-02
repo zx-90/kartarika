@@ -1,5 +1,5 @@
 MODULE(1, 1): [NULL]
 	INDENT(1, 1): []
-	COMMENT(1, 1): [ Многострочный комментарий ]
+	COMMENT(1, 1): [NULL]
 	IDENTIFIER(1, 32): [Кар]
 	INDENT(2, 1): []

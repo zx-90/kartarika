@@ -1,5 +1,5 @@
 MODULE(1, 1): [NULL]
 	INDENT(1, 1): []
 	INDENT(2, 1): []
-	COMMENT(2, 1): [ Однострочный комментарий]
+	COMMENT(2, 1): [NULL]
 	INDENT(3, 1): []

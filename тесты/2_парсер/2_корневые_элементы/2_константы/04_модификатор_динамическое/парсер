@@ -1,6 +1,6 @@
 MODULE(1, 1): [NULL]
 	FIELD_CONST(1, 1): [имя]
 		VAR_MODIFIER(1, 1): [NULL]
-			VAR_MODIFIER_DYNAMIC(1, 1): [динамическое]
+			VAR_MODIFIER_DYNAMIC(1, 1): [NULL]
 		BLOCK_BODY(1, 26): [NULL]
 			VAL_INTEGER(1, 26): [1]

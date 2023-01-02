@@ -18,6 +18,7 @@ static bool concat_single_minus_number(KarToken* token) {
 		child->type == KAR_TOKEN_VAL_FLOAT
 	) {
 		token->type = child->type;
+		kar_token_add_str(token, "-");
 		kar_token_add_str(token, child->str);
 		kar_token_child_erase(token, 0);
 	}

@@ -119,11 +119,10 @@ static void new_token(KarFirstLexer* lexer, KarTokenType type) {
 	lexer->current = kar_token_create();
 	lexer->current->type = type;
 	lexer->current->cursor = lexer->streamCursor->cursor;
-	kar_token_set_str(lexer->current, "");
 }
 
 static void push_token(KarFirstLexer* lexer) {
-	if (strcmp(lexer->current->str, "") || lexer->current->type != KAR_TOKEN_UNKNOWN) {
+	if (lexer->current->str != NULL || lexer->current->type != KAR_TOKEN_UNKNOWN) {
 		kar_token_child_add(lexer->module->token, lexer->current);
 	} else {
 		kar_token_free(lexer->current);
@@ -152,6 +151,7 @@ static void next_token_default(KarFirstLexer* lexer, KarLexerStatus st) {
 static void add_new_line(KarFirstLexer* lexer) {
 	push_token(lexer);
 	new_token(lexer, KAR_TOKEN_INDENT);
+	kar_token_set_str(lexer->current, "");
 	lexer->current->cursor = lexer->streamCursor->cursor;
 	lexer->status = KAR_LEXER_STATUS_INDENT;
 }
@@ -233,6 +233,7 @@ static bool parse_hexadecimal_string(KarFirstLexer* lexer, bool *is_next_char) {
 
 static void parse_string(KarFirstLexer* lexer) {
 	bool is_next_char = true;
+	kar_token_set_str(lexer->current, "");
 	while (true) {
 		if (kar_stream_cursor_is_eof(lexer->streamCursor)) {
 			kar_module_error_create_add(&lexer->module->errors, &lexer->streamCursor->cursor, 1, ERROR_END_OF_FILE_PARSING_STRING);
@@ -287,7 +288,6 @@ static void parse_singleline_comment(KarFirstLexer* lexer) {
 			next_token_default(lexer, KAR_LEXER_STATUS_UNKNOWN);
 			return;
 		}
-		kar_token_add_str(lexer->current, kar_stream_cursor_get(lexer->streamCursor));
 	}
 }
 
@@ -303,12 +303,10 @@ static void parse_multiline_comment(KarFirstLexer* lexer) {
 			kar_module_error_create_add(&lexer->module->errors, &lexer->streamCursor->cursor, 1, ERROR_SYMBOL_STRING);
 		}
 		if (end_mul && kar_stream_cursor_is_equal(lexer->streamCursor, KAR_KEYWORD_SIGN_DIV)) {
-			lexer->current->str[strlen(lexer->current->str) - 1] = 0;
 			return;
 		}
 		char* cur_char = kar_stream_cursor_get(lexer->streamCursor);
 		end_mul = !strcmp(cur_char, KAR_KEYWORD_SIGN_MUL);
-		kar_token_add_str(lexer->current, cur_char);
 	}
 }
 
@@ -353,6 +351,7 @@ bool kar_first_lexer_run(KarFirstLexer* lexer) {
 			} else if (lexer->status == KAR_LEXER_STATUS_SPACE) {
 				KarLexerStatus st = get_status_by_symbol(lexer);
 				if (st != KAR_LEXER_STATUS_SPACE) {
+					kar_token_set_str(lexer->current, NULL);
 					next_token_default(lexer, st);
 				}
 				add_string_to_token(lexer->current, streamCursor);
@@ -363,13 +362,13 @@ bool kar_first_lexer_run(KarFirstLexer* lexer) {
 				}
 				add_string_to_token(lexer->current, streamCursor);
 			} else if (lexer->status == KAR_LEXER_STATUS_SIGN) {
-				if (!strcmp(lexer->current->str, KAR_KEYWORD_SIGN_DIV) && !strcmp(streamCursor->currentChar, KAR_KEYWORD_SIGN_DIV)) {
+				if (lexer->current->str && !strcmp(lexer->current->str, KAR_KEYWORD_SIGN_DIV) && !strcmp(streamCursor->currentChar, KAR_KEYWORD_SIGN_DIV)) {
 					KarCursor cursor = lexer->current->cursor;
 					new_token(lexer, KAR_TOKEN_COMMENT);
 					lexer->current->cursor = cursor;
 					parse_singleline_comment(lexer);
 					continue;
-				} else if (!strcmp(lexer->current->str, KAR_KEYWORD_SIGN_DIV) && !strcmp(streamCursor->currentChar, KAR_KEYWORD_SIGN_MUL)) {
+				} else if (lexer->current->str && !strcmp(lexer->current->str, KAR_KEYWORD_SIGN_DIV) && !strcmp(streamCursor->currentChar, KAR_KEYWORD_SIGN_MUL)) {
 					KarCursor cursor = lexer->current->cursor;
 					new_token(lexer, KAR_TOKEN_COMMENT);
 					lexer->current->cursor = cursor;

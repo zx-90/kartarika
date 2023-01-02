@@ -1,6 +1,6 @@
 MODULE(1, 1): [NULL]
 	FIELD_VAR(1, 1): [К]
 		VAR_MODIFIER(1, 2): [NULL]
-			MODIFIER_STAT(1, 2): [стат]
+			MODIFIER_STAT(1, 2): [NULL]
 		BLOCK_BODY(1, 16): [NULL]
 			IDENTIFIER(1, 16): [Кар1]
