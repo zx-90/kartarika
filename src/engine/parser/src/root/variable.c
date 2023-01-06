@@ -7,8 +7,8 @@
 #include <stdbool.h>
 
 #include "core/string.h"
-#include "structure/token.h"
-#include "structure/module_error.h"
+#include "model/token.h"
+#include "model/module_error.h"
 #include "parser/base.h"
 
 static bool parse_modifiers(KarToken* token, size_t variable, KarArray* errors)

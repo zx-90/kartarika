@@ -4,7 +4,7 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#include "structure/token.h"
+#include "model/token.h"
 #include "parser/base.h"
 
 KarParserStatus kar_parser_make_algo_expression(KarToken* token) {

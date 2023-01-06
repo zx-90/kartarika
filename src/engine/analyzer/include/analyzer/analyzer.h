@@ -7,7 +7,7 @@
 #ifndef KAR_ANALYZER_H
 #define KAR_ANALYZER_H
 
-#include "structure/module.h"
+#include "model/module.h"
 
 bool kar_analyze(KarModule* module);
 

@@ -6,7 +6,7 @@
 
 #include <stdbool.h>
 
-#include "structure/token.h"
+#include "model/token.h"
 
 static bool concat_single_minus_number(KarToken* token) {
 	if (token->type != KAR_TOKEN_SIGN_SINGLE_MINUS) {

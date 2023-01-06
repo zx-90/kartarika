@@ -14,7 +14,7 @@
 #include "core/file_system.h"
 #include "core/stream.h"
 #include "core/string.h"
-#include "structure/module.h"
+#include "model/module.h"
 #include "lexer/lexer.h"
 #include "parser/parser.h"
 #include "generator/generator.h"

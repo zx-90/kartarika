@@ -7,7 +7,7 @@
 #ifndef KAR_GENERATOR_H
 #define KAR_GENERATOR_H
 
-#include "structure/module.h"
+#include "model/module.h"
 
 bool kar_generator_run(KarModule* module);
 

@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 #include "core/console_system.h"
-#include "structure/module.h"
+#include "model/module.h"
 #include "lexer/lexer.h"
 #include "parser/parser.h"
 #include "generator/generator.h"

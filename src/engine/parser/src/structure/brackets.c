@@ -7,8 +7,8 @@
 #include <stdbool.h>
 
 #include "core/stack.h"
-#include "structure/module_error.h"
-#include "structure/token.h"
+#include "model/module_error.h"
+#include "model/token.h"
 
 static bool extern_bracket(KarToken* token, KarArray* errors) {
 	KarStack* stack = kar_stack_create(token->children.count);

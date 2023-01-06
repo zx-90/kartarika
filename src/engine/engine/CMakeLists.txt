@@ -9,6 +9,7 @@ src/engine.c
 add_library(engine STATIC ${lib_engine_SRC})
 
 target_link_libraries(engine core)
+target_link_libraries(engine model)
 target_link_libraries(engine lexer)
 target_link_libraries(engine parser)
 target_link_libraries(engine analyzer)

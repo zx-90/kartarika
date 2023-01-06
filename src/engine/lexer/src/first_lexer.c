@@ -11,7 +11,7 @@
 #include <stdint.h>
 
 #include "core/alloc.h"
-#include "structure/module_error.h"
+#include "model/module_error.h"
 #include "lexer/keyword.h"
 #include "lexer/check_alphabet.h"
 

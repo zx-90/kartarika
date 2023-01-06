@@ -38,6 +38,6 @@ src/base/check.c
 
 add_library(parser STATIC ${lib_parser_SRC})
 
-target_link_libraries(parser structure core)
+target_link_libraries(parser model core)
 
 target_include_directories(parser PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)

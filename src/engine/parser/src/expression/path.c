@@ -6,8 +6,8 @@
 
 #include <stdbool.h>
 
-#include "structure/token.h"
-#include "structure/module_error.h"
+#include "model/token.h"
+#include "model/module_error.h"
 #include "parser/base.h"
 
 static bool make_path(KarToken* token, KarArray* errors) {

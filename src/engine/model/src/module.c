@@ -4,7 +4,7 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#include "structure/module.h"
+#include "model/module.h"
 
 #include <string.h>
 

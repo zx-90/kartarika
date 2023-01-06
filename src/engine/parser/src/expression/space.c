@@ -6,7 +6,7 @@
 
 #include <stdbool.h>
 
-#include "structure/token.h"
+#include "model/token.h"
 
 static bool is_space_token(KarToken* token) {
 	return (token->type == KAR_TOKEN_SPACE) ||

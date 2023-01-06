@@ -6,8 +6,8 @@
 
 #include <stdbool.h>
 
-#include "structure/module_error.h"
-#include "structure/token.h"
+#include "model/module_error.h"
+#include "model/token.h"
 
 static bool is_empty_token(KarToken* token) {
 	return token->type == KAR_TOKEN_SPACE || token->type == KAR_TOKEN_COMMENT;

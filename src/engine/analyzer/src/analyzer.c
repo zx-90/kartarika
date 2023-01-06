@@ -6,7 +6,7 @@
 
 #include "analyzer/analyzer.h"
 
-#include "structure/token.h"
+#include "model/token.h"
 
 bool kar_analyze(KarModule* module) {
 	if (!module) {

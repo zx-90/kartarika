@@ -7,7 +7,7 @@
 #ifndef KAR_SECOND_LEXER_H
 #define KAR_SECOND_LEXER_H
 
-#include "structure/module.h"
+#include "model/module.h"
 
 bool kar_second_lexer_run(KarModule* module);
 
