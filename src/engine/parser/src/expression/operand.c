@@ -224,7 +224,6 @@ static const KarTokenType OPERAND_LIST_MUL_DIV[] = {
 	KAR_TOKEN_SIGN_MUL,
 	KAR_TOKEN_SIGN_DIV,
 	KAR_TOKEN_SIGN_MOD,
-	KAR_TOKEN_SIGN_MUL_CLEAN,
 	KAR_TOKEN_SIGN_DIV_CLEAN,
 	KAR_TOKEN_SIGN_MOD_CLEAN
 };
@@ -273,7 +272,7 @@ bool kar_parser_make_operands(KarToken* token, KarArray* errors)
 	b = b && foreach_find_single(token, errors);
 	b = b && foreach_operator_after(token, 4, OPERAND_LIST_SINGLE_NOT, errors);
 
-	b = b && foreach_two_operators(token, 6, OPERAND_LIST_MUL_DIV, errors);
+	b = b && foreach_two_operators(token, 5, OPERAND_LIST_MUL_DIV, errors);
 	b = b && foreach_two_operators(token, 2, OPERAND_LIST_PLUS_MINUS, errors);
 	
 	b = b && foreach_two_operators(token, 2, OPERAND_LIST_RIGHT_LEFT, errors);

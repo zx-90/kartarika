@@ -84,7 +84,6 @@ const char* kar_token_type_get_name(const KarTokenType type)
 		PROCESS_VAL(SIGN_MUL);
 		PROCESS_VAL(SIGN_DIV);
 		PROCESS_VAL(SIGN_MOD);
-		PROCESS_VAL(SIGN_MUL_CLEAN);
 		PROCESS_VAL(SIGN_DIV_CLEAN);
 		PROCESS_VAL(SIGN_MOD_CLEAN);
 		

@@ -3,17 +3,15 @@ MODULE(1, 1): --
 		VAR_MODIFIER(1, 1): --
 			VAR_MODIFIER_PUBLIC(1, 1): --
 			MODIFIER_STAT(1, 10): --
-		BLOCK_BODY(1, 51): --
-			SIGN_MUL(1, 51): --
-				SIGN_MUL_CLEAN(1, 46): --
-					SIGN_DIV(1, 42): --
-						SIGN_DIV_CLEAN(1, 37): --
-							SIGN_MOD(1, 33): --
-								SIGN_MOD_CLEAN(1, 28): --
-									VAL_INTEGER(1, 26): [1]
-									VAL_INTEGER(1, 31): [2]
-								VAL_INTEGER(1, 35): [3]
-							VAL_INTEGER(1, 40): [4]
-						VAL_INTEGER(1, 44): [5]
-					VAL_INTEGER(1, 49): [6]
-				VAL_INTEGER(1, 53): [7]
+		BLOCK_BODY(1, 46): --
+			SIGN_MUL(1, 46): --
+				SIGN_DIV(1, 42): --
+					SIGN_DIV_CLEAN(1, 37): --
+						SIGN_MOD(1, 33): --
+							SIGN_MOD_CLEAN(1, 28): --
+								VAL_INTEGER(1, 26): [1]
+								VAL_INTEGER(1, 31): [2]
+							VAL_INTEGER(1, 35): [3]
+						VAL_INTEGER(1, 40): [4]
+					VAL_INTEGER(1, 44): [5]
+				VAL_INTEGER(1, 48): [6]
