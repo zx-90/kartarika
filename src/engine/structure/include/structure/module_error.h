@@ -9,8 +9,8 @@
 
 #include <stddef.h>
 
-#include "cursor.h"
-#include "array.h"
+#include "core/cursor.h"
+#include "core/array.h"
 
 typedef struct {
 	KarCursor cursor;

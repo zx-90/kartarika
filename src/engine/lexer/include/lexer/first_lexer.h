@@ -7,8 +7,8 @@
 #ifndef KAR_FIRST_LEXER_H
 #define KAR_FIRST_LEXER_H
 
-#include "core/module.h"
 #include "core/stream_cursor.h"
+#include "structure/module.h"
 
 typedef enum {
 	KAR_LEXER_STATUS_UNKNOWN,

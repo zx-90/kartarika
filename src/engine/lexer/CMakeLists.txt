@@ -11,6 +11,6 @@ src/check_alphabet.c
 
 add_library(lexer STATIC ${lib_lexer_SRC})
 
-target_link_libraries(lexer core)
+target_link_libraries(lexer structure core)
 
 target_include_directories(lexer PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)

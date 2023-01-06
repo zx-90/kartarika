@@ -4,7 +4,7 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#include "core/module_error.h"
+#include "structure/module_error.h"
 
 #include "core/alloc.h"
 #include "core/string.h"

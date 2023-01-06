@@ -18,6 +18,6 @@ target_include_directories(generator PUBLIC ${ROOT_DIR}/third_party/include)
 target_link_libraries(generator ${ROOT_DIR}/third_party/lib/LLVM-C.lib)
 endif()
 
-target_link_libraries(generator core)
+target_link_libraries(generator structure core)
 
 target_include_directories(generator PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)

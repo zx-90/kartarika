@@ -6,10 +6,10 @@
 
 #include <stdbool.h>
 
-#include "core/token.h"
-#include "core/module_error.h"
 #include "core/string.h"
 #include "core/alloc.h"
+#include "structure/token.h"
+#include "structure/module_error.h"
 #include "parser/base.h"
 
 // ----------------------------------------------------------------------------

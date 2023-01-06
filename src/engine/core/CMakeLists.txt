@@ -16,11 +16,7 @@ src/error.c
 src/stack.c
 
 src/cursor.c
-src/module_error.c
 src/stream_cursor.c
-src/module.c
-src/token.c
-src/token_type.c
 
 )
 

@@ -7,8 +7,8 @@
 #ifndef KAR_MODULE_H
 #define KAR_MODULE_H
 
+#include "core/array.h"
 #include "token.h"
-#include "array.h"
 #include "module_error.h"
 
 typedef struct {

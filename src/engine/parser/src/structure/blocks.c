@@ -6,8 +6,8 @@
 
 #include <stdbool.h>
 
-#include "core/token.h"
-#include "core/module_error.h"
+#include "structure/token.h"
+#include "structure/module_error.h"
 
 //-----------------------------------------------------------------------------
 typedef struct {

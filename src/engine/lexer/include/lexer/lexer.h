@@ -8,7 +8,7 @@
 #define KAR_LEXER_H
 
 #include "core/stream.h"
-#include "core/module.h"
+#include "structure/module.h"
 
 bool kar_lexer_run(KarStream* stream, KarModule* module);
 

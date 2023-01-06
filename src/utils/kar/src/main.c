@@ -7,11 +7,11 @@
 
 #include <stdio.h>
 
-#include "core/module.h"
+#include "core/console_system.h"
+#include "structure/module.h"
 #include "lexer/lexer.h"
 #include "parser/parser.h"
 #include "generator/generator.h"
-#include "core/console_system.h"
 
 int main(int argc, char** argv) {
 	kar_console_init();

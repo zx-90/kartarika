@@ -24,6 +24,7 @@ elseif(WIN32)
 endif()
 
 add_subdirectory(src/engine/core)
+add_subdirectory(src/engine/structure)
 add_subdirectory(src/engine/lexer)
 add_subdirectory(src/engine/parser)
 add_subdirectory(src/engine/analyzer)

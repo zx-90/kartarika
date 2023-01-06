@@ -9,7 +9,7 @@
 
 #include <stdbool.h>
 
-#include "core/module.h"
+#include "structure/module.h"
 
 bool kar_parser_run(KarModule* module);
 

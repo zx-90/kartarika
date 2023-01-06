@@ -12,8 +12,8 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include "array.h"
-#include "cursor.h"
+#include "core/array.h"
+#include "core/cursor.h"
 #include "token_type.h"
 
 typedef struct KarStructToken {

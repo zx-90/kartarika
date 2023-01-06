@@ -4,4 +4,4 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#include "core/token.h"
+#include "structure/token.h"

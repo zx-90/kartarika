@@ -9,11 +9,10 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include "core/string.h"
 #include "core/file_system.h"
-
-#include <errno.h>
 
 static KarError* check_for_subdirs(char** files, size_t count) {
 	size_t i;

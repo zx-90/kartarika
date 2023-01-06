@@ -6,8 +6,8 @@
 
 #include <stdbool.h>
 
-#include "core/token.h"
-#include "core/module_error.h"
+#include "structure/token.h"
+#include "structure/module_error.h"
 
 static bool is_method_operator(KarTokenType type) {
 	return

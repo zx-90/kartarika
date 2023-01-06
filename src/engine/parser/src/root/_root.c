@@ -4,11 +4,9 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#include "core/token.h"
-#include "core/module_error.h"
-
+#include "structure/token.h"
+#include "structure/module_error.h"
 #include "parser/base.h"
-//#include "parser/root.h"
 
 KarParserStatus kar_parser_make_variable(KarToken* token, KarArray* errors);
 KarParserStatus kar_parser_make_constant(KarToken* token, KarArray* errors);

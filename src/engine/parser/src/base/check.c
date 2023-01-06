@@ -4,7 +4,7 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#include "core/token.h"
+#include "structure/token.h"
 
 bool kar_token_is_name(KarTokenType type) {
     return

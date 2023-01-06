@@ -8,9 +8,8 @@
 
 #include "core/alloc.h"
 #include "core/string.h"
-#include "core/token.h"
-#include "core/module_error.h"
-
+#include "structure/token.h"
+#include "structure/module_error.h"
 #include "parser/base.h"
 
 static bool parse_modifiers(KarToken* token, size_t methodPos, KarArray* errors) {

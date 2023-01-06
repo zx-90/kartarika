@@ -4,8 +4,8 @@
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
-#include "core/token.h"
-#include "core/module_error.h"
+#include "structure/token.h"
+#include "structure/module_error.h"
 
 bool kar_parser_extern_brackets(KarToken* token, KarArray* errors);
 bool kar_parser_split_by_lines(KarToken* token, KarArray* errors);
