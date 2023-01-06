@@ -214,12 +214,16 @@ static bool foreach_find_single(KarToken* token, KarArray* errors)
 static const KarTokenType OPERAND_LIST_CLEAN[] = {
 	KAR_TOKEN_SIGN_CLEAN
 };
+static size_t OPERAND_LIST_CLEAN_SIZE = sizeof(OPERAND_LIST_CLEAN) / sizeof(KarTokenType);
+
 static const KarTokenType OPERAND_LIST_SINGLE_NOT[] = {
 	KAR_TOKEN_SIGN_SINGLE_PLUS,
 	KAR_TOKEN_SIGN_SINGLE_MINUS,
 	KAR_TOKEN_SIGN_NOT,
 	KAR_TOKEN_SIGN_BIT_NOT
 };
+static size_t OPERAND_LIST_SINGLE_NOT_SIZE = sizeof(OPERAND_LIST_SINGLE_NOT) / sizeof(KarTokenType);
+
 static const KarTokenType OPERAND_LIST_MUL_DIV[] = {
 	KAR_TOKEN_SIGN_MUL,
 	KAR_TOKEN_SIGN_DIV,
@@ -227,63 +231,81 @@ static const KarTokenType OPERAND_LIST_MUL_DIV[] = {
 	KAR_TOKEN_SIGN_DIV_CLEAN,
 	KAR_TOKEN_SIGN_MOD_CLEAN
 };
+static size_t OPERAND_LIST_MUL_DIV_SIZE = sizeof(OPERAND_LIST_MUL_DIV) / sizeof(KarTokenType);
+
 static const KarTokenType OPERAND_LIST_PLUS_MINUS[] = {
 	KAR_TOKEN_SIGN_PLUS,
 	KAR_TOKEN_SIGN_MINUS
 };
+static size_t OPERAND_LIST_PLUS_MINUS_SIZE = sizeof(OPERAND_LIST_PLUS_MINUS) / sizeof(KarTokenType);
+
 static const KarTokenType OPERAND_LIST_RIGHT_LEFT[] = {
 	KAR_TOKEN_SIGN_BIT_RIGHT,
 	KAR_TOKEN_SIGN_BIT_LEFT
 };
+static size_t OPERAND_LIST_RIGHT_LEFT_SIZE = sizeof(OPERAND_LIST_RIGHT_LEFT) / sizeof(KarTokenType);
+
 static const KarTokenType OPERAND_LIST_GREATER_LESS[] = {
 	KAR_TOKEN_SIGN_GREATER,
 	KAR_TOKEN_SIGN_GREATER_OR_EQUAL,
 	KAR_TOKEN_SIGN_LESS,
 	KAR_TOKEN_SIGN_LESS_OR_EQUAL
 };
+static size_t OPERAND_LIST_GREATER_LESS_SIZE = sizeof(OPERAND_LIST_GREATER_LESS) / sizeof(KarTokenType);
+
 static const KarTokenType OPERAND_LIST_EQUAL_NOT_EQUAL[] = {
 	KAR_TOKEN_SIGN_EQUAL,
 	KAR_TOKEN_SIGN_NOT_EQUAL
 };
+static size_t OPERAND_LIST_EQUAL_NOT_EQUAL_SIZE = sizeof(OPERAND_LIST_EQUAL_NOT_EQUAL) / sizeof(KarTokenType);
+
 static const KarTokenType OPERAND_LIST_BIT_AND[] = {
 	KAR_TOKEN_SIGN_BIT_AND
 };
+static size_t OPERAND_LIST_BIT_AND_SIZE = sizeof(OPERAND_LIST_BIT_AND) / sizeof(KarTokenType);
+
 static const KarTokenType OPERAND_LIST_BIT_XOR[] = {
 	KAR_TOKEN_SIGN_BIT_XOR
 };
+static size_t OPERAND_LIST_BIT_XOR_SIZE = sizeof(OPERAND_LIST_BIT_XOR) / sizeof(KarTokenType);
+
 static const KarTokenType OPERAND_LIST_BIT_OR[] = {
 	KAR_TOKEN_SIGN_BIT_OR
 };
+static size_t OPERAND_LIST_BIT_OR_SIZE = sizeof(OPERAND_LIST_BIT_OR) / sizeof(KarTokenType);
+
 static const KarTokenType OPERAND_LIST_AND[] = {
 	KAR_TOKEN_SIGN_AND
 };
+static size_t OPERAND_LIST_AND_SIZE = sizeof(OPERAND_LIST_AND) / sizeof(KarTokenType);
+
 static const KarTokenType OPERAND_LIST_OR[] = {
 	KAR_TOKEN_SIGN_OR
 };
+static size_t OPERAND_LIST_OR_SIZE = sizeof(OPERAND_LIST_OR) / sizeof(KarTokenType);
 
 bool kar_parser_make_operands(KarToken* token, KarArray* errors)
 {
 	bool b = true;
 	
 	b = b && foreach_operator_before(token, KAR_TOKEN_SIGN_UNCLEAN, errors);
-	// TODO: Здесь и далее волшебные числа заменить на константу равную разеру массива.
-	b = b && foreach_two_operators(token, 1, OPERAND_LIST_CLEAN, errors);
+	b = b && foreach_two_operators(token, OPERAND_LIST_CLEAN_SIZE, OPERAND_LIST_CLEAN, errors);
 	
 	b = b && foreach_find_single(token, errors);
-	b = b && foreach_operator_after(token, 4, OPERAND_LIST_SINGLE_NOT, errors);
+	b = b && foreach_operator_after(token, OPERAND_LIST_SINGLE_NOT_SIZE, OPERAND_LIST_SINGLE_NOT, errors);
 
-	b = b && foreach_two_operators(token, 5, OPERAND_LIST_MUL_DIV, errors);
-	b = b && foreach_two_operators(token, 2, OPERAND_LIST_PLUS_MINUS, errors);
+	b = b && foreach_two_operators(token, OPERAND_LIST_MUL_DIV_SIZE, OPERAND_LIST_MUL_DIV, errors);
+	b = b && foreach_two_operators(token, OPERAND_LIST_PLUS_MINUS_SIZE, OPERAND_LIST_PLUS_MINUS, errors);
 	
-	b = b && foreach_two_operators(token, 2, OPERAND_LIST_RIGHT_LEFT, errors);
-	b = b && foreach_two_operators(token, 4, OPERAND_LIST_GREATER_LESS, errors);
-	b = b && foreach_two_operators(token, 2, OPERAND_LIST_EQUAL_NOT_EQUAL, errors);
+	b = b && foreach_two_operators(token, OPERAND_LIST_RIGHT_LEFT_SIZE, OPERAND_LIST_RIGHT_LEFT, errors);
+	b = b && foreach_two_operators(token, OPERAND_LIST_GREATER_LESS_SIZE, OPERAND_LIST_GREATER_LESS, errors);
+	b = b && foreach_two_operators(token, OPERAND_LIST_EQUAL_NOT_EQUAL_SIZE, OPERAND_LIST_EQUAL_NOT_EQUAL, errors);
 
-	b = b && foreach_two_operators(token, 1, OPERAND_LIST_BIT_AND, errors);
-	b = b && foreach_two_operators(token, 1, OPERAND_LIST_BIT_XOR, errors);
-	b = b && foreach_two_operators(token, 1, OPERAND_LIST_BIT_OR, errors);
-	b = b && foreach_two_operators(token, 1, OPERAND_LIST_AND, errors);
-	b = b && foreach_two_operators(token, 1, OPERAND_LIST_OR, errors);
+	b = b && foreach_two_operators(token, OPERAND_LIST_BIT_AND_SIZE, OPERAND_LIST_BIT_AND, errors);
+	b = b && foreach_two_operators(token, OPERAND_LIST_BIT_XOR_SIZE, OPERAND_LIST_BIT_XOR, errors);
+	b = b && foreach_two_operators(token, OPERAND_LIST_BIT_OR_SIZE, OPERAND_LIST_BIT_OR, errors);
+	b = b && foreach_two_operators(token, OPERAND_LIST_AND_SIZE, OPERAND_LIST_AND, errors);
+	b = b && foreach_two_operators(token, OPERAND_LIST_OR_SIZE, OPERAND_LIST_OR, errors);
 	
 	return b;
 }
