@@ -1,4 +1,4 @@
-/* Copyright © 2021,2022 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2021-2023 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -7,7 +7,7 @@
 #include <stdbool.h>
 
 #include "model/token.h"
-#include "model/module_error.h"
+#include "model/project_error_list.h"
 
 static bool is_method_operator(KarTokenType type) {
 	return
@@ -16,17 +16,17 @@ static bool is_method_operator(KarTokenType type) {
 }
 
 static bool make_call_method(KarToken* token) {
-	if (token->children.count == 0) {
+	if (kar_token_child_empty(token)) {
 		return true;
 	}
 
-	for (size_t i = token->children.count - 1; i >= 1; --i) {
-		KarToken* child = kar_token_child(token, i);
+	for (size_t i = kar_token_child_count(token) - 1; i >= 1; --i) {
+		KarToken* child = kar_token_child_get(token, i);
 		if (child->type != KAR_TOKEN_SIGN_OPEN_BRACES) {
 			continue;
 		}
 		
-		KarToken* prev = kar_token_child(token, i - 1);
+		KarToken* prev = kar_token_child_get(token, i - 1);
 		if (!is_method_operator(prev->type)) {
 			continue;
 		}
@@ -42,8 +42,8 @@ static bool make_call_method(KarToken* token) {
 
 static bool foreach(KarToken* token) 
 {
-	for (size_t i = 0; i < token->children.count; i++) {
-		if (!foreach(token->children.items[i])) {
+	for (size_t i = 0; i < kar_token_child_count(token); i++) {
+		if (!foreach(kar_token_child_get(token, i))) {
 			return false;
 		}
 	}
@@ -60,26 +60,26 @@ bool kar_parser_make_call_method(KarToken* token)
 // Обработка вызова функции.
 // ----------------------------------------------------------------------------
 
-static bool make_arguments(KarToken* token, KarArray* errors) {
+static bool make_arguments(KarToken* token, KarProjectErrorList* errors) {
 	if (token->type != KAR_TOKEN_SIGN_CALL_METHOD) {
 		return true;
 	}
-	if (token->children.count <= 1) {
+	if (kar_token_child_count(token) <= 1) {
 		return true;
 	}
 	
 	KarToken* currentArg = NULL;
 	size_t currentPlace = 1;
-	while (token->children.count > currentPlace) {
+	while (kar_token_child_count(token) > currentPlace) {
 		KarToken* curItem = kar_token_child_tear(token, currentPlace);
 		if (curItem->type == KAR_TOKEN_SIGN_COMMA) {
 			if (currentArg == NULL) {
-				kar_module_error_create_add(errors, &curItem->cursor, 1, "Неожиданное появление знака \",\".");
+				kar_project_error_list_create_add(errors, &curItem->cursor, 1, "Неожиданное появление знака \",\".");
 				kar_token_free(curItem);
 				return false;
 			}
-			if (token->children.count == currentPlace) {
-				kar_module_error_create_add(errors, &curItem->cursor, 1, "Нет операнда слева у знака \",\".");
+			if (kar_token_child_count(token) == currentPlace) {
+				kar_project_error_list_create_add(errors, &curItem->cursor, 1, "Нет операнда слева у знака \",\".");
 				kar_token_free(curItem);
 				return false;
 			}
@@ -100,10 +100,10 @@ static bool make_arguments(KarToken* token, KarArray* errors) {
 	return true;
 }
 
-bool kar_parser_make_arguments(KarToken* token, KarArray* errors) 
+bool kar_parser_make_arguments(KarToken* token, KarProjectErrorList* errors) 
 {
-	for (size_t i = 0; i < token->children.count; i++) {
-		if (!kar_parser_make_arguments(token->children.items[i], errors)) {
+	for (size_t i = 0; i < kar_token_child_count(token); i++) {
+		if (!kar_parser_make_arguments(kar_token_child_get(token, i), errors)) {
 			return false;
 		}
 	}

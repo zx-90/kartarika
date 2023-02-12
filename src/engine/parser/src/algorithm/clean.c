@@ -1,84 +1,84 @@
-/* Copyright © 2022 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2022,2023 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
 #include "model/token.h"
-#include "model/module_error.h"
+#include "model/project_error_list.h"
 #include "parser/base.h"
 
-KarParserStatus kar_parser_make_clean(KarToken* parent, size_t commandNum, KarArray* errors) {
+KarParserStatus kar_parser_make_clean(KarToken* parent, size_t commandNum, KarProjectErrorList* errors) {
 	
-	KarToken* token = kar_token_child(parent, commandNum);
+	KarToken* token = kar_token_child_get(parent, commandNum);
 	size_t cleanPos = kar_token_child_find(token, KAR_TOKEN_COMMAND_CLEAN);
-	if (cleanPos == token->children.count) {
+	if (cleanPos == kar_token_child_count(token)) {
 		return KAR_PARSER_STATUS_NOT_PARSED;
 	}
 	
-	KarToken* cleanToken = kar_token_child(token, cleanPos);
+	KarToken* cleanToken = kar_token_child_get(token, cleanPos);
 	if (cleanPos != 0) {
-		kar_module_error_create_add(errors, &cleanToken->cursor, 1, "Ключевое слово \"раскрыть\" должно стоять в начале команды.");
+		kar_project_error_list_create_add(errors, &cleanToken->cursor, 1, "Ключевое слово \"раскрыть\" должно стоять в начале команды.");
 		return KAR_PARSER_STATUS_ERROR;
 	}
 	
-	if (token->children.count < 2) {
+	if (kar_token_child_count(token) < 2) {
 		// TODO: Ссылка на последний символ в токене.
-		kar_module_error_create_add(errors, &cleanToken->cursor, 1, "Ожидалось имя переменной после ключевого слова \"раскрыть\".");
+		kar_project_error_list_create_add(errors, &cleanToken->cursor, 1, "Ожидалось имя переменной после ключевого слова \"раскрыть\".");
 		return KAR_PARSER_STATUS_ERROR;
 	}
-	KarToken* uncleanNameToken = kar_token_child(token, 1);
+	KarToken* uncleanNameToken = kar_token_child_get(token, 1);
 	if (!kar_parser_is_expression(uncleanNameToken->type)) {
-		kar_module_error_create_add(errors, &uncleanNameToken->cursor, 1, "Здесь ожидалось имя раскрываемой переменной.");
+		kar_project_error_list_create_add(errors, &uncleanNameToken->cursor, 1, "Здесь ожидалось имя раскрываемой переменной.");
 		return KAR_PARSER_STATUS_ERROR;
 	}
 	
-	if (token->children.count < 3) {
+	if (kar_token_child_count(token) < 3) {
 		// TODO: Ссылка на последний символ в токене.
-		kar_module_error_create_add(errors, &uncleanNameToken->cursor, 1, "Здесь ожидалось ключевое слово \"как\" или знак двоеточия.");
+		kar_project_error_list_create_add(errors, &uncleanNameToken->cursor, 1, "Здесь ожидалось ключевое слово \"как\" или знак двоеточия.");
 		return KAR_PARSER_STATUS_ERROR;
 	}
 	size_t colonNum = 2;
-	KarToken* asToken = kar_token_child(token, 2);
+	KarToken* asToken = kar_token_child_get(token, 2);
 	KarToken* cleanNameToken = NULL;
 	if (asToken->type == KAR_TOKEN_COMMAND_AS) {
-		if (token->children.count < 4) {
+		if (kar_token_child_count(token) < 4) {
 			// TODO: Ссылка на последний символ в токене.
-			kar_module_error_create_add(errors, &asToken->cursor, 1, "Здесь ожидалось имя переменной для блока раскрытия.");
+			kar_project_error_list_create_add(errors, &asToken->cursor, 1, "Здесь ожидалось имя переменной для блока раскрытия.");
 			return KAR_PARSER_STATUS_ERROR;
 		}
-		cleanNameToken = kar_token_child(token, 3);
+		cleanNameToken = kar_token_child_get(token, 3);
 		if (!kar_token_is_name(cleanNameToken->type)) {
-			kar_module_error_create_add(errors, &cleanNameToken->cursor, 1, "Здесь ожидалось имя переменной для блока раскрытия.");
+			kar_project_error_list_create_add(errors, &cleanNameToken->cursor, 1, "Здесь ожидалось имя переменной для блока раскрытия.");
 			return KAR_PARSER_STATUS_ERROR;
 		}
 		colonNum += 2;
 	}
 	
-	if (token->children.count < colonNum + 1) {
+	if (kar_token_child_count(token) < colonNum + 1) {
 		// TODO: Ссылка на последний символ в токене.
-		kar_module_error_create_add(errors, &kar_token_child(token, colonNum)->cursor, 1, "Здесь ожидалось ключевое слово \"как\" или знак двоеточия.");
+		kar_project_error_list_create_add(errors, &kar_token_child_get(token, colonNum)->cursor, 1, "Здесь ожидалось ключевое слово \"как\" или знак двоеточия.");
 		return KAR_PARSER_STATUS_ERROR;
 	}
-	KarToken* colonToken = kar_token_child(token, colonNum);
+	KarToken* colonToken = kar_token_child_get(token, colonNum);
 	if (colonToken->type != KAR_TOKEN_SIGN_COLON) {
-		kar_module_error_create_add(errors, &colonToken->cursor, 1, "Здесь ожидалось ключевое слово \"как\" или знак двоеточия.");
+		kar_project_error_list_create_add(errors, &colonToken->cursor, 1, "Здесь ожидалось ключевое слово \"как\" или знак двоеточия.");
 		return KAR_PARSER_STATUS_ERROR;
 	}
 	colonNum++;
 	
-	if (token->children.count < colonNum + 1) {
+	if (kar_token_child_count(token) < colonNum + 1) {
 		// TODO: Ссылка на последний символ в токене.
-		kar_module_error_create_add(errors, &kar_token_child(token, colonNum - 1)->cursor, 1, "Не могу найти тело блока раскрыть.");
+		kar_project_error_list_create_add(errors, &kar_token_child_get(token, colonNum - 1)->cursor, 1, "Не могу найти тело блока раскрыть.");
 		return KAR_PARSER_STATUS_ERROR;
 	}
-	KarToken* bodyToken = kar_token_child(token, colonNum);
+	KarToken* bodyToken = kar_token_child_get(token, colonNum);
 	if (bodyToken->type != KAR_TOKEN_BLOCK_BODY) {
-		kar_module_error_create_add(errors, &bodyToken->cursor, 1, "Здесь ожидалось найти тело блока \"раскрыть\".");
+		kar_project_error_list_create_add(errors, &bodyToken->cursor, 1, "Здесь ожидалось найти тело блока \"раскрыть\".");
 		return KAR_PARSER_STATUS_ERROR;
 	}
-	if (token->children.count > colonNum + 1) {
-		kar_module_error_create_add(errors, &kar_token_child(token, colonNum + 1)->cursor, 1, "Найдены лишние элементы после тела блока.");
+	if (kar_token_child_count(token) > colonNum + 1) {
+		kar_project_error_list_create_add(errors, &kar_token_child_get(token, colonNum + 1)->cursor, 1, "Найдены лишние элементы после тела блока.");
 		return KAR_PARSER_STATUS_ERROR;
 	}
 	
@@ -99,10 +99,10 @@ KarParserStatus kar_parser_make_clean(KarToken* parent, size_t commandNum, KarAr
 		kar_token_child_erase(token, 1);
 	}
 	
-	if (parent->children.count <= commandNum + 1) {
+	if (kar_token_child_count(parent) <= commandNum + 1) {
 		return KAR_PARSER_STATUS_PARSED;
 	}
-	KarToken* elseToken = kar_token_child(parent, commandNum + 1);
+	KarToken* elseToken = kar_token_child_get(parent, commandNum + 1);
 	if (!kar_parser_check_else(elseToken)) {
 		return KAR_PARSER_STATUS_PARSED;
 	}

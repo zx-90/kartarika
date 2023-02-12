@@ -17,11 +17,9 @@ typedef struct {
 	KarArray def_list;
 } KarProject;
 
-#define kar_project_def_list_child(project, num) ((KarVartree*)(project)->def_list.items[(num)])
-
 KarProject* kar_project_create(char* filename);
 void kar_project_free(KarProject* project);
 
-KAR_TREE_HEADER(project_def_list, KarProject, KarVartree);
+KAR_TREE_HEADER(project_def_list, KarProject, KarVartree)
 
 #endif // KAR_PROJECT_H

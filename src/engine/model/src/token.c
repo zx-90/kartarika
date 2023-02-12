@@ -1,4 +1,4 @@
-/* Copyright © 2020-2022 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020-2023 Evgeny Zaytsev <zx_90@mail.ru>
  * Copyright © 2022 Abdullin Timur <abdtimurrif@gmail.com>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
@@ -14,8 +14,6 @@
 #include "core/alloc.h"
 #include "core/string.h"
 
-KAR_TREE_CODE(token_child, KarToken, KarToken, children, &kar_token_free)
-
 KarToken* kar_token_create()
 {
 	KAR_CREATE(token, KarToken);
@@ -23,7 +21,7 @@ KarToken* kar_token_create()
 	token->type = KAR_TOKEN_UNKNOWN;
 	kar_cursor_init(&token->cursor);
 	token->str = NULL;
-	kar_array_init(&token->children);
+	kar_token_child_init(token);
 	
 	return token;
 }
@@ -41,7 +39,7 @@ KarToken* kar_token_create_fill(KarTokenType type, KarCursor cursor, const char*
 	} else {
 		token->str = NULL;
 	}
-	kar_array_init(&token->children);
+	kar_token_child_init(token);
 	
 	return token;
 }
@@ -51,7 +49,7 @@ void kar_token_free(KarToken* token)
 	if (token->str) {
 		KAR_FREE(token->str);
 	}
-	kar_array_clear(&token->children, (KarArrayFreeFn*)&kar_token_free);
+	kar_token_child_clear(token);
 	KAR_FREE(token);
 }
 
@@ -86,9 +84,11 @@ void kar_token_add_str(KarToken* token, const char* str) {
 	token->str = new_string;
 }
 
+KAR_TREE_CODE(token_child, KarToken, KarToken, children, kar_token_free)
+
 bool kar_token_child_foreach_bool(KarToken* token, bool(*func)(KarToken* array)) {
-	for (size_t i = 0; i < token->children.count; i++) {
-		if (!kar_token_child_foreach_bool(token->children.items[i], func)) {
+	for (size_t i = 0; i < kar_token_child_count(token); i++) {
+		if (!kar_token_child_foreach_bool(kar_token_child_get(token, i), func)) {
 			return false;
 		}
 	}
@@ -110,15 +110,15 @@ static void print_level(const KarToken* token, FILE* stream, size_t level) {
 		fprintf(stream, "%s(%d, %d): [%s]\n", kar_token_type_get_name(token->type), token->cursor.line, token->cursor.column, token->str);
 	}
 	
-	for (n = 0; n < token->children.count; ++n) {
-		print_level(kar_token_child(token, n), stream, level + 1);
+	for (n = 0; n < kar_token_child_count(token); ++n) {
+		print_level(kar_token_child_get(token, n), stream, level + 1);
 	}
 }
 
 size_t kar_token_child_find(KarToken* token, const KarTokenType type) {
 	size_t pos;
-	for (pos = 0; pos < token->children.count; ++pos) {
-		if (kar_token_child(token, pos)->type == type) {
+	for (pos = 0; pos < kar_token_child_count(token); ++pos) {
+		if (kar_token_child_get(token, pos)->type == type) {
 			break;
 		}
 	}
@@ -144,18 +144,18 @@ static void restore_str(KarToken* token) {
 }
 
 KarToken* kar_token_join_children(KarToken* token, size_t first, size_t count) {
-	KarToken* first_token = kar_token_child(token, first);
+	KarToken* first_token = kar_token_child_get(token, first);
 	restore_str(first_token);
 
 	for (size_t i = 0; i < count - 1; ++i) {
-		KarToken* next_token = kar_token_child(token, first + 1);
+		KarToken* next_token = kar_token_child_get(token, first + 1);
 		restore_str(next_token);
 
 		char* join_str = kar_string_create_concat(first_token->str, next_token->str);
 		KAR_FREE(first_token->str);
 		first_token->str = join_str;
 
-		while (next_token->children.count != 0) {
+		while (!kar_token_child_empty(next_token)) {
 			KarToken* child = kar_token_child_tear(next_token, 0);
 			kar_token_child_add(first_token, child);
 		}
@@ -168,8 +168,8 @@ KarToken* kar_token_join_children(KarToken* token, size_t first, size_t count) {
 
 KarToken* kar_token_get_first_grandchild(KarToken* token) {
 	KarToken* result = token;
-	while (result->children.count != 0) {
-		result = kar_token_child(result, 0);
+	while (!kar_token_child_empty(result)) {
+		result = kar_token_child_get(result, 0);
 	}
 	return result;
 }
@@ -189,8 +189,8 @@ static int get_print_level_size(const KarToken* token, size_t level) {
 	}
 	
 	size_t n;
-	for (n = 0; n < token->children.count; ++n) {
-		result += get_print_level_size(kar_token_child(token, n), level + 1);
+	for (n = 0; n < kar_token_child_count(token); ++n) {
+		result += get_print_level_size(kar_token_child_get(token, n), level + 1);
 	}
 	return result;
 }
@@ -210,8 +210,8 @@ static char* create_print_level(const KarToken* token, char* buffer, size_t leve
 		buffer += sprintf(buffer, "%s(%d, %d): [%s]\n", kar_token_type_get_name(token->type), token->cursor.line, token->cursor.column, token->str);
 	}
 	
-	for (n = 0; n < token->children.count; ++n) {
-		buffer = create_print_level(kar_token_child(token, n), buffer, level + 1);
+	for (n = 0; n < kar_token_child_count(token); ++n) {
+		buffer = create_print_level(kar_token_child_get(token, n), buffer, level + 1);
 	}
 	return buffer;
 }

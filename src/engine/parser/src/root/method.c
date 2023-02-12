@@ -1,4 +1,4 @@
-/* Copyright © 2020-2022 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020-2023 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -9,13 +9,13 @@
 #include "core/alloc.h"
 #include "core/string.h"
 #include "model/token.h"
-#include "model/module_error.h"
+#include "model/project_error_list.h"
 #include "parser/base.h"
 
-static bool parse_modifiers(KarToken* token, size_t methodPos, KarArray* errors) {
+static bool parse_modifiers(KarToken* token, size_t methodPos, KarProjectErrorList* errors) {
 	KarToken* modifiers = kar_token_create();
 	modifiers->type = KAR_TOKEN_METHOD_MODIFIER;
-	modifiers->cursor = kar_token_child(token, 0)->cursor;
+	modifiers->cursor = kar_token_child_get(token, 0)->cursor;
 	kar_token_child_insert(token, modifiers, 0);
 	kar_token_child_move_to_end(token, modifiers, 1, methodPos);
 	
@@ -23,8 +23,8 @@ static bool parse_modifiers(KarToken* token, size_t methodPos, KarArray* errors)
 	bool inherit_modifier = false;
 	bool finalize_modifier = false;
 	bool overload_modifier = false;
-	for (size_t i = 0; i < modifiers->children.count; i++){
-		KarToken* token = kar_token_child(modifiers, i);
+	for (size_t i = 0; i < kar_token_child_count(modifiers); i++){
+		KarToken* token = kar_token_child_get(modifiers, i);
 		if (
 			token->type != KAR_TOKEN_MODIFIER_STAT &&
 			token->type != KAR_TOKEN_METHOD_MODIFIER_DYNAMIC &&
@@ -35,7 +35,7 @@ static bool parse_modifiers(KarToken* token, size_t methodPos, KarArray* errors)
 			token->type != KAR_TOKEN_METHOD_MODIFIER_INHERITED &&
 			token->type != KAR_TOKEN_METHOD_MODIFIER_OVERLOAD
 		) {
-			kar_module_error_create_add(errors, &token->cursor, 1, "Некорректный модификатор при объявлении метода.");
+			kar_project_error_list_create_add(errors, &token->cursor, 1, "Некорректный модификатор при объявлении метода.");
 			return false;
 		}
 		if (
@@ -43,7 +43,7 @@ static bool parse_modifiers(KarToken* token, size_t methodPos, KarArray* errors)
 			token->type == KAR_TOKEN_METHOD_MODIFIER_DYNAMIC
 		) {
 			if (static_modifier) {
-				kar_module_error_create_add(errors, &token->cursor, 1, "Объявлено более одного модификатора статичности при объявлении метода.");
+				kar_project_error_list_create_add(errors, &token->cursor, 1, "Объявлено более одного модификатора статичности при объявлении метода.");
 				return false;
 			} else {
 				static_modifier = true;
@@ -55,7 +55,7 @@ static bool parse_modifiers(KarToken* token, size_t methodPos, KarArray* errors)
 			token->type == KAR_TOKEN_METHOD_MODIFIER_PUBLIC
 		) {
 			if (inherit_modifier) {
-				kar_module_error_create_add(errors, &token->cursor, 1, "Объявлено более одного модификатора области видимости при объявлении метода.");
+				kar_project_error_list_create_add(errors, &token->cursor, 1, "Объявлено более одного модификатора области видимости при объявлении метода.");
 				return false;
 			} else {
 				inherit_modifier = true;
@@ -66,7 +66,7 @@ static bool parse_modifiers(KarToken* token, size_t methodPos, KarArray* errors)
 			token->type == KAR_TOKEN_METHOD_MODIFIER_INHERITED
 		) {
 			if (finalize_modifier) {
-				kar_module_error_create_add(errors, &token->cursor, 1, "Объявлено более одного модификатора финализации при объявлении метода.");
+				kar_project_error_list_create_add(errors, &token->cursor, 1, "Объявлено более одного модификатора финализации при объявлении метода.");
 				return false;
 			} else {
 				finalize_modifier = true;
@@ -76,7 +76,7 @@ static bool parse_modifiers(KarToken* token, size_t methodPos, KarArray* errors)
 			token->type == KAR_TOKEN_METHOD_MODIFIER_OVERLOAD
 		) {
 			if (overload_modifier) {
-				kar_module_error_create_add(errors, &token->cursor, 1, "Объявлено более одного модификатора перегрузки при объявлении метода.");
+				kar_project_error_list_create_add(errors, &token->cursor, 1, "Объявлено более одного модификатора перегрузки при объявлении метода.");
 				return false;
 			} else {
 				overload_modifier = true;
@@ -91,26 +91,26 @@ static void parse_keyword(KarToken* token) {
 	kar_token_child_erase(token, CHILD_INDEX);
 }
 
-static bool parse_method_name(KarToken* token, KarArray* errors) {
+static bool parse_method_name(KarToken* token, KarProjectErrorList* errors) {
 	const size_t CHILD_INDEX = 1;
-	if (CHILD_INDEX == token->children.count) {
-		kar_module_error_create_add(errors, &kar_token_child(token, token->children.count - 1)->cursor, 1, "Неожиданный конец строки. Ожидалось имя метода.");
+	if (CHILD_INDEX == kar_token_child_count(token)) {
+		kar_project_error_list_create_add(errors, &kar_token_child_get_last(token, 0)->cursor, 1, "Неожиданный конец строки. Ожидалось имя метода.");
 		return false;
 	}
 	
-	KarToken* methodParams = kar_token_child(token, CHILD_INDEX);
+	KarToken* methodParams = kar_token_child_get(token, CHILD_INDEX);
 	if (methodParams->type != KAR_TOKEN_SIGN_CALL_METHOD) {
-		kar_module_error_create_add(errors, &methodParams->cursor, 1, "Некорректное имя метода. Ожидалось, что будет идентификатор.");
+		kar_project_error_list_create_add(errors, &methodParams->cursor, 1, "Некорректное имя метода. Ожидалось, что будет идентификатор.");
 		return false;
 	}
-	if (methodParams->children.count < 1) {
-		kar_module_error_create_add(errors, &methodParams->cursor, 1, "Не возможно найти имя метода.");
+	if (kar_token_child_count(methodParams) < 1) {
+		kar_project_error_list_create_add(errors, &methodParams->cursor, 1, "Не возможно найти имя метода.");
 		return false;
 	}
 	
-	KarToken* methodName = kar_token_child(methodParams, 0);
+	KarToken* methodName = kar_token_child_get(methodParams, 0);
 	if (methodName->type != KAR_TOKEN_IDENTIFIER) {
-		kar_module_error_create_add(errors, &methodName->cursor, 1, "Не корректное имя метода.");
+		kar_project_error_list_create_add(errors, &methodName->cursor, 1, "Не корректное имя метода.");
 		return false;
 	}
 	
@@ -128,7 +128,7 @@ static bool parse_method_name(KarToken* token, KarArray* errors) {
 	return true;
 }
 
-static bool parse_method_parameters(KarToken* token, KarArray* errors) {
+static bool parse_method_parameters(KarToken* token, KarProjectErrorList* errors) {
 	const size_t CHILD_INDEX = 1;
 	KarToken* parameters = kar_token_child_tear(token, CHILD_INDEX);
 	parameters->type = KAR_TOKEN_METHOD_PARAMETERS;
@@ -136,16 +136,16 @@ static bool parse_method_parameters(KarToken* token, KarArray* errors) {
 	parameters->str = NULL;
 	kar_token_child_insert(token, parameters, 1);
 	
-	for (size_t i = 0; i < parameters->children.count; i++) {
-		KarToken* parameter = kar_token_child(parameters, i);
-		if (parameter->children.count == 1) {
-			KarToken* mul = kar_token_child(parameter, 0);
+	for (size_t i = 0; i < kar_token_child_count(parameters); i++) {
+		KarToken* parameter = kar_token_child_get(parameters, i);
+		if (kar_token_child_count(parameter) == 1) {
+			KarToken* mul = kar_token_child_get(parameter, 0);
 			if (mul->type != KAR_TOKEN_SIGN_MUL) {
-				kar_module_error_create_add(errors, &parameter->cursor, 1, "Некорректный параметр метода.");
+				kar_project_error_list_create_add(errors, &parameter->cursor, 1, "Некорректный параметр метода.");
 				return false;
 			}
-			if (mul->children.count != 2) {
-				kar_module_error_create_add(errors, &parameter->cursor, 1, "Некорректный параметр метода.");
+			if (kar_token_child_count(mul) != 2) {
+				kar_project_error_list_create_add(errors, &parameter->cursor, 1, "Некорректный параметр метода.");
 				return false;
 			}
 			parameter->type = KAR_TOKEN_METHOD_PARAMETER_VAR;
@@ -156,45 +156,45 @@ static bool parse_method_parameters(KarToken* token, KarArray* errors) {
 			kar_token_child_add(parameter, name);
 			kar_token_free(mul);
 			
-		} else if (parameter->children.count == 2) {
+		} else if (kar_token_child_count(parameter) == 2) {
 			parameter->type = KAR_TOKEN_METHOD_PARAMETER_CONST;
 		} else {
-			kar_module_error_create_add(errors, &parameter->cursor, 1, "Некорректный параметр метода.");
+			kar_project_error_list_create_add(errors, &parameter->cursor, 1, "Некорректный параметр метода.");
 			return false;
 		}
 		
-		if (parameter->children.count != 2) {
-			kar_module_error_create_add(errors, &parameter->cursor, 1, "Некорректный параметр метода.");
+		if (kar_token_child_count(parameter) != 2) {
+			kar_project_error_list_create_add(errors, &parameter->cursor, 1, "Некорректный параметр метода.");
 			return false;
 		}
-		KarToken* type = kar_token_child(parameter, 0);
-		KarToken* name = kar_token_child(parameter, 1);
+		KarToken* type = kar_token_child_get(parameter, 0);
+		KarToken* name = kar_token_child_get(parameter, 1);
 		if (!kar_token_is_type(type->type)) {
-			kar_module_error_create_add(errors, &type->cursor, 1, "Некорректный тип параметра метода.");
+			kar_project_error_list_create_add(errors, &type->cursor, 1, "Некорректный тип параметра метода.");
 			return false;
 		}
 		if (!kar_token_is_name(name->type)) {
-			kar_module_error_create_add(errors, &name->cursor, 1, "Некорректное имя параметра метода.");
+			kar_project_error_list_create_add(errors, &name->cursor, 1, "Некорректное имя параметра метода.");
 			return false;
 		}
 	}
 	return true;
 }
 
-static bool parse_return_type(KarToken* token, KarArray* errors) {
+static bool parse_return_type(KarToken* token, KarProjectErrorList* errors) {
 	const size_t CHILD_INDEX = 2;
-	if (CHILD_INDEX == token->children.count) {
+	if (CHILD_INDEX == kar_token_child_count(token)) {
 		return false;
 	}
 	KarToken* returnType = kar_token_create();
 	returnType->type = KAR_TOKEN_METHOD_RETURN_TYPE;
-	returnType->cursor = kar_token_child(token, CHILD_INDEX)->cursor;
+	returnType->cursor = kar_token_child_get(token, CHILD_INDEX)->cursor;
 	// TODO: Надо проверять корректность типа возвращаемого значения. Это либо идентификатор, либо стандартный тип.
-	if (kar_token_child(token, CHILD_INDEX)->type != KAR_TOKEN_SIGN_COLON) {
+	if (kar_token_child_get(token, CHILD_INDEX)->type != KAR_TOKEN_SIGN_COLON) {
 		KarToken* returnTypeToken = kar_token_child_tear(token, CHILD_INDEX);
 		kar_token_child_add(returnType, returnTypeToken);
 		if (!kar_token_is_type(returnTypeToken->type)) {
-			kar_module_error_create_add(errors, &returnTypeToken->cursor, 1, "Некорректный тип возвращаемого значения функции.");
+			kar_project_error_list_create_add(errors, &returnTypeToken->cursor, 1, "Некорректный тип возвращаемого значения функции.");
 			return false;
 		}
 	}
@@ -202,56 +202,56 @@ static bool parse_return_type(KarToken* token, KarArray* errors) {
 	return true;
 }
 
-static bool parse_colon(KarToken* token, KarArray* errors) {
+static bool parse_colon(KarToken* token, KarProjectErrorList* errors) {
 	const size_t CHILD_INDEX = 3;
-	if (CHILD_INDEX == token->children.count) {
+	if (CHILD_INDEX == kar_token_child_count(token)) {
 		// TODO: Надо указать курсор на конец токена.
-		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX - 1)->cursor, 1, "Пропущено двоеточие в конце строки.");
+		kar_project_error_list_create_add(errors, &kar_token_child_get(token, CHILD_INDEX - 1)->cursor, 1, "Пропущено двоеточие в конце строки.");
 		return false;
 	}
-	if (kar_token_child(token, CHILD_INDEX)->type != KAR_TOKEN_SIGN_COLON) {
-		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX)->cursor, 1, "Ожидался символ \":\".");
+	if (kar_token_child_get(token, CHILD_INDEX)->type != KAR_TOKEN_SIGN_COLON) {
+		kar_project_error_list_create_add(errors, &kar_token_child_get(token, CHILD_INDEX)->cursor, 1, "Ожидался символ \":\".");
 		return false;
 	}
-	if ((CHILD_INDEX + 1) == token->children.count) {
-		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX)->cursor, 1, "Неожиданное выражение в конце строки.");
+	if ((CHILD_INDEX + 1) == kar_token_child_count(token)) {
+		kar_project_error_list_create_add(errors, &kar_token_child_get(token, CHILD_INDEX)->cursor, 1, "Неожиданное выражение в конце строки.");
 		return false;
 	}
 	kar_token_child_erase(token, CHILD_INDEX);
 	return true;
 }
 
-static bool parse_algorithm(KarToken* token, KarArray* errors) {
+static bool parse_algorithm(KarToken* token, KarProjectErrorList* errors) {
 	const size_t CHILD_INDEX = 3;
-	if (token->children.count == CHILD_INDEX) {
+	if (kar_token_child_count(token) == CHILD_INDEX) {
 		// TODO: Надо указать курсор на конец токена.
-		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX - 1)->cursor, 1, "Отсутствует алгоритм метода.");
+		kar_project_error_list_create_add(errors, &kar_token_child_get(token, CHILD_INDEX - 1)->cursor, 1, "Отсутствует алгоритм метода.");
 		return false;
 	}
-	if (token->children.count > CHILD_INDEX + 1) {
-		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX + 1)->cursor, 1, "Слишком много алгоритмов или других элементов в методе.");
+	if (kar_token_child_count(token) > CHILD_INDEX + 1) {
+		kar_project_error_list_create_add(errors, &kar_token_child_get(token, CHILD_INDEX + 1)->cursor, 1, "Слишком много алгоритмов или других элементов в методе.");
 		return false;
 	}
 	
 	// TODO: Возможно эти 2 блока если на самом деле являются частью проверки алгоритма. Надо перенести туда.
-	if (kar_token_child(token, CHILD_INDEX)->type != KAR_TOKEN_BLOCK_BODY) {
-		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX)->cursor, 1, "Здесь ожидалось найти тело метода.");
+	if (kar_token_child_get(token, CHILD_INDEX)->type != KAR_TOKEN_BLOCK_BODY) {
+		kar_project_error_list_create_add(errors, &kar_token_child_get(token, CHILD_INDEX)->cursor, 1, "Здесь ожидалось найти тело метода.");
 		return false;
 	}
-	if (kar_token_child(token, CHILD_INDEX)->children.count == 0) {
-		kar_module_error_create_add(errors, &kar_token_child(token, CHILD_INDEX)->cursor, 1, "В теле метода должна быть хотя бы одна команда.");
+	if (kar_token_child_count(kar_token_child_get(token, CHILD_INDEX)) == 0) {
+		kar_project_error_list_create_add(errors, &kar_token_child_get(token, CHILD_INDEX)->cursor, 1, "В теле метода должна быть хотя бы одна команда.");
 		return false;
 	}
 	
-	return kar_parser_parse_algorithm(kar_token_child(token, CHILD_INDEX), errors);
+	return kar_parser_parse_algorithm(kar_token_child_get(token, CHILD_INDEX), errors);
 }
 
 // ----------------------------------------------------------------------------
 
-KarParserStatus kar_parser_make_method(KarToken* token, KarArray* errors)
+KarParserStatus kar_parser_make_method(KarToken* token, KarProjectErrorList* errors)
 {
 	size_t methodPos = kar_token_child_find(token, KAR_TOKEN_METHOD);
-	if (methodPos == token->children.count) {
+	if (methodPos == kar_token_child_count(token)) {
 		return KAR_PARSER_STATUS_NOT_PARSED;
 	}
 	

@@ -88,7 +88,7 @@ bool is_hexadecimal(char* str) {
 	return true;
 }
 
-static bool check_for_number(KarToken* token, KarModule* module) {
+static bool check_for_number(KarToken* token, KarProjectErrorList* error_list) {
 	// TODO: Плюс бесконеность, минус бесконечность, +0, -0, НеЧисло.
 	if (token->type != KAR_TOKEN_IDENTIFIER) {
 		return true;
@@ -109,7 +109,7 @@ static bool check_for_number(KarToken* token, KarModule* module) {
 	size_t len = strlen(token->str);
 	for (size_t i = 1; i < len; ++i) {
 		if(!is_cypher(token->str[i])) {
-			kar_module_error_create_add(&module->errors, &token->cursor, 1, "Токен не является корректным числом.");
+			kar_project_error_list_create_add(error_list, &token->cursor, 1, "Токен не является корректным числом.");
 			return false;
 		}
 	}
@@ -117,10 +117,10 @@ static bool check_for_number(KarToken* token, KarModule* module) {
 	return true;
 }
 
-static bool retype_all(KarToken* token, KarModule* module) {
+static bool retype_all(KarToken* token, KarProjectErrorList* error_list) {
 	// TODO: Не обязательно передавать KarModule. Достаточно KarModuleError.
 	if (token->type == KAR_TOKEN_IDENTIFIER && !kar_check_identifiers_alphabet(token->str)) {
-		kar_module_error_create_add(&module->errors, &token->cursor, 1, "Токен составлен из разных алфавитов.");
+		kar_project_error_list_create_add(error_list, &token->cursor, 1, "Токен составлен из разных алфавитов.");
 		return false;
 	}
 	// Значения переменных.
@@ -133,7 +133,7 @@ static bool retype_all(KarToken* token, KarModule* module) {
 	retype_if_check(token, KAR_TOKEN_IDENTIFIER, KAR_KEYWORD_VAL_MINUS_INFINITY, KAR_TOKEN_VAL_MINUS_INFINITY);
 	
 	// Число.
-	if (!check_for_number(token, module)) {
+	if (!check_for_number(token, error_list)) {
 		return false;
 	}
 	
@@ -235,13 +235,13 @@ static bool retype_all(KarToken* token, KarModule* module) {
 	return true;
 }
 
-static bool foreach_retype(KarToken* token, KarModule* module) {
-	for (size_t i = 0; i < token->children.count; i++) {
-		if (!foreach_retype(token->children.items[i], module)) {
+static bool foreach_retype(KarToken* token, KarProjectErrorList* error_list) {
+	for (size_t i = 0; i < kar_token_child_count(token); i++) {
+		if (!foreach_retype(kar_token_child_get(token, i), error_list)) {
 			return false;
 		}
 	}
-	return retype_all(token, module);
+	return retype_all(token, error_list);
 }
 
 static KarTokenType CONCAT_LIST[][3] = {
@@ -253,12 +253,12 @@ static KarTokenType CONCAT_LIST[][3] = {
 static size_t CONCAT_LIST_SIZE = sizeof(CONCAT_LIST) / sizeof(KarTokenType[3]);
 
 static bool concat_signs(KarToken* token) {
-	if (token->children.count == 0) {
+	if (kar_token_child_empty(token)) {
 		return true;
 	}
-	for (size_t i = 0; i < token->children.count - 1; ++i) {
-		KarToken* cur = kar_token_child(token, i);
-		KarToken* next = kar_token_child(token, i + 1);
+	for (size_t i = 0; i < kar_token_child_count(token) - 1; ++i) {
+		KarToken* cur = kar_token_child_get(token, i);
+		KarToken* next = kar_token_child_get(token, i + 1);
 		KarTokenType curType = cur->type;
 		KarTokenType nextType = next->type;
 		for (size_t j = 0; j < CONCAT_LIST_SIZE; ++j) {
@@ -277,15 +277,15 @@ static bool concat_signs(KarToken* token) {
 
 static bool find_floats_5(KarToken* token) {
 	
-	for (size_t i = 0; i < token->children.count - 4; ++i) {
-		if (token->children.count < 5) {
+	for (size_t i = 0; i < kar_token_child_count(token) - 4; ++i) {
+		if (kar_token_child_count(token) < 5) {
 			return true;
 		}
-		KarToken* first = kar_token_child(token, i);
-		KarToken* second = kar_token_child(token, i + 1);
-		KarToken* third = kar_token_child(token, i + 2);
-		KarToken* fourth = kar_token_child(token, i + 3);
-		KarToken* fifth = kar_token_child(token, i + 4);
+		KarToken* first = kar_token_child_get(token, i);
+		KarToken* second = kar_token_child_get(token, i + 1);
+		KarToken* third = kar_token_child_get(token, i + 2);
+		KarToken* fourth = kar_token_child_get(token, i + 3);
+		KarToken* fifth = kar_token_child_get(token, i + 4);
 
 		if (first->type != KAR_TOKEN_VAL_INTEGER) {
 			continue;
@@ -310,13 +310,13 @@ static bool find_floats_5(KarToken* token) {
 }
 
 static bool find_floats_3(KarToken* token) {
-	for (size_t i = 0; i < token->children.count - 2; ++i) {
-		if (token->children.count < 3) {
+	for (size_t i = 0; i < kar_token_child_count(token) - 2; ++i) {
+		if (kar_token_child_count(token) < 3) {
 			return true;
 		}
-		KarToken* integer = kar_token_child(token, i);
-		KarToken* dot = kar_token_child(token, i + 1);
-		KarToken* fraction = kar_token_child(token, i + 2);
+		KarToken* integer = kar_token_child_get(token, i);
+		KarToken* dot = kar_token_child_get(token, i + 1);
+		KarToken* fraction = kar_token_child_get(token, i + 2);
 
 		if (integer->type == KAR_TOKEN_VAL_INTEGER && dot->type == KAR_TOKEN_SIGN_GET_FIELD && fraction->type == KAR_TOKEN_VAL_INTEGER) {
 			integer->type = KAR_TOKEN_VAL_FLOAT;
@@ -338,32 +338,32 @@ static bool find_floats_3(KarToken* token) {
 	return true;
 }
 
-static bool find_floats_2(KarToken* token, KarArray* errors) {
-	for (size_t i = 0; i < token->children.count - 1; ++i) {
-		if (token->children.count < 2) {
+static bool find_floats_2(KarToken* token, KarProjectErrorList* error_list) {
+	for (size_t i = 0; i < kar_token_child_count(token) - 1; ++i) {
+		if (kar_token_child_count(token) < 2) {
 			return true;
 		}
-		KarToken* first = kar_token_child(token, i);
-		KarToken* second = kar_token_child(token, i + 1);
+		KarToken* first = kar_token_child_get(token, i);
+		KarToken* second = kar_token_child_get(token, i + 1);
 
 		if (first->type == KAR_TOKEN_SIGN_GET_FIELD && second->type == KAR_TOKEN_VAL_INTEGER) {
-			kar_module_error_create_add(errors, &first->cursor, 1, "Некорректная запись числа с плавающей точкой.");
+			kar_project_error_list_create_add(error_list, &first->cursor, 1, "Некорректная запись числа с плавающей точкой.");
 			return false;
 		}
 		if (first->type == KAR_TOKEN_VAL_INTEGER && second->type == KAR_TOKEN_SIGN_GET_FIELD) {
-			kar_module_error_create_add(errors, &first->cursor, 1, "Некорректная запись числа с плавающей точкой.");
+			kar_project_error_list_create_add(error_list, &first->cursor, 1, "Некорректная запись числа с плавающей точкой.");
 			return false;
 		}
 	}
 	return true;
 }
 
-static bool find_floats_1(KarToken* token, KarArray* errors) {
-	for (size_t i = 0; i < token->children.count; ++i) {
-		KarToken* first = kar_token_child(token, i);
+static bool find_floats_1(KarToken* token, KarProjectErrorList* error_list) {
+	for (size_t i = 0; i < kar_token_child_count(token); ++i) {
+		KarToken* first = kar_token_child_get(token, i);
 
 		if (first->type == KAR_TOKEN_IDENTIFIER && get_exp_status(first->str) == KAR_EXP_POSITION_END) {
-			kar_module_error_create_add(errors, &first->cursor, 1, "Некорректная запись числа с плавающей точкой.");
+			kar_project_error_list_create_add(error_list, &first->cursor, 1, "Некорректная запись числа с плавающей точкой.");
 			return false;
 		}
 		if (first->type == KAR_TOKEN_IDENTIFIER && get_exp_status(first->str) == KAR_EXP_POSITION_MIDDLE) {
@@ -374,7 +374,7 @@ static bool find_floats_1(KarToken* token, KarArray* errors) {
 	return true;
 }
 
-static bool find_floats(KarToken* token, KarArray* errors) {	
+static bool find_floats(KarToken* token, KarProjectErrorList* error_list) {	
 	
 	if (!find_floats_5(token)) {
 		return false;
@@ -382,20 +382,20 @@ static bool find_floats(KarToken* token, KarArray* errors) {
 	if (!find_floats_3(token)) {
 		return false;
 	}
-	if (!find_floats_2(token, errors)) {
+	if (!find_floats_2(token, error_list)) {
 		return false;
 	}
-	if (!find_floats_1(token, errors)) {
+	if (!find_floats_1(token, error_list)) {
 		return false;
 	}
 	return true;
 }
 
-static bool check_identifires(KarToken* token, KarArray* errors) {
-	for (size_t i = 0; i < token->children.count; ++i) {
-		KarToken* child = kar_token_child(token, i);
+static bool check_identifires(KarToken* token, KarProjectErrorList* error_list) {
+	for (size_t i = 0; i < kar_token_child_count(token); ++i) {
+		KarToken* child = kar_token_child_get(token, i);
 		if (child->type == KAR_TOKEN_IDENTIFIER && is_cypher(*child->str)) {
-			kar_module_error_create_add(errors, &child->cursor, 1, "Идентификатор начинается с цифры.");
+			kar_project_error_list_create_add(error_list, &child->cursor, 1, "Идентификатор начинается с цифры.");
 			return false;
 		}
 	}
@@ -404,8 +404,8 @@ static bool check_identifires(KarToken* token, KarArray* errors) {
 
 bool kar_second_lexer_run(KarModule* module) {
 	return
-		foreach_retype(module->token, module) &&
+		foreach_retype(module->token, module->errors) &&
 		concat_signs(module->token) &&
-		find_floats(module->token, &module->errors) &&
-		check_identifires(module->token, &module->errors);
+		find_floats(module->token, module->errors) &&
+		check_identifires(module->token, module->errors);
 }

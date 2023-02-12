@@ -4,9 +4,10 @@ set(lib_model_SRC
 
 src/token_type.c
 src/token.c
-
-src/module_error.c
 src/module.c
+
+src/project_error.c
+src/project_error_list.c
 
 src/vartree.c
 src/project.c

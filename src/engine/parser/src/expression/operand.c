@@ -1,4 +1,4 @@
-/* Copyright © 2021,2022 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2021-2023 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -9,7 +9,7 @@
 #include "core/string.h"
 #include "core/alloc.h"
 #include "model/token.h"
-#include "model/module_error.h"
+#include "model/project_error_list.h"
 #include "parser/base.h"
 
 // ----------------------------------------------------------------------------
@@ -29,33 +29,33 @@ static bool is_token_type_in_list(KarTokenType type, size_t num, const KarTokenT
 // Операторы с двумя операндами (А оп Б).
 // ----------------------------------------------------------------------------
 
-static bool make_two_operators(KarToken* token, size_t num, const KarTokenType* operands, KarArray* errors) {
-	for (size_t i = 0; i < token->children.count; ++i) {
-		KarToken* child = kar_token_child(token, i);
+static bool make_two_operators(KarToken* token, size_t num, const KarTokenType* operands, KarProjectErrorList* errors) {
+	for (size_t i = 0; i < kar_token_child_count(token); ++i) {
+		KarToken* child = kar_token_child_get(token, i);
 		if (!is_token_type_in_list(child->type, num, operands)) {
 			continue;
 		}
 		
 		if (i == 0) {
-			kar_module_error_create_add(errors, &child->cursor, 1, "Нет первого операнда у операции.");
+			kar_project_error_list_create_add(errors, &child->cursor, 1, "Нет первого операнда у операции.");
 			return false;
 		}
-		if (i == token->children.count - 1) {
-			kar_module_error_create_add(errors, &child->cursor, 1, "Нет второго операнда у операции.");
+		if (i == kar_token_child_count(token) - 1) {
+			kar_project_error_list_create_add(errors, &child->cursor, 1, "Нет второго операнда у операции.");
 			return false;
 		}
-		KarToken* first = kar_token_child(token, i - 1);
-		KarToken* second = kar_token_child(token, i + 1);
+		KarToken* first = kar_token_child_get(token, i - 1);
+		KarToken* second = kar_token_child_get(token, i + 1);
 		if (!kar_parser_is_expression(first->type)) {
-			kar_module_error_create_add(errors, &child->cursor, 1, "Первый оператор не корректен.");
+			kar_project_error_list_create_add(errors, &child->cursor, 1, "Первый оператор не корректен.");
 			return false;
 		}
 		if (!kar_parser_is_expression(second->type)) {
-			kar_module_error_create_add(errors, &child->cursor, 1, "Второй оператор не корректен.");
+			kar_project_error_list_create_add(errors, &child->cursor, 1, "Второй оператор не корректен.");
 			return false;
 		}
 		if (is_token_type_in_list(second->type, num, operands)) {
-			kar_module_error_create_add(errors, &child->cursor, 1, "Следующий операнд того же порядка что и текущий.");
+			kar_project_error_list_create_add(errors, &child->cursor, 1, "Следующий операнд того же порядка что и текущий.");
 			return false;
 		}
 		kar_token_child_tear(token, i + 1);
@@ -67,10 +67,10 @@ static bool make_two_operators(KarToken* token, size_t num, const KarTokenType* 
 	return true;
 }
 
-static bool foreach_two_operators(KarToken* token, size_t num, const KarTokenType* operands, KarArray* errors) 
+static bool foreach_two_operators(KarToken* token, size_t num, const KarTokenType* operands, KarProjectErrorList* errors) 
 {
-	for (size_t i = 0; i < token->children.count; i++) {
-		if (!foreach_two_operators(token->children.items[i], num, operands, errors)) {
+	for (size_t i = 0; i < kar_token_child_count(token); i++) {
+		if (!foreach_two_operators(kar_token_child_get(token, i), num, operands, errors)) {
 			return false;
 		}
 	}
@@ -81,22 +81,22 @@ static bool foreach_two_operators(KarToken* token, size_t num, const KarTokenTyp
 // Операторы с операндом перед оператором (А оп).
 // ----------------------------------------------------------------------------
 
-static bool make_operator_before(KarToken* token, KarTokenType operator, KarArray* errors) {
-	for (size_t i = 0; i < token->children.count; ++i) {
-		KarToken* child = kar_token_child(token, i);
+static bool make_operator_before(KarToken* token, KarTokenType operator, KarProjectErrorList* errors) {
+	for (size_t i = 0; i < kar_token_child_count(token); ++i) {
+		KarToken* child = kar_token_child_get(token, i);
 		if (child->type != operator) {
 			continue;
 		}
 		if (i == 0) {
 			char* error_text = kar_string_create_format("Нет первого операнда у операции \"%s\".", child->str);
-			kar_module_error_create_add(errors, &child->cursor, 1, error_text);
+			kar_project_error_list_create_add(errors, &child->cursor, 1, error_text);
 			KAR_FREE(error_text);
 			return false;
 		}
 		
-		KarToken* operator = kar_token_child(token, i - 1);
+		KarToken* operator = kar_token_child_get(token, i - 1);
 		if (!kar_parser_is_expression(operator->type)) {
-			kar_module_error_create_add(errors, &child->cursor, 1, "Оператор не корректен.");
+			kar_project_error_list_create_add(errors, &child->cursor, 1, "Оператор не корректен.");
 			return false;
 		}
 		
@@ -107,10 +107,10 @@ static bool make_operator_before(KarToken* token, KarTokenType operator, KarArra
 	return true;
 }
 
-static bool foreach_operator_before(KarToken* token, KarTokenType operator, KarArray* errors) 
+static bool foreach_operator_before(KarToken* token, KarTokenType operator, KarProjectErrorList* errors) 
 {
-	for (size_t i = 0; i < token->children.count; i++) {
-		if (!foreach_operator_before(token->children.items[i], operator, errors)) {
+	for (size_t i = 0; i < kar_token_child_count(token); i++) {
+		if (!foreach_operator_before(kar_token_child_get(token, i), operator, errors)) {
 			return false;
 		}
 	}
@@ -121,23 +121,23 @@ static bool foreach_operator_before(KarToken* token, KarTokenType operator, KarA
 // Операторы с операндом перед оператором (оп А).
 // ----------------------------------------------------------------------------
 
-static bool make_operator_after(KarToken* token, size_t op_num, const KarTokenType* operands, KarArray* errors) {
-	for (size_t num = token->children.count; num > 0; --num) {
+static bool make_operator_after(KarToken* token, size_t op_num, const KarTokenType* operands, KarProjectErrorList* errors) {
+	for (size_t num = kar_token_child_count(token); num > 0; --num) {
 		size_t i = num - 1;
-		KarToken* child = kar_token_child(token, i);
+		KarToken* child = kar_token_child_get(token, i);
 		if (!is_token_type_in_list(child->type, op_num, operands)) {
 			continue;
 		}
-		if (i == token->children.count - 1) {
+		if (i == kar_token_child_count(token) - 1) {
 			char* error_text = kar_string_create_format("Нет операнда у операции \"%s\".", child->str);
-			kar_module_error_create_add(errors, &child->cursor, 1, error_text);
+			kar_project_error_list_create_add(errors, &child->cursor, 1, error_text);
 			KAR_FREE(error_text);
 			return false;
 		}
 		
-		KarToken* operator = kar_token_child(token, i + 1);
+		KarToken* operator = kar_token_child_get(token, i + 1);
 		if (!kar_parser_is_expression(operator->type)) {
-			kar_module_error_create_add(errors, &child->cursor, 1, "Оператор не корректен.");
+			kar_project_error_list_create_add(errors, &child->cursor, 1, "Оператор не корректен.");
 			return false;
 		}
 		
@@ -147,10 +147,10 @@ static bool make_operator_after(KarToken* token, size_t op_num, const KarTokenTy
 	return true;
 }
 
-static bool foreach_operator_after(KarToken* token, size_t op_num, const KarTokenType* operands, KarArray* errors) 
+static bool foreach_operator_after(KarToken* token, size_t op_num, const KarTokenType* operands, KarProjectErrorList* errors) 
 {
-	for (size_t i = 0; i < token->children.count; i++) {
-		if (!foreach_operator_after(token->children.items[i], op_num, operands, errors)) {
+	for (size_t i = 0; i < kar_token_child_count(token); i++) {
+		if (!foreach_operator_after(kar_token_child_get(token, i), op_num, operands, errors)) {
 			return false;
 		}
 	}
@@ -169,12 +169,12 @@ static void switch_to_single(KarToken* token) {
 	}
 }
 
-static bool find_single_plus_minus(KarToken* token, KarArray* errors) {
+static bool find_single_plus_minus(KarToken* token, KarProjectErrorList* errors) {
 	if (errors) {
 		
 	}
-	for (size_t i = 0; i < token->children.count; ++i) {
-		KarToken* child = kar_token_child(token, i);
+	for (size_t i = 0; i < kar_token_child_count(token); ++i) {
+		KarToken* child = kar_token_child_get(token, i);
 		if (child->type != KAR_TOKEN_SIGN_PLUS && child->type != KAR_TOKEN_SIGN_MINUS) {
 			continue;
 		}
@@ -182,7 +182,7 @@ static bool find_single_plus_minus(KarToken* token, KarArray* errors) {
 			switch_to_single(child);
 			continue;
 		}
-		KarToken* prev = kar_token_child(token, i - 1);
+		KarToken* prev = kar_token_child_get(token, i - 1);
 		if (
 			kar_token_type_is_value(prev->type) ||
 			prev->type == KAR_TOKEN_IDENTIFIER ||
@@ -197,10 +197,10 @@ static bool find_single_plus_minus(KarToken* token, KarArray* errors) {
 	return true;
 }
 
-static bool foreach_find_single(KarToken* token, KarArray* errors) 
+static bool foreach_find_single(KarToken* token, KarProjectErrorList* errors) 
 {
-	for (size_t i = 0; i < token->children.count; i++) {
-		if (!foreach_find_single(token->children.items[i], errors)) {
+	for (size_t i = 0; i < kar_token_child_count(token); i++) {
+		if (!foreach_find_single(kar_token_child_get(token, i), errors)) {
 			return false;
 		}
 	}
@@ -284,7 +284,7 @@ static const KarTokenType OPERAND_LIST_OR[] = {
 };
 static size_t OPERAND_LIST_OR_SIZE = sizeof(OPERAND_LIST_OR) / sizeof(KarTokenType);
 
-bool kar_parser_make_operands(KarToken* token, KarArray* errors)
+bool kar_parser_make_operands(KarToken* token, KarProjectErrorList* errors)
 {
 	bool b = true;
 	

@@ -8,13 +8,15 @@
 
 #include "core/alloc.h"
 
+static void(*link_free)(KarVartree* item) = NULL;
+
 KarVartree* kar_vartree_create() {
 	KAR_CREATE(vartree, KarVartree);
 	
 	vartree->name = NULL;
 	vartree->type = KAR_VARTYPE_UNKNOWN;
-	kar_array_init(&vartree->children);
-	kar_array_init(&vartree->link);
+	kar_vartree_child_init(vartree);
+	kar_vartree_link_init(vartree);
 	vartree->value = NULL;
 	
 	return vartree;
@@ -24,8 +26,8 @@ void kar_vartree_free(KarVartree* vartree) {
 	if (vartree->name != NULL) {
 		KAR_FREE(vartree->name);
 	}
-	kar_array_clear(&vartree->children, (KarArrayFreeFn*)&kar_vartree_free);
-	kar_array_clear(&vartree->link, NULL);
+	kar_vartree_child_clear(vartree);
+	kar_vartree_link_clear(vartree);
 	// TODO: необходимо правильное удаление.
 	if (vartree->value != NULL) {
 		KAR_FREE(vartree->value);
@@ -33,5 +35,5 @@ void kar_vartree_free(KarVartree* vartree) {
 	KAR_FREE(vartree);
 }
 
-KAR_TREE_CODE(cartree_child, KarVartree, KarVartree, children, &kar_vartree_free)
-KAR_TREE_CODE(vartree_link, KarVartree, KarVartree, link, NULL)
+KAR_TREE_CODE(vartree_child, KarVartree, KarVartree, children, kar_vartree_free)
+KAR_TREE_CODE(vartree_link, KarVartree, KarVartree, link, link_free)

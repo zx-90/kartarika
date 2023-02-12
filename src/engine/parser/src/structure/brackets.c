@@ -1,4 +1,4 @@
-/* Copyright © 2020-2022 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020-2023 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -7,24 +7,24 @@
 #include <stdbool.h>
 
 #include "core/stack.h"
-#include "model/module_error.h"
+#include "model/project_error_list.h"
 #include "model/token.h"
 
-static bool extern_bracket(KarToken* token, KarArray* errors) {
-	KarStack* stack = kar_stack_create(token->children.count);
+static bool extern_bracket(KarToken* token, KarProjectErrorList* errors) {
+	KarStack* stack = kar_stack_create(kar_token_child_count(token));
 	
-	for (size_t i = 0; i < token->children.count; ++i) {
-		if (kar_token_child(token, i)->type == KAR_TOKEN_SIGN_OPEN_BRACES) {
+	for (size_t i = 0; i < kar_token_child_count(token); ++i) {
+		if (kar_token_child_get(token, i)->type == KAR_TOKEN_SIGN_OPEN_BRACES) {
 			kar_stack_push(stack, i);
 		}
-		if (kar_token_child(token, i)->type == KAR_TOKEN_SIGN_CLOSE_BRACES) {
+		if (kar_token_child_get(token, i)->type == KAR_TOKEN_SIGN_CLOSE_BRACES) {
 			if (kar_stack_is_empty(stack)) {
-				kar_module_error_create_add(errors, &kar_token_child(token, i)->cursor, 1, "У закрывающейся скобки нет соответствующей ей открывающейся.");
+				kar_project_error_list_create_add(errors, &kar_token_child_get(token, i)->cursor, 1, "У закрывающейся скобки нет соответствующей ей открывающейся.");
 				kar_stack_free(stack);
 				return false;
 			}
 			size_t open = kar_stack_pop(stack);
-			kar_token_child_move_to_end(token, kar_token_child(token, open), open + 1, i - open - 1);
+			kar_token_child_move_to_end(token, kar_token_child_get(token, open), open + 1, i - open - 1);
 			kar_token_child_erase(token, open + 1);
 			i = open;
 		}
@@ -32,7 +32,7 @@ static bool extern_bracket(KarToken* token, KarArray* errors) {
 	
 	if (!kar_stack_is_empty(stack)) {
 		while (!kar_stack_is_empty(stack)) {
-			kar_module_error_create_add(errors, &kar_token_child(token, kar_stack_pop(stack))->cursor, 1, "У открывающейся скобки нет соответствующей ей закрывающейся.");
+			kar_project_error_list_create_add(errors, &kar_token_child_get(token, kar_stack_pop(stack))->cursor, 1, "У открывающейся скобки нет соответствующей ей закрывающейся.");
 		}
 		kar_stack_free(stack);
 		return false;
@@ -42,17 +42,17 @@ static bool extern_bracket(KarToken* token, KarArray* errors) {
 	return true;
 }
 
-static bool foreach(KarToken* token, KarArray* errors) 
+static bool foreach(KarToken* token, KarProjectErrorList* errors) 
 {
-	for (size_t i = 0; i < token->children.count; i++) {
-		if (!foreach(token->children.items[i], errors)) {
+	for (size_t i = 0; i < kar_token_child_count(token); i++) {
+		if (!foreach(kar_token_child_get(token, i), errors)) {
 			return false;
 		}
 	}
 	return extern_bracket(token, errors);
 }
 
-bool kar_parser_extern_brackets(KarToken* token, KarArray* errors)
+bool kar_parser_extern_brackets(KarToken* token, KarProjectErrorList* errors)
 {
 	return foreach(token, errors);
 }

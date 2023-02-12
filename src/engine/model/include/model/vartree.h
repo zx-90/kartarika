@@ -43,7 +43,7 @@ typedef struct {
 KarVartree* kar_vartree_create();
 void kar_vartree_free(KarVartree* vartree);
 
-KAR_TREE_HEADER(vartree_child, KarVartree, KarVartree);
-KAR_TREE_HEADER(vartree_link, KarVartree, KarVartree);
+KAR_TREE_HEADER(vartree_child, KarVartree, KarVartree)
+KAR_TREE_HEADER(vartree_link, KarVartree, KarVartree)
 
 #endif // KAR_VARTREE_H

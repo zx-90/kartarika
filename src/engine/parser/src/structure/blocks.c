@@ -1,4 +1,4 @@
-/* Copyright © 2020-2022 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020-2023 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -7,7 +7,7 @@
 #include <stdbool.h>
 
 #include "model/token.h"
-#include "model/module_error.h"
+#include "model/project_error_list.h"
 
 //-----------------------------------------------------------------------------
 typedef struct {
@@ -27,8 +27,8 @@ static bool is_empty_token(KarToken* token) {
 }
 
 static bool is_colon_end(KarToken* token) {
-	for (size_t i = token->children.count; i > 0; --i) {
-		KarToken* child = kar_token_child(token, i - 1);
+	for (size_t i = kar_token_child_count(token); i > 0; --i) {
+		KarToken* child = kar_token_child_get(token, i - 1);
 		if (is_empty_token(child)) {
 			continue;
 		}
@@ -38,8 +38,8 @@ static bool is_colon_end(KarToken* token) {
 }
 
 static KarToken* get_first_not_empty(KarToken* token) {
-	for (size_t i = 0; i < token->children.count; ++i) {
-		KarToken* child = kar_token_child(token, i);
+	for (size_t i = 0; i < kar_token_child_count(token); ++i) {
+		KarToken* child = kar_token_child_get(token, i);
 		if (is_empty_token(child)) {
 			continue;
 		}
@@ -49,8 +49,8 @@ static KarToken* get_first_not_empty(KarToken* token) {
 }
 
 static KarToken* get_last_not_empty(KarToken* token) {
-	for (size_t i = token->children.count; i > 0; --i) {
-		KarToken* child = kar_token_child(token, i - 1);
+	for (size_t i = kar_token_child_count(token); i > 0; --i) {
+		KarToken* child = kar_token_child_get(token, i - 1);
 		if (is_empty_token(child)) {
 			continue;
 		}
@@ -77,7 +77,7 @@ static int get_token_indent(KarToken* token) {
 }
 
 static KarToken* cursor_current(KarTokenCursor cursor) {
-	return kar_token_child(cursor.token, cursor.num);
+	return kar_token_child_get(cursor.token, cursor.num);
 }
 
 static KarTokenIndent get_current_indent(KarTokenCursor root) {
@@ -89,27 +89,27 @@ static KarTokenIndent get_current_indent(KarTokenCursor root) {
 static KarToken* get_parent(
 	KarTokenCursor root,
 	KarTokenIndent parentToken,
-	KarArray* errors
+	KarProjectErrorList* errors
 	)
 {
 	KarToken* parent;
 	if (root.token == parentToken.token) {
-		parent = kar_token_child(root.token, root.num - 1);
+		parent = kar_token_child_get(root.token, root.num - 1);
 	} else {
-		parent = kar_token_child(parentToken.token, parentToken.token->children.count - 1);
+		parent = kar_token_child_get_last(parentToken.token, 0);
 	}
 	
 	KarToken* last_not_empty = get_last_not_empty(parent);
 	if (last_not_empty != NULL && last_not_empty->type != KAR_TOKEN_SIGN_COLON) {
-		kar_module_error_create_add(errors, &last_not_empty->cursor, 1, "Строка заголовка блока должна заканчиваться двоеточием.");
+		kar_project_error_list_create_add(errors, &last_not_empty->cursor, 1, "Строка заголовка блока должна заканчиваться двоеточием.");
 		return NULL;
 	}
 	return parent;
 }
 
-static bool fill_block(KarTokenCursor root, KarTokenIndent parentToken, KarArray* errors);
+static bool fill_block(KarTokenCursor root, KarTokenIndent parentToken, KarProjectErrorList* errors);
 
-static bool fill_subblock(KarTokenCursor root, KarTokenIndent parentToken, int indent, KarArray* errors) {
+static bool fill_subblock(KarTokenCursor root, KarTokenIndent parentToken, int indent, KarProjectErrorList* errors) {
 	KarToken* line = cursor_current(root);
 	
 	KarToken* parent = get_parent(root, parentToken, errors);
@@ -125,8 +125,8 @@ static bool fill_subblock(KarTokenCursor root, KarTokenIndent parentToken, int i
 	if (!fill_block(root, block_indent, errors)) {
 		return false;
 	}
-	if (block->children.count == 0) {
-		kar_module_error_create_add(errors, &get_first_not_empty(line)->cursor, 1, "Не найдена ни одна команда в блоке.");
+	if (kar_token_child_empty(block)) {
+		kar_project_error_list_create_add(errors, &get_first_not_empty(line)->cursor, 1, "Не найдена ни одна команда в блоке.");
 		return false;
 	}
 	return true;
@@ -140,12 +140,12 @@ static void fill_block_line(KarTokenCursor* root, KarTokenIndent parent) {
 	}
 }
 
-static bool fill_block(KarTokenCursor root, KarTokenIndent parent, KarArray* errors)
+static bool fill_block(KarTokenCursor root, KarTokenIndent parent, KarProjectErrorList* errors)
 {
 	bool prev_colon_end = false;
 	int indent = get_token_indent(cursor_current(root));
 	
-	while (root.num != root.token->children.count) {
+	while (root.num != kar_token_child_count(root.token)) {
 		KarTokenIndent current = get_current_indent(root);
 
 		if (current.indent > indent) {
@@ -157,7 +157,7 @@ static bool fill_block(KarTokenCursor root, KarTokenIndent parent, KarArray* err
 		}
 		
 		if (prev_colon_end) {
-			kar_module_error_create_add(errors, &get_first_not_empty(current.token)->cursor, 1, "Не найдена ни одна команда в блоке.");
+			kar_project_error_list_create_add(errors, &get_first_not_empty(current.token)->cursor, 1, "Не найдена ни одна команда в блоке.");
 			return false;
 		}
 		prev_colon_end = is_colon_end(current.token);
@@ -169,7 +169,7 @@ static bool fill_block(KarTokenCursor root, KarTokenIndent parent, KarArray* err
 		
 		if (current.indent < indent) {
 			if (current.indent > parent.indent) {
-				kar_module_error_create_add(errors, &get_first_not_empty(current.token)->cursor, 1, "Отступ в строке не соответствует ни одному предыдущему отступу.");
+				kar_project_error_list_create_add(errors, &get_first_not_empty(current.token)->cursor, 1, "Отступ в строке не соответствует ни одному предыдущему отступу.");
 				return false;
 			}
 			return true;
@@ -178,15 +178,15 @@ static bool fill_block(KarTokenCursor root, KarTokenIndent parent, KarArray* err
 	return !prev_colon_end;
 }
 
-bool kar_parser_split_by_blocks(KarToken* token, KarArray* errors) {
-	if (token->children.count == 0) {
+bool kar_parser_split_by_blocks(KarToken* token, KarProjectErrorList* errors) {
+	if (kar_token_child_empty(token)) {
 		return true;
 	}
 	
 	KarTokenCursor cursor = {token, 0};
 	KarTokenIndent indent = {token, get_token_indent(cursor_current(cursor))};
 	if (indent.indent != 0) {
-		kar_module_error_create_add(errors, &get_first_not_empty(cursor_current(cursor))->cursor, 1, "Отступ в строке не соответствует ни одному предыдущему отступу.");
+		kar_project_error_list_create_add(errors, &get_first_not_empty(cursor_current(cursor))->cursor, 1, "Отступ в строке не соответствует ни одному предыдущему отступу.");
 		return false;
 	}
 	

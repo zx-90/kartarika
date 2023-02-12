@@ -1,4 +1,4 @@
-/* Copyright © 2022 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2022,2023 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -13,7 +13,7 @@ static bool concat_single_minus_number(KarToken* token) {
 		return true;
 	}
 	
-	KarToken* child = kar_token_child(token, 0);
+	KarToken* child = kar_token_child_get(token, 0);
 	if (child->type == KAR_TOKEN_VAL_INTEGER ||
 		child->type == KAR_TOKEN_VAL_FLOAT
 	) {

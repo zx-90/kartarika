@@ -1,28 +1,28 @@
-/* Copyright © 2022 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2022,2023 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
 */
 
 #include "model/token.h"
-#include "model/module_error.h"
+#include "model/project_error_list.h"
 #include "parser/base.h"
 
 KarParserStatus kar_parser_make_algo_expression(KarToken* token);
-KarParserStatus kar_parser_make_return(KarToken* token, KarArray* errors);
-KarParserStatus kar_parser_make_declaration(KarToken* token, KarArray* errors);
-KarParserStatus kar_parser_make_assign(KarToken* token, KarArray* errors);
+KarParserStatus kar_parser_make_return(KarToken* token, KarProjectErrorList* errors);
+KarParserStatus kar_parser_make_declaration(KarToken* token, KarProjectErrorList* errors);
+KarParserStatus kar_parser_make_assign(KarToken* token, KarProjectErrorList* errors);
 
-KarParserStatus kar_parser_make_block(KarToken* token, KarArray* errors);
-KarParserStatus kar_parser_make_empty_block(KarToken* token, KarArray* errors);
-KarParserStatus kar_parser_make_clean(KarToken* parent, size_t commandNum, KarArray* errors);
-KarParserStatus kar_parser_make_if(KarToken* parent, size_t commandNum, KarArray* errors);
-KarParserStatus kar_parser_make_while(KarToken* token, KarArray* errors);
-KarParserStatus kar_parser_make_break(KarToken* token, KarArray* errors);
+KarParserStatus kar_parser_make_block(KarToken* token, KarProjectErrorList* errors);
+KarParserStatus kar_parser_make_empty_block(KarToken* token, KarProjectErrorList* errors);
+KarParserStatus kar_parser_make_clean(KarToken* parent, size_t commandNum, KarProjectErrorList* errors);
+KarParserStatus kar_parser_make_if(KarToken* parent, size_t commandNum, KarProjectErrorList* errors);
+KarParserStatus kar_parser_make_while(KarToken* token, KarProjectErrorList* errors);
+KarParserStatus kar_parser_make_break(KarToken* token, KarProjectErrorList* errors);
 
-bool kar_parser_parse_command(KarToken* parent, size_t commandNum, KarArray* errors) {
+bool kar_parser_parse_command(KarToken* parent, size_t commandNum, KarProjectErrorList* errors) {
 	KarParserStatus status;
-	KarToken* token = kar_token_child(parent, commandNum);
+	KarToken* token = kar_token_child_get(parent, commandNum);
 	
 	status = kar_parser_make_algo_expression(token);
 	if (status == KAR_PARSER_STATUS_PARSED) {
@@ -87,11 +87,11 @@ bool kar_parser_parse_command(KarToken* parent, size_t commandNum, KarArray* err
 		return false;
 	}
 	
-	kar_module_error_create_add(errors, &token->cursor, 1, "Неизвестная команда алгоритма.");
+	kar_project_error_list_create_add(errors, &token->cursor, 1, "Неизвестная команда алгоритма.");
 	return false;
 }
 
-bool kar_parser_parse_algorithm(KarToken* token, KarArray* errors) {
+bool kar_parser_parse_algorithm(KarToken* token, KarProjectErrorList* errors) {
 	KarParserStatus status;
 	
 	status = kar_parser_make_empty_block(token, errors);
@@ -102,7 +102,7 @@ bool kar_parser_parse_algorithm(KarToken* token, KarArray* errors) {
 	}
 	
 	bool b = true;
-	for (size_t i = 0; i < token->children.count; ++i) {
+	for (size_t i = 0; i < kar_token_child_count(token); ++i) {
 		b = kar_parser_parse_command(token, i, errors) && b;
 	}
 	return b;

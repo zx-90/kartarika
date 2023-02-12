@@ -1,4 +1,4 @@
-/* Copyright © 2020-2022 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020-2023 Evgeny Zaytsev <zx_90@mail.ru>
  * Copyright © 2021,2022 Abdullin Timur <abdtimurrif@gmail.com>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
@@ -40,32 +40,32 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 		printf("ERROR 1\n");
 		return false;
 	}
-	const KarToken* child1 = kar_token_child(token, 0);
+	const KarToken* child1 = kar_token_child_get(token, 0);
 	if (!kar_token_check_type(child1, KAR_TOKEN_SIGN_GET_FIELD)) {
 		printf("ERROR 2\n");
 		return false;
 	}
-	const KarToken* child2 = kar_token_child(child1, 0);
+	const KarToken* child2 = kar_token_child_get(child1, 0);
 	if (!kar_token_check_type_name(child2, KAR_TOKEN_IDENTIFIER, "Кар")) {
 		printf("ERROR 3\n");
 		return false;
 	}
-	const KarToken* child3 = kar_token_child(child1, 1);
+	const KarToken* child3 = kar_token_child_get(child1, 1);
 	if (!kar_token_check_type(child3, KAR_TOKEN_SIGN_CALL_METHOD)) {
 		printf("ERROR 4\n");
 		return false;
 	}
-	const KarToken* child4a = kar_token_child(child3, 0);
+	const KarToken* child4a = kar_token_child_get(child3, 0);
 	if (!kar_token_check_type_name(child4a, KAR_TOKEN_IDENTIFIER, "Печатать")) {
 		printf("ERROR 5\n");
 		return false;
 	}
-	const KarToken* child4 = kar_token_child(child3, 1);
+	const KarToken* child4 = kar_token_child_get(child3, 1);
 	if (!kar_token_check_type(child4, KAR_TOKEN_SIGN_ARGUMENT)) {
 		printf("ERROR 6\n");
 		return false;
 	}
-	const KarToken* child5 = kar_token_child(child4, 0);
+	const KarToken* child5 = kar_token_child_get(child4, 0);
 	
 	if (kar_token_check_type(child5, KAR_TOKEN_VAL_TRUE)) {
 		return print("Да", module, builder);
@@ -178,10 +178,10 @@ static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilder
 		LLVMBasicBlockRef entry = LLVMAppendBasicBlock(main_func, "entry");
 		LLVMPositionBuilderAtEnd(builder, entry);
 
-		KarToken* body = kar_token_child(token, token->children.count - 1);
+		KarToken* body = kar_token_child_get_last(token, 0);
 	
-		for (size_t i = 0; i < body->children.count; ++i) {
-			if (!generate_identifier(kar_token_child(body, i), module, builder)) {
+		for (size_t i = 0; i < kar_token_child_count(body); ++i) {
+			if (!generate_identifier(kar_token_child_get(body, i), module, builder)) {
 				LLVMBuildRetVoid(builder);
 				return false;
 			}
@@ -200,9 +200,9 @@ static bool generate_module(const KarToken* token, LLVMModuleRef module, LLVMBui
 		printf("ERROR 16\n");
 		return false;
 	}
-	for (size_t i = 0; i < token->children.count; ++i) {
-		if (kar_token_child(token, i)->type == KAR_TOKEN_METHOD) {
-			if (!generate_function(kar_token_child(token, i), module, builder)) {
+	for (size_t i = 0; i < kar_token_child_count(token); ++i) {
+		if (kar_token_child_get(token, i)->type == KAR_TOKEN_METHOD) {
+			if (!generate_function(kar_token_child_get(token, i), module, builder)) {
 				return false;
 			}
 		} else {
