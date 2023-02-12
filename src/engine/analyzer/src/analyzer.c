@@ -8,8 +8,16 @@
 
 #include "model/token.h"
 
-bool kar_analyze(KarModule* module) {
-	if (!module) {
+/*static bool fill_standard_lib(KarProject* project) {
+	KarVartree* vartree = project->vartree;
+	KarVartree** def_list = project->def_list;
+	
+	
+	return true;
+}*/
+
+bool kar_analyzer_run(KarProject* project) {
+	if (!project) {
 		return false;
 	}
 	return true;

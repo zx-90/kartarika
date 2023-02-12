@@ -17,8 +17,10 @@ void kar_array_init(KarArray* array) {
 }
 
 void kar_array_clear(KarArray* array, KarArrayFreeFn* fn) {
-	while(array->count--) {
-		fn(array->items[array->count]);
+	if (fn != NULL) {
+		while(array->count--) {
+			fn(array->items[array->count]);
+		}
 	}
 	if (array->items) {
 		KAR_FREE(array->items);
@@ -73,7 +75,7 @@ void* kar_array_tear(KarArray* array, size_t num) {
 
 void kar_array_erase(KarArray* array, size_t num, KarArrayFreeFn* fn) {
 	void* teared = kar_array_tear(array, num);
-	if (teared) {
+	if (teared && fn!= NULL) {
 		fn(teared);
 	}
 }

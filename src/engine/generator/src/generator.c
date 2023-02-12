@@ -36,26 +36,33 @@ static bool print(const char* out, LLVMModuleRef module, LLVMBuilderRef builder)
 
 static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder) {
 	if (token->type != KAR_TOKEN_COMMAND_EXPRESSION) {
+		// TODO: Здесь и дальше вместо printf-error необходимо добавить описания ошибок в kar_module_error.
+		printf("ERROR 1\n");
 		return false;
 	}
 	const KarToken* child1 = kar_token_child(token, 0);
 	if (!kar_token_check_type(child1, KAR_TOKEN_SIGN_GET_FIELD)) {
+		printf("ERROR 2\n");
 		return false;
 	}
 	const KarToken* child2 = kar_token_child(child1, 0);
 	if (!kar_token_check_type_name(child2, KAR_TOKEN_IDENTIFIER, "Кар")) {
+		printf("ERROR 3\n");
 		return false;
 	}
 	const KarToken* child3 = kar_token_child(child1, 1);
 	if (!kar_token_check_type(child3, KAR_TOKEN_SIGN_CALL_METHOD)) {
+		printf("ERROR 4\n");
 		return false;
 	}
 	const KarToken* child4a = kar_token_child(child3, 0);
 	if (!kar_token_check_type_name(child4a, KAR_TOKEN_IDENTIFIER, "Печатать")) {
+		printf("ERROR 5\n");
 		return false;
 	}
 	const KarToken* child4 = kar_token_child(child3, 1);
 	if (!kar_token_check_type(child4, KAR_TOKEN_SIGN_ARGUMENT)) {
+		printf("ERROR 6\n");
 		return false;
 	}
 	const KarToken* child5 = kar_token_child(child4, 0);
@@ -68,20 +75,24 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 		// TODO: Эту проверку необходимо перенести в анализатор.
 		// TODO: Проверку надо более тщательно организовать. Сейчас работает только проверка на длину строки.
 		if (strlen(child5->str) > 11) {
+			printf("ERROR 7\n");
 			return false;
 		}
 		int32_t val;
 		if (1 != sscanf(child5->str, "%"SCNd32, &val)) {
+			printf("ERROR 8\n");
 			return false;
 		}
 		return print(child5->str, module, builder);
 	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_HEXADECIMAL)) {
 		// TODO: Эту проверку необходимо перенести в анализатор.
 		if (strlen(child5->str) > 7) {
+			printf("ERROR 9\n");
 			return false;
 		}
 		uint32_t val;
 		if (1 != sscanf(child5->str + 3, "%x", &val)) {
+			printf("ERROR 10\n");
 			return false;
 		}
 		char textToWrite[16];
@@ -105,11 +116,13 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 			KAR_FREE(tmp2);
 			KAR_FREE(tmp3);
 			if (isnan(d) || isinf(d)) {
+				printf("ERROR 11\n");
 				return false;
 			}
 		}
 		
 		if (errno == ERANGE) {
+			printf("ERROR 12\n");
 			return false;
 		}
 		
@@ -139,6 +152,7 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 			return result;
 		}
 		
+		printf("ERROR 13\n");
 		return false;
 	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_NAN)) {
 		return print("НеЧисло", module, builder);
@@ -150,6 +164,7 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 		return print(child5->str, module, builder);
 	}
 	
+		printf("ERROR 14\n");
 	return false;
 }
 	
@@ -174,6 +189,7 @@ static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilder
 		LLVMBuildRetVoid(builder);
 	} else {
 		// Далее здесь необходимо дописать поддержку других методов.
+		printf("ERROR 15\n");
 		return false;
 	}
 	return true;
@@ -181,6 +197,7 @@ static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilder
 	
 static bool generate_module(const KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder) {
 	if (token->type != KAR_TOKEN_MODULE) {
+		printf("ERROR 16\n");
 		return false;
 	}
 	for (size_t i = 0; i < token->children.count; ++i) {
@@ -189,6 +206,7 @@ static bool generate_module(const KarToken* token, LLVMModuleRef module, LLVMBui
 				return false;
 			}
 		} else {
+			printf("ERROR 17\n");
 			return false;
 		}
 	}
@@ -211,7 +229,7 @@ static bool generate_module(const KarToken* token, LLVMModuleRef module, LLVMBui
 	LLVMBuildRetVoid(builder);
 }*/
 
-
+// TODO: Надо передавать KarProject вместо KarModule. 
 bool kar_generator_run(KarModule* mod) {
 	// TODO: обработка ошибок. Добавить.
 	// TODO: Windows настроить кодировку консоли.

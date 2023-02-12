@@ -7,8 +7,8 @@
 #ifndef KAR_ANALYZER_H
 #define KAR_ANALYZER_H
 
-#include "model/module.h"
+#include "model/project.h"
 
-bool kar_analyze(KarModule* module);
+bool kar_analyzer_run(KarProject* project);
 
 #endif // KAR_ANALYZER_H

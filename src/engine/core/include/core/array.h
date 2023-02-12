@@ -8,6 +8,7 @@
 #define KAR_ARRAY_H
 
 #include <stddef.h>
+#include <stdbool.h>
 
 typedef struct {
 	size_t count;
@@ -26,22 +27,26 @@ void* kar_array_tear(KarArray* array, size_t num);
 void kar_array_erase(KarArray* array, size_t num, KarArrayFreeFn* fn);
 void kar_array_move_to_end(KarArray* from, KarArray* to, size_t begin, size_t count);
 
-#define KAR_TREE_HEADER(prefix, type)                                        \
-void kar_##prefix##_add(type* array, type* child);                            \
-void kar_##prefix##_insert(type* array, type* child, size_t num);             \
-type* kar_##prefix##_tear(type* array, size_t num);                           \
-void kar_##prefix##_erase(type* array, size_t num);                           \
-void kar_##prefix##_move_to_end(type* from, type* to, size_t begin, size_t count); \
-bool kar_##prefix##_foreach_bool(type* array, bool(*fn)(type* array))
+#define KAR_TREE_HEADER(prefix, parent_type, child_type)                                        \
+void kar_##prefix##_add(parent_type* array, child_type* child);                            \
+void kar_##prefix##_insert(parent_type* array, child_type* child, size_t num);             \
+child_type* kar_##prefix##_tear(parent_type* array, size_t num);                           \
+void kar_##prefix##_erase(parent_type* array, size_t num);                           \
+void kar_##prefix##_move_to_end(parent_type* from, parent_type* to, size_t begin, size_t count)
 
-#define KAR_TREE_CODE(prefix, type, field, fn) \
-void kar_##prefix##_add(type* array, type* child) { kar_array_add(&array->field, child); } \
-void kar_##prefix##_insert(type* array, type* child, size_t num) { kar_array_insert(&array->field, child, num); } \
-type* kar_##prefix##_tear(type* array, size_t num) { return (type*)kar_array_tear(&array->field, num); } \
-void kar_##prefix##_erase(type* array, size_t num) { kar_array_erase(&array->field, num, (KarArrayFreeFn*)&(fn)); } \
-void kar_##prefix##_move_to_end(type* from, type* to, size_t begin, size_t count) { kar_array_move_to_end(&from->field, &to->field, begin, count); } \
-bool kar_##prefix##_foreach_bool(type* array, bool(*func)(type* array)) \
-    { for (size_t i = 0; i < array->field.count; i++) { if (!kar_##prefix##_foreach_bool(array->field.items[i], func)) return false; } return func(array); } \
+/*; \
+bool kar_##prefix##_foreach_bool(child_type* array, bool(*fn)(child_type* array))*/
+
+#define KAR_TREE_CODE(prefix, parent_type, child_type, field, fn) \
+void kar_##prefix##_add(parent_type* array, child_type* child) { kar_array_add(&array->field, child); } \
+void kar_##prefix##_insert(parent_type* array, child_type* child, size_t num) { kar_array_insert(&array->field, child, num); } \
+child_type* kar_##prefix##_tear(parent_type* array, size_t num) { return (child_type*)kar_array_tear(&array->field, num); } \
+void kar_##prefix##_erase(parent_type* array, size_t num) { kar_array_erase(&array->field, num, (KarArrayFreeFn*)(fn)); } \
+void kar_##prefix##_move_to_end(parent_type* from, parent_type* to, size_t begin, size_t count) { kar_array_move_to_end(&from->field, &to->field, begin, count); }
+
+/* \
+bool kar_##prefix##_foreach_bool(child_type* array, bool(*func)(child_type* array)) \
+    { for (size_t i = 0; i < array->field.count; i++) { if (!kar_##prefix##_foreach_bool(array->field.items[i], func)) return false; } return func(array); } \ */
 
 
 #endif // KAR_ARRAY_H

@@ -14,9 +14,10 @@
 #include "core/file_system.h"
 #include "core/stream.h"
 #include "core/string.h"
-#include "model/module.h"
+#include "model/project.h"
 #include "lexer/lexer.h"
 #include "parser/parser.h"
+#include "analyzer/analyzer.h"
 #include "generator/generator.h"
 
 void kar_path_element_init(KarPathElement* element) {
@@ -241,21 +242,21 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 	
 	// TODO: "/" Получать через ОС, и вообще перенести в file_system или куда-то туда.
 	char* path2 = kar_string_create_concat(dir, KAR_FILE_SYSTEM_DELIMETER);
-	KarModule* module = kar_module_create(test->project_file.path);
+	KarProject* project = kar_project_create(test->project_file.path);
 	
 	{
 		KarStream* file = kar_stream_create(test->project_file.path);
-		bool lexerResult = kar_lexer_run(file, module);
+		bool lexerResult = kar_lexer_run(file, project->module);
 		kar_stream_free(file);
 		if (test->lexer_file.is) {
 			if (!lexerResult) {
-				kar_module_print_errors(module);
-				kar_module_free(module);
+				kar_module_print_errors(project->module);
+				kar_project_free(project);
 				KAR_FREE(path2);
 				return kar_error_register(1, "Ошибка в лексере. Ожидалось, что лексер отработает нормально.");
 			}
 			
-			char* testResult = kar_token_create_print(module->token);
+			char* testResult = kar_token_create_print(project->module->token);
 			char* gold_path = kar_string_create_concat(path2, kar_file_system_get_basename(test->lexer_file.path));
 			char* gold = kar_file_load(gold_path);
 			KAR_FREE(gold_path);
@@ -266,7 +267,7 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 					"Эталон:\n%s\nВывод программы:\n%s",
 					cursor->line, cursor->column, gold, testResult
 				);
-				kar_module_free(module);
+				kar_project_free(project);
 				KAR_FREE(path2);
 				KAR_FREE(testResult);
 				KAR_FREE(gold);
@@ -278,12 +279,12 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 			KAR_FREE(cursor);
 		} else if (test->lexer_error_file.is) {
 			if (lexerResult) {
-				kar_module_free(module);
+				kar_project_free(project);
 				KAR_FREE(path2);
 				return kar_error_register(1, "Ошибка в лексере. Ожидалось, что лексер вернет ошибку, но он отработал нормально.");
 			}
 		} else if (!lexerResult) {
-			kar_module_free(module);
+			kar_project_free(project);
 			KAR_FREE(path2);
 			return kar_error_register(1, "Ошибка в лексере. Ожидалось, что лексер отработает нормально и продолжится тестирование следующих модулей.");
 		}
@@ -295,22 +296,22 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 		test->compiler_error_file.is ||
 		test->out_file.is
 	) {
-		bool parserResult = kar_parser_run(module);
+		bool parserResult = kar_parser_run(project->module);
 		if (test->parser_file.is) {
 			if (!parserResult) {
-				char* moduleResult = kar_token_create_print(module->token);
+				char* moduleResult = kar_token_create_print(project->module->token);
 				KarError* result = kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер отработает нормально.\n"
 					"Структура модуля:\n%s",
 					moduleResult
 				);
 				KAR_FREE(moduleResult);
-				kar_module_print_errors(module);
-				kar_module_free(module);
+				kar_module_print_errors(project->module);
+				kar_project_free(project);
 				KAR_FREE(path2);
 				return result;
 			}
 			
-			char* testResult = kar_token_create_print(module->token);
+			char* testResult = kar_token_create_print(project->module->token);
 			char* gold_path = kar_string_create_concat(path2, kar_file_system_get_basename(test->parser_file.path));
 			char* gold = kar_file_load(gold_path);
 			KAR_FREE(gold_path);
@@ -321,7 +322,7 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 					"Эталон:\n%s\nВывод программы:\n%s",
 					cursor->line, cursor->column, gold, testResult
 				);
-				kar_module_free(module);
+				kar_project_free(project);
 				KAR_FREE(path2);
 				KAR_FREE(testResult);
 				KAR_FREE(gold);
@@ -333,18 +334,18 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 			KAR_FREE(cursor);
 		} else if (test->parser_error_file.is) {
 			if (parserResult) {
-				char* moduleResult = kar_token_create_print(module->token);
+				char* moduleResult = kar_token_create_print(project->module->token);
 				KarError* result = kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер вернет ошибку, но он отработал нормально.\n"
 					"Структура модуля:\n%s",
 					moduleResult
 				);
 				KAR_FREE(moduleResult);
-				kar_module_free(module);
+				kar_project_free(project);
 				KAR_FREE(path2);
 				return result;
 			}
 		} else if (!parserResult) {
-			kar_module_free(module);
+			kar_project_free(project);
 			KAR_FREE(path2);
 			return kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер отработает нормально и продолжится тестирование следующих модулей.");
 		}
@@ -355,16 +356,16 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 		test->out_file.is
 	) {
 		// TODO: Компилировать и собирать исполняемый файл в отдельном каталоге.
-		bool generatorResult = kar_generator_run(module);
+		bool generatorResult = kar_analyzer_run(project) && kar_generator_run(project->module);
 		if (generatorResult) {
 			if (test->compiler_error_file.is) {
-				kar_module_free(module);
+				kar_project_free(project);
 				KAR_FREE(path2);
 				return kar_error_register(1, "Ошибка в компиляторе. Ожидалось, что компилятор вернет ошибку, но он отработал нормально.");
 			}
 		} else {
 			if (!test->compiler_error_file.is) {
-				kar_module_free(module);
+				kar_project_free(project);
 				KAR_FREE(path2);
 				return kar_error_register(1, "Ошибка в компиляторе. Ожидалось, что компилятор отработает нормально, но он вернул ошибку.");
 			}
@@ -392,7 +393,7 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 				"Эталон:\n%s\nВывод программы:\n%s\n",
 				cursor->line, cursor->column, gold, out
 			);
-			kar_module_free(module);
+			kar_project_free(project);
 			KAR_FREE(path2);
 			KAR_FREE(out);
 			KAR_FREE(gold);
@@ -404,9 +405,9 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 	}
 
 	// TODO: Эта строка для вывода всех сообщений об ошибках.
-	// kar_module_print_errors(module);
+	// kar_module_print_errors(project->module);
 	
-	kar_module_free(module);
+	kar_project_free(project);
 	KAR_FREE(path2);
 	printf("OK\n");
 	fflush(stdout);

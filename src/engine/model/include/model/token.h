@@ -16,7 +16,7 @@
 #include "core/cursor.h"
 #include "token_type.h"
 
-typedef struct KarStructToken {
+typedef struct {
 	KarTokenType type;
 	KarCursor cursor;
 	char* str;
@@ -35,7 +35,9 @@ bool kar_token_check_type_name(const KarToken* token, const KarTokenType type, c
 void kar_token_set_str(KarToken* token, const char* str);
 void kar_token_add_str(KarToken* token, const char* str);
 
-KAR_TREE_HEADER(token_child, KarToken);
+KAR_TREE_HEADER(token_child, KarToken, KarToken);
+
+bool kar_token_child_foreach_bool(KarToken* token, bool(*func)(KarToken* array));
 
 size_t kar_token_child_find(KarToken* token, const KarTokenType type);
 

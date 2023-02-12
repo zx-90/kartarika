@@ -14,7 +14,7 @@
 #include "core/alloc.h"
 #include "core/string.h"
 
-KAR_TREE_CODE(token_child, KarToken, children, kar_token_free)
+KAR_TREE_CODE(token_child, KarToken, KarToken, children, &kar_token_free)
 
 KarToken* kar_token_create()
 {
@@ -84,6 +84,15 @@ void kar_token_add_str(KarToken* token, const char* str) {
 	char* new_string = kar_string_create_concat(token->str, str);
 	KAR_FREE(token->str);
 	token->str = new_string;
+}
+
+bool kar_token_child_foreach_bool(KarToken* token, bool(*func)(KarToken* array)) {
+	for (size_t i = 0; i < token->children.count; i++) {
+		if (!kar_token_child_foreach_bool(token->children.items[i], func)) {
+			return false;
+		}
+	}
+	return func(token);
 }
 
 static void print_level(const KarToken* token, FILE* stream, size_t level) {

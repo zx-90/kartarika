@@ -12,6 +12,7 @@
 #include "core/cursor.h"
 #include "core/array.h"
 
+// TODO: Фактически это будет KarProjectError, где имя модуля будет лишь одной из координат (Имя модуля, строка, столбец).
 typedef struct {
 	KarCursor cursor;
 	int code;

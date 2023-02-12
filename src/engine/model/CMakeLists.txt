@@ -8,6 +8,8 @@ src/token.c
 src/module_error.c
 src/module.c
 
+src/vartree.c
+src/project.c
 )
 
 add_library(model STATIC ${lib_model_SRC})
