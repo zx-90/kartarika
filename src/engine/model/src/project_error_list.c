@@ -16,7 +16,7 @@ void kar_project_error_list_free(KarProjectErrorList* error_list) {
 	kar_project_error_list_clear(error_list);
 }
 
-KAR_TREE_CODE(project_error_list, KarProjectErrorList, KarProjectError, errors, kar_project_error_free)
+KAR_ARRAY_CODE(project_error_list, KarProjectErrorList, KarProjectError, errors, kar_project_error_free)
 
 void kar_project_error_list_create_add(KarProjectErrorList* error_list, KarCursor* cursor, int code, const char* description) {
 	kar_project_error_list_add(error_list, kar_project_error_create(cursor, code, description));

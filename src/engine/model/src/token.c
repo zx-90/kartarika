@@ -84,7 +84,7 @@ void kar_token_add_str(KarToken* token, const char* str) {
 	token->str = new_string;
 }
 
-KAR_TREE_CODE(token_child, KarToken, KarToken, children, kar_token_free)
+KAR_ARRAY_CODE(token_child, KarToken, KarToken, children, kar_token_free)
 
 bool kar_token_child_foreach_bool(KarToken* token, bool(*func)(KarToken* array)) {
 	for (size_t i = 0; i < kar_token_child_count(token); i++) {

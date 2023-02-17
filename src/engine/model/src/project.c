@@ -25,4 +25,4 @@ void kar_project_free(KarProject* project) {
 	KAR_FREE(project);
 }
 
-KAR_TREE_CODE(project_def_list, KarProject, KarVartree, def_list, kar_vartree_free)
+KAR_ARRAY_CODE(project_def_list, KarProject, KarVartree, def_list, kar_vartree_free)

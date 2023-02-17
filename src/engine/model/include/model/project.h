@@ -20,6 +20,6 @@ typedef struct {
 KarProject* kar_project_create(char* filename);
 void kar_project_free(KarProject* project);
 
-KAR_TREE_HEADER(project_def_list, KarProject, KarVartree)
+KAR_ARRAY_HEADER(project_def_list, KarProject, KarVartree)
 
 #endif // KAR_PROJECT_H

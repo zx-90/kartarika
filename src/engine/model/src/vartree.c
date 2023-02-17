@@ -35,5 +35,5 @@ void kar_vartree_free(KarVartree* vartree) {
 	KAR_FREE(vartree);
 }
 
-KAR_TREE_CODE(vartree_child, KarVartree, KarVartree, children, kar_vartree_free)
-KAR_TREE_CODE(vartree_link, KarVartree, KarVartree, link, link_free)
+KAR_ARRAY_CODE(vartree_child, KarVartree, KarVartree, children, kar_vartree_free)
+KAR_ARRAY_CODE(vartree_link, KarVartree, KarVartree, link, link_free)

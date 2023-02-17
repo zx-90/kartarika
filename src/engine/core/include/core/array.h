@@ -26,57 +26,57 @@ typedef struct {
 // Заголовочный файл.
 // ----------------------------------------------------------------------------
 
-#define KAR_TREE_HEADER_INIT(prefix, parent_type)                    \
+#define KAR_ARRAY_HEADER_INIT(prefix, parent_type)                    \
 	void kar_##prefix##_init(parent_type* parent);
-#define KAR_TREE_HEADER_CLEAR(prefix, parent_type)                   \
+#define KAR_ARRAY_HEADER_CLEAR(prefix, parent_type)                   \
 	void kar_##prefix##_clear(parent_type* parent);
-#define KAR_TREE_HEADER_COUNT(prefix, parent_type)                   \
+#define KAR_ARRAY_HEADER_COUNT(prefix, parent_type)                   \
 	size_t kar_##prefix##_count(const parent_type* parent);
-#define KAR_TREE_HEADER_EMPTY(prefix, parent_type)                   \
+#define KAR_ARRAY_HEADER_EMPTY(prefix, parent_type)                   \
 	bool kar_##prefix##_empty(const parent_type* parent);
-#define KAR_TREE_HEADER_CAPACITY(prefix, parent_type)                \
+#define KAR_ARRAY_HEADER_CAPACITY(prefix, parent_type)                \
 	size_t kar_##prefix##_capacity(const parent_type* parent);
-#define KAR_TREE_HEADER_GET(prefix, parent_type, child_type)         \
+#define KAR_ARRAY_HEADER_GET(prefix, parent_type, child_type)         \
 	child_type* kar_##prefix##_get(const parent_type* parent, size_t num);
-#define KAR_TREE_HEADER_GET_LAST(prefix, parent_type, child_type)    \
+#define KAR_ARRAY_HEADER_GET_LAST(prefix, parent_type, child_type)    \
 	child_type* kar_##prefix##_get_last(const parent_type* parent, size_t num);
-#define KAR_TREE_HEADER_ADD(prefix, parent_type, child_type)         \
+#define KAR_ARRAY_HEADER_ADD(prefix, parent_type, child_type)         \
 	void kar_##prefix##_add(parent_type* parent, child_type* child);
-#define KAR_TREE_HEADER_INSERT(prefix, parent_type, child_type)      \
+#define KAR_ARRAY_HEADER_INSERT(prefix, parent_type, child_type)      \
 	void kar_##prefix##_insert(parent_type* parent, child_type* child, size_t num);
-#define KAR_TREE_HEADER_TEAR(prefix, parent_type, child_type)        \
+#define KAR_ARRAY_HEADER_TEAR(prefix, parent_type, child_type)        \
 	child_type* kar_##prefix##_tear(parent_type* parent, size_t num);
-#define KAR_TREE_HEADER_ERASE(prefix, parent_type)                   \
+#define KAR_ARRAY_HEADER_ERASE(prefix, parent_type)                   \
 	void kar_##prefix##_erase(parent_type* parent, size_t num);
-#define KAR_TREE_HEADER_MOVE_TO_END(prefix, parent_type)             \
+#define KAR_ARRAY_HEADER_MOVE_TO_END(prefix, parent_type)             \
     void kar_##prefix##_move_to_end(parent_type* from, parent_type* to, size_t begin, size_t count);
 
-#define KAR_TREE_HEADER(prefix, parent_type, child_type)      \
-	KAR_TREE_HEADER_INIT(prefix, parent_type)                 \
-	KAR_TREE_HEADER_CLEAR(prefix, parent_type)                \
-	KAR_TREE_HEADER_COUNT(prefix, parent_type)                \
-	KAR_TREE_HEADER_EMPTY(prefix, parent_type)                \
-	KAR_TREE_HEADER_CAPACITY(prefix, parent_type)             \
-	KAR_TREE_HEADER_GET(prefix, parent_type, child_type)      \
-	KAR_TREE_HEADER_GET_LAST(prefix, parent_type, child_type) \
-    KAR_TREE_HEADER_ADD(prefix, parent_type, child_type)      \
-    KAR_TREE_HEADER_INSERT(prefix, parent_type, child_type)   \
-    KAR_TREE_HEADER_TEAR(prefix, parent_type, child_type)     \
-    KAR_TREE_HEADER_ERASE(prefix, parent_type)                \
-    KAR_TREE_HEADER_MOVE_TO_END(prefix, parent_type)
+#define KAR_ARRAY_HEADER(prefix, parent_type, child_type)      \
+	KAR_ARRAY_HEADER_INIT(prefix, parent_type)                 \
+	KAR_ARRAY_HEADER_CLEAR(prefix, parent_type)                \
+	KAR_ARRAY_HEADER_COUNT(prefix, parent_type)                \
+	KAR_ARRAY_HEADER_EMPTY(prefix, parent_type)                \
+	KAR_ARRAY_HEADER_CAPACITY(prefix, parent_type)             \
+	KAR_ARRAY_HEADER_GET(prefix, parent_type, child_type)      \
+	KAR_ARRAY_HEADER_GET_LAST(prefix, parent_type, child_type) \
+    KAR_ARRAY_HEADER_ADD(prefix, parent_type, child_type)      \
+    KAR_ARRAY_HEADER_INSERT(prefix, parent_type, child_type)   \
+    KAR_ARRAY_HEADER_TEAR(prefix, parent_type, child_type)     \
+    KAR_ARRAY_HEADER_ERASE(prefix, parent_type)                \
+    KAR_ARRAY_HEADER_MOVE_TO_END(prefix, parent_type)
 
 // ----------------------------------------------------------------------------
 // Файл с кодом.
 // ----------------------------------------------------------------------------
 
-#define KAR_TREE_CODE_INIT(prefix, parent_type, field) \
-	void kar_##prefix##_init(parent_type* parent) {    \
-		parent->field.count = 0;                       \
-		parent->field.capacity = 0;                    \
-		parent->field.items = NULL;                    \
+#define KAR_ARRAY_CODE_INIT(prefix, parent_type, field) \
+	void kar_##prefix##_init(parent_type* parent) {     \
+		parent->field.count = 0;                        \
+		parent->field.capacity = 0;                     \
+		parent->field.items = NULL;                     \
 	}
 
-#define KAR_TREE_CODE_CLEAR(prefix, parent_type, field, fn)   \
+#define KAR_ARRAY_CODE_CLEAR(prefix, parent_type, field, fn)  \
 	void kar_##prefix##_clear(parent_type* parent) {          \
 		if (fn != NULL) {                                     \
 			while(parent->field.count--) {                    \
@@ -89,22 +89,22 @@ typedef struct {
 		kar_##prefix##_init(parent);                          \
 	}
 
-#define KAR_TREE_CODE_COUNT(prefix, parent_type, field)      \
+#define KAR_ARRAY_CODE_COUNT(prefix, parent_type, field)     \
 	size_t kar_##prefix##_count(const parent_type* parent) { \
 		return parent->field.count;                          \
 	}
 
-#define KAR_TREE_CODE_EMPTY(prefix, parent_type, field)    \
+#define KAR_ARRAY_CODE_EMPTY(prefix, parent_type, field)   \
 	bool kar_##prefix##_empty(const parent_type* parent) { \
 		return parent->field.count == 0;                   \
 	}
 
-#define KAR_TREE_CODE_CAPACITY(prefix, parent_type, field)      \
+#define KAR_ARRAY_CODE_CAPACITY(prefix, parent_type, field)     \
 	size_t kar_##prefix##_capacity(const parent_type* parent) { \
 		return parent->field.capacity;                          \
 	}
 
-#define KAR_TREE_CODE_GET(prefix, parent_type, child_type, field)                 \
+#define KAR_ARRAY_CODE_GET(prefix, parent_type, child_type, field)                \
 	child_type* kar_##prefix##_get(const parent_type* parent, const size_t num) { \
 		if (num >= parent->field.count) {                                         \
 			return NULL;                                                          \
@@ -112,7 +112,7 @@ typedef struct {
 		return parent->field.items[num];                                          \
 	}
 
-#define KAR_TREE_CODE_GET_LAST(prefix, parent_type, child_type, field)                 \
+#define KAR_ARRAY_CODE_GET_LAST(prefix, parent_type, child_type, field)                \
 	child_type* kar_##prefix##_get_last(const parent_type* parent, const size_t num) { \
 		if (num >= parent->field.count) {                                              \
 			return NULL;                                                               \
@@ -120,7 +120,7 @@ typedef struct {
 		return parent->field.items[parent->field.count - num -   1];                   \
 	}
 
-#define KAR_TREE_CODE_WIDE_CAPACITY(prefix, parent_type, field)          \
+#define KAR_ARRAY_CODE_WIDE_CAPACITY(prefix, parent_type, field)         \
 	static void kar_##prefix##_wide_capacity(parent_type* parent) {      \
 		if (!parent->field.capacity) {                                   \
 			parent->field.capacity = 1;                                  \
@@ -131,7 +131,7 @@ typedef struct {
 	}
 
 
-#define KAR_TREE_CODE_ADD(prefix, parent_type, child_type, field)     \
+#define KAR_ARRAY_CODE_ADD(prefix, parent_type, child_type, field)    \
 	void kar_##prefix##_add(parent_type* parent, child_type* child) { \
 		if (parent->field.count == parent->field.capacity) {          \
 			kar_##prefix##_wide_capacity(parent);                     \
@@ -140,7 +140,7 @@ typedef struct {
 		parent->field.count++;                                        \
 	}
 
-#define KAR_TREE_CODE_INSERT(prefix, parent_type, child_type, field)                 \
+#define KAR_ARRAY_CODE_INSERT(prefix, parent_type, child_type, field)                \
 	void kar_##prefix##_insert(parent_type* parent, child_type* child, size_t num) { \
 		if (num >= parent->field.count) {                                            \
 			kar_##prefix##_add(parent, child);                                       \
@@ -156,7 +156,7 @@ typedef struct {
 		parent->field.count++;                                                       \
 	}
 
-#define KAR_TREE_CODE_TEAR(prefix, parent_type, child_type, field)     \
+#define KAR_ARRAY_CODE_TEAR(prefix, parent_type, child_type, field)    \
 	child_type* kar_##prefix##_tear(parent_type* parent, size_t num) { \
 		if (num >= parent->field.count) {                              \
 			return NULL;                                               \
@@ -170,15 +170,15 @@ typedef struct {
 		return (child_type*)teared;                                    \
 	}
 
-#define KAR_TREE_CODE_ERASE(prefix, parent_type, child_type, fn) \
-	void kar_##prefix##_erase(parent_type* parent, size_t num) { \
-		child_type* teared = kar_##prefix##_tear(parent, num);   \
-		if (teared && fn != NULL) {                              \
-			fn(teared);                                          \
-		}                                                        \
+#define KAR_ARRAY_CODE_ERASE(prefix, parent_type, child_type, fn) \
+	void kar_##prefix##_erase(parent_type* parent, size_t num) {  \
+		child_type* teared = kar_##prefix##_tear(parent, num);    \
+		if (teared && fn != NULL) {                               \
+			fn(teared);                                           \
+		}                                                         \
 	}
 
-#define KAR_TREE_CODE_MOVE_TO_END(prefix, parent_type, field)                                         \
+#define KAR_ARRAY_CODE_MOVE_TO_END(prefix, parent_type, field)                                        \
 	void kar_##prefix##_move_to_end(parent_type* from, parent_type* to, size_t begin, size_t count) { \
 		while (to->field.capacity < to->field.count + count) {                                        \
 			kar_##prefix##_wide_capacity(to);                                                         \
@@ -193,19 +193,19 @@ typedef struct {
 		to->field.count += count;                                                                     \
 	}
 
-#define KAR_TREE_CODE(prefix, parent_type, child_type, field, fn)  \
-	KAR_TREE_CODE_INIT(prefix, parent_type, field)                 \
-	KAR_TREE_CODE_CLEAR(prefix, parent_type, field, fn)            \
-	KAR_TREE_CODE_COUNT(prefix, parent_type, field)                \
-	KAR_TREE_CODE_EMPTY(prefix, parent_type, field)                \
-	KAR_TREE_CODE_CAPACITY(prefix, parent_type, field)             \
-	KAR_TREE_CODE_GET(prefix, parent_type, child_type, field)      \
-	KAR_TREE_CODE_GET_LAST(prefix, parent_type, child_type, field) \
-	KAR_TREE_CODE_WIDE_CAPACITY(prefix, parent_type, field)        \
-	KAR_TREE_CODE_ADD(prefix, parent_type, child_type, field)      \
-	KAR_TREE_CODE_INSERT(prefix, parent_type, child_type, field)   \
-	KAR_TREE_CODE_TEAR(prefix, parent_type, child_type, field)     \
-	KAR_TREE_CODE_ERASE(prefix, parent_type, child_type, fn)       \
-	KAR_TREE_CODE_MOVE_TO_END(prefix, parent_type, field)
+#define KAR_ARRAY_CODE(prefix, parent_type, child_type, field, fn)  \
+	KAR_ARRAY_CODE_INIT(prefix, parent_type, field)                 \
+	KAR_ARRAY_CODE_CLEAR(prefix, parent_type, field, fn)            \
+	KAR_ARRAY_CODE_COUNT(prefix, parent_type, field)                \
+	KAR_ARRAY_CODE_EMPTY(prefix, parent_type, field)                \
+	KAR_ARRAY_CODE_CAPACITY(prefix, parent_type, field)             \
+	KAR_ARRAY_CODE_GET(prefix, parent_type, child_type, field)      \
+	KAR_ARRAY_CODE_GET_LAST(prefix, parent_type, child_type, field) \
+	KAR_ARRAY_CODE_WIDE_CAPACITY(prefix, parent_type, field)        \
+	KAR_ARRAY_CODE_ADD(prefix, parent_type, child_type, field)      \
+	KAR_ARRAY_CODE_INSERT(prefix, parent_type, child_type, field)   \
+	KAR_ARRAY_CODE_TEAR(prefix, parent_type, child_type, field)     \
+	KAR_ARRAY_CODE_ERASE(prefix, parent_type, child_type, fn)       \
+	KAR_ARRAY_CODE_MOVE_TO_END(prefix, parent_type, field)
 
 #endif // KAR_ARRAY_H
