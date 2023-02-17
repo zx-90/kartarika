@@ -37,9 +37,6 @@ typedef struct KarVartreeStruct {
 	void* value;
 } KarVartree;
 
-#define kar_vartree_child(vartree, num) ((KarVartree*)(vartree)->children.items[(num)])
-#define kar_vartree_link(vartree, num) ((KarVartree*)(vartree)->link.items[(num)])
-
 KarVartree* kar_vartree_create();
 void kar_vartree_free(KarVartree* vartree);
 

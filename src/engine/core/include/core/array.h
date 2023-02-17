@@ -168,7 +168,7 @@
 		for (n = num; n < parent->field.count; ++n) {                  \
 			parent->field.items[n] = parent->field.items[n + 1];       \
 		}                                                              \
-		return (child_type*)teared;                                    \
+		return teared;                                                 \
 	}
 
 #define KAR_ARRAY_CODE_ERASE(prefix, parent_type, child_type, fn) \
