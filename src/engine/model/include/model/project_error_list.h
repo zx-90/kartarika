@@ -10,7 +10,7 @@
 #include "project_error.h"
 
 typedef struct {
-	KarArray errors;
+	KAR_ARRAY_STRUCT(KarProjectError) errors;
 } KarProjectErrorList;
 
 KarProjectErrorList* kar_project_error_list_create();

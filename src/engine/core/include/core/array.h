@@ -16,11 +16,12 @@
 // Структура.
 // ----------------------------------------------------------------------------
 
-typedef struct {
-	size_t count;
-	size_t capacity;
-	void** items;
-} KarArray;
+#define KAR_ARRAY_STRUCT(child_type) \
+	struct {                         \
+		size_t count;                \
+		size_t capacity;             \
+		child_type** items;          \
+	}
 
 // ----------------------------------------------------------------------------
 // Заголовочный файл.
@@ -120,14 +121,14 @@ typedef struct {
 		return parent->field.items[parent->field.count - num -   1];                   \
 	}
 
-#define KAR_ARRAY_CODE_WIDE_CAPACITY(prefix, parent_type, field)         \
-	static void kar_##prefix##_wide_capacity(parent_type* parent) {      \
-		if (!parent->field.capacity) {                                   \
-			parent->field.capacity = 1;                                  \
-		} else {                                                         \
-			parent->field.capacity *= 2;                                 \
-		}                                                                \
-		KAR_REALLOC(parent->field.items, void*, parent->field.capacity); \
+#define KAR_ARRAY_CODE_WIDE_CAPACITY(prefix, parent_type, child_type, field)   \
+	static void kar_##prefix##_wide_capacity(parent_type* parent) {            \
+		if (!parent->field.capacity) {                                         \
+			parent->field.capacity = 1;                                        \
+		} else {                                                               \
+			parent->field.capacity *= 2;                                       \
+		}                                                                      \
+		KAR_REALLOC(parent->field.items, child_type*, parent->field.capacity); \
 	}
 
 
@@ -193,19 +194,19 @@ typedef struct {
 		to->field.count += count;                                                                     \
 	}
 
-#define KAR_ARRAY_CODE(prefix, parent_type, child_type, field, fn)  \
-	KAR_ARRAY_CODE_INIT(prefix, parent_type, field)                 \
-	KAR_ARRAY_CODE_CLEAR(prefix, parent_type, field, fn)            \
-	KAR_ARRAY_CODE_COUNT(prefix, parent_type, field)                \
-	KAR_ARRAY_CODE_EMPTY(prefix, parent_type, field)                \
-	KAR_ARRAY_CODE_CAPACITY(prefix, parent_type, field)             \
-	KAR_ARRAY_CODE_GET(prefix, parent_type, child_type, field)      \
-	KAR_ARRAY_CODE_GET_LAST(prefix, parent_type, child_type, field) \
-	KAR_ARRAY_CODE_WIDE_CAPACITY(prefix, parent_type, field)        \
-	KAR_ARRAY_CODE_ADD(prefix, parent_type, child_type, field)      \
-	KAR_ARRAY_CODE_INSERT(prefix, parent_type, child_type, field)   \
-	KAR_ARRAY_CODE_TEAR(prefix, parent_type, child_type, field)     \
-	KAR_ARRAY_CODE_ERASE(prefix, parent_type, child_type, fn)       \
+#define KAR_ARRAY_CODE(prefix, parent_type, child_type, field, fn)       \
+	KAR_ARRAY_CODE_INIT(prefix, parent_type, field)                      \
+	KAR_ARRAY_CODE_CLEAR(prefix, parent_type, field, fn)                 \
+	KAR_ARRAY_CODE_COUNT(prefix, parent_type, field)                     \
+	KAR_ARRAY_CODE_EMPTY(prefix, parent_type, field)                     \
+	KAR_ARRAY_CODE_CAPACITY(prefix, parent_type, field)                  \
+	KAR_ARRAY_CODE_GET(prefix, parent_type, child_type, field)           \
+	KAR_ARRAY_CODE_GET_LAST(prefix, parent_type, child_type, field)      \
+	KAR_ARRAY_CODE_WIDE_CAPACITY(prefix, parent_type, child_type, field) \
+	KAR_ARRAY_CODE_ADD(prefix, parent_type, child_type, field)           \
+	KAR_ARRAY_CODE_INSERT(prefix, parent_type, child_type, field)        \
+	KAR_ARRAY_CODE_TEAR(prefix, parent_type, child_type, field)          \
+	KAR_ARRAY_CODE_ERASE(prefix, parent_type, child_type, fn)            \
 	KAR_ARRAY_CODE_MOVE_TO_END(prefix, parent_type, field)
 
 #endif // KAR_ARRAY_H

@@ -29,11 +29,11 @@ typedef enum {
 	KAR_VARTYPE_ROOT
 } KarVartypeElement;
 
-typedef struct {
+typedef struct KarVartreeStruct {
 	char* name;
 	KarVartypeElement type;
-	KarArray children;
-	KarArray link;
+	KAR_ARRAY_STRUCT(struct KarVartreeStruct) children;
+	KAR_ARRAY_STRUCT(struct KarVartreeStruct) link;
 	void* value;
 } KarVartree;
 

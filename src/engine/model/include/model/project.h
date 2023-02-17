@@ -14,7 +14,7 @@
 typedef struct {
 	KarModule* module;
 	KarVartree* vartree;
-	KarArray def_list;
+	KAR_ARRAY_STRUCT(KarVartree) def_list;
 } KarProject;
 
 KarProject* kar_project_create(char* filename);

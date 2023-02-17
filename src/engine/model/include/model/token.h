@@ -16,11 +16,11 @@
 #include "core/cursor.h"
 #include "token_type.h"
 
-typedef struct {
+typedef struct KarTokenStruct{
 	KarTokenType type;
 	KarCursor cursor;
 	char* str;
-	KarArray children;
+	KAR_ARRAY_STRUCT(struct KarTokenStruct) children;
 } KarToken;
 
 KarToken* kar_token_create();
