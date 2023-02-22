@@ -7,6 +7,7 @@
 #ifndef KAR_VARTREE_H
 #define KAR_VARTREE_H
 
+#include "core/set.h"
 #include "core/array.h"
 
 typedef enum {
@@ -32,7 +33,7 @@ typedef enum {
 typedef struct KarVartreeStruct {
 	char* name;
 	KarVartypeElement type;
-	KAR_ARRAY_STRUCT(struct KarVartreeStruct) children;
+	KAR_SET_STRUCT(struct KarVartreeStruct) children;
 	KAR_ARRAY_STRUCT(struct KarVartreeStruct) link;
 	void* value;
 } KarVartree;
@@ -40,7 +41,10 @@ typedef struct KarVartreeStruct {
 KarVartree* kar_vartree_create();
 void kar_vartree_free(KarVartree* vartree);
 
-KAR_ARRAY_HEADER(vartree_child, KarVartree, KarVartree)
+bool kar_vartree_less(KarVartree* vartree1, KarVartree* vartree2);
+bool kar_vartree_equal(KarVartree* vartree1, KarVartree* vartree2);
+
+KAR_SET_HEADER(vartree_child, KarVartree, KarVartree)
 KAR_ARRAY_HEADER(vartree_link, KarVartree, KarVartree)
 
 #endif // KAR_VARTREE_H

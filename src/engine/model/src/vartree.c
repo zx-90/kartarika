@@ -6,6 +6,8 @@
 
 #include "model/vartree.h"
 
+#include <string.h>
+
 #include "core/alloc.h"
 
 static void(*link_free)(KarVartree* item) = NULL;
@@ -35,5 +37,13 @@ void kar_vartree_free(KarVartree* vartree) {
 	KAR_FREE(vartree);
 }
 
-KAR_ARRAY_CODE(vartree_child, KarVartree, KarVartree, children, kar_vartree_free)
+bool kar_vartree_less(KarVartree* vartree1, KarVartree* vartree2) {
+	return strcmp(vartree1->name, vartree2->name) < 0;
+}
+
+bool kar_vartree_equal(KarVartree* vartree1, KarVartree* vartree2) {
+	return strcmp(vartree1->name, vartree2->name) == 0;
+}
+
+KAR_SET_CODE(vartree_child, KarVartree, KarVartree, children, kar_vartree_less, kar_vartree_equal, kar_vartree_free)
 KAR_ARRAY_CODE(vartree_link, KarVartree, KarVartree, link, link_free)
