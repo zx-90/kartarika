@@ -192,7 +192,7 @@ static KarError* fill_test(KarTest* test, const char* dir) {
 	char** files = kar_file_create_absolute_directory_list(dir, &file_count);
 	KarError* error;
 	error = check_for_test_directory(test, files, file_count);
-	kar_string_list_free(files, file_count);
+	kar_string_list_free2(files, file_count);
 	
 	if (error) {
 		return error;

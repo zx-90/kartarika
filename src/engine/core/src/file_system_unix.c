@@ -80,7 +80,7 @@ char** kar_file_create_absolute_directory_list(const char* path, size_t* count) 
 	// TODO: Здесь надо скачивать это соединение "/" через функции ОС.
 	char* path2 = kar_string_create_concat(path, "/");
 	if (!path2) {
-		kar_string_list_free(result, *count);
+		kar_string_list_free2(result, *count);
 		*count = 0;
 		return NULL;
 	}

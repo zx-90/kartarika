@@ -11,9 +11,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef const char* KarString;
+// TODO: Применить везде.
+typedef char KarString;
 
-void kar_string_list_free(char** list, size_t count);
+KarString* kar_string_create(const char* str);
+void kar_string_free(KarString* str);
+
+// TODO: char** заменить везде на KarStringList.
+void kar_string_list_free2(char** list, size_t count);
 
 void kar_string_list_quick_sort(char** list, size_t length);
 

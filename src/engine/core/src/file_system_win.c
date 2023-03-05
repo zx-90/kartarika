@@ -179,7 +179,7 @@ char** kar_file_create_absolute_directory_list(const char* path, size_t* count) 
 		}
 		char* name = create_utf8_by_utf16(findData.cFileName);
 		if (name == NULL) {
-			kar_string_list_free(result, number);
+			kar_string_list_free2(result, number);
 			*count = 0;
 			KAR_FREE(path2);
 			return NULL;

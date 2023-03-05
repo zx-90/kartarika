@@ -11,7 +11,19 @@
 
 #include "core/alloc.h"
 
-void kar_string_list_free(char** list, size_t count) {
+KarString* kar_string_create(const char* str) {
+	size_t len = strlen(str);
+	KAR_CREATES(result, char, len + 1);
+	strcpy(result, str);
+	result[len] = 0;
+	return result;
+}
+
+void kar_string_free(KarString* str) {
+	KAR_FREE(str);
+}
+
+void kar_string_list_free2(char** list, size_t count) {
 	while(count--) {
 		KAR_FREE(list[count]);
 	}
@@ -76,12 +88,9 @@ char* kar_string_create_format_args(const char* format, size_t size, va_list arg
 	return result;
 }
 
+// TODO: Удалить. Повтор другой функции.
 char* kar_string_create_copy(const char* str) {
-	size_t len = strlen(str);
-	KAR_CREATES(result, char, len + 1);
-	strcpy(result, str);
-	result[len] = 0;
-	return result;
+	return kar_string_create(str);
 }
 
 char* kar_string_create_concat(const char* str1, const char* str2)

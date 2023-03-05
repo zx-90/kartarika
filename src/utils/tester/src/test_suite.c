@@ -38,7 +38,7 @@ static KarError* run_dir(const char* path) {
 	}
 	if (count == 0) {
 		printf("Предупреждение. Каталог %s пуст.\n", path);
-		kar_string_list_free(files, count);
+		kar_string_list_free2(files, count);
 		return NULL;
 	}
 	
@@ -50,7 +50,7 @@ static KarError* run_dir(const char* path) {
 			if (kar_file_system_is_directory(files[i])) {
 				error = run_dir(files[i]);
 				if (error) {
-					kar_string_list_free(files, count);
+					kar_string_list_free2(files, count);
 					return error;
 				}
 			}
@@ -60,11 +60,11 @@ static KarError* run_dir(const char* path) {
 		KarTest* tf = kar_test_create();
 		KarError* result = kar_test_run(tf, path);
 		kar_test_free(tf);
-		kar_string_list_free(files, count);
+		kar_string_list_free2(files, count);
 		return result;
 	}
 	
-	kar_string_list_free(files, count);
+	kar_string_list_free2(files, count);
 	return NULL;
 }
 
