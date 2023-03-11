@@ -8,6 +8,7 @@
 
 #include "core/alloc.h"
 #include "core/string.h"
+#include "core/unicode.h"
 #include "model/token.h"
 #include "model/project_error_list.h"
 #include "parser/base.h"
@@ -115,14 +116,14 @@ static bool parse_method_name(KarToken* token, KarProjectErrorList* errors) {
 	}
 	
 	token->type = KAR_TOKEN_METHOD;
-	token->str = kar_string_create_copy(methodName->str);
+	token->str = kar_string_create(methodName->str);
 	kar_token_child_erase(methodParams, 0);
 	
 	/*if (methodParams->children.count > 0) {
 		methodParams->cursor = kar_token_child(methodParams, 0)->cursor;
 	} else {*/
 		// TODO: Сделать функцию в cursor.c, которая бы по строке вычисляла положение курсора с учетом символов новой строки.
-		methodParams->cursor.column +=  (int)kar_string_length(token->str);
+		methodParams->cursor.column +=  (int)kar_unicode_length(token->str);
 	//}
 	
 	return true;

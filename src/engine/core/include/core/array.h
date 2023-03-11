@@ -45,6 +45,10 @@
 	void kar_##prefix##_add(parent_type* parent, child_type* child);
 #define KAR_ARRAY_HEADER_INSERT(prefix, parent_type, child_type)      \
 	void kar_##prefix##_insert(parent_type* parent, child_type* child, size_t num);
+#define KAR_ARRAY_HEADER_SWAP(prefix, parent_type)                    \
+	void kar_##prefix##_swap(parent_type* parent, size_t num1, size_t num2);
+#define KAR_ARRAY_HEADER_SORT(prefix, parent_type, child_type)        \
+	void kar_##prefix##_sort(parent_type* parent, bool (*func_less)(const child_type* child1, const child_type* child2));
 #define KAR_ARRAY_HEADER_TEAR(prefix, parent_type, child_type)        \
 	child_type* kar_##prefix##_tear(parent_type* parent, size_t num);
 #define KAR_ARRAY_HEADER_ERASE(prefix, parent_type)                   \
@@ -62,6 +66,8 @@
 	KAR_ARRAY_HEADER_GET_LAST(prefix, parent_type, child_type) \
     KAR_ARRAY_HEADER_ADD(prefix, parent_type, child_type)      \
     KAR_ARRAY_HEADER_INSERT(prefix, parent_type, child_type)   \
+    KAR_ARRAY_HEADER_SWAP(prefix, parent_type)                 \
+    KAR_ARRAY_HEADER_SORT(prefix, parent_type, child_type)     \
     KAR_ARRAY_HEADER_TEAR(prefix, parent_type, child_type)     \
     KAR_ARRAY_HEADER_ERASE(prefix, parent_type)                \
     KAR_ARRAY_HEADER_MOVE_TO_END(prefix, parent_type)
@@ -157,6 +163,63 @@
 		parent->field.count++;                                                       \
 	}
 
+#define KAR_ARRAY_CODE_SWAP(prefix, parent_type, child_type, field)           \
+	void kar_##prefix##_swap(parent_type* parent, size_t num1, size_t num2) { \
+		if (parent->field.count == 0) {                                       \
+			return;                                                           \
+		}                                                                     \
+		if (num1 >= parent->field.count) {                                    \
+			num1 = parent->field.count - 1;                                   \
+		}                                                                     \
+		if (num2 >= parent->field.count) {                                    \
+			num2 = parent->field.count - 1;                                   \
+		}                                                                     \
+		if (parent->field.count == parent->field.capacity) {                  \
+			kar_##prefix##_wide_capacity(parent);                             \
+		}                                                                     \
+		child_type* temp = parent->field.items[num1];                         \
+		parent->field.items[num1] = parent->field.items[num2];                \
+		parent->field.items[num2] = temp;                                     \
+	}
+
+#define KAR_ARRAY_CODE_SORT(prefix, parent_type, child_type, field)                \
+	static size_t kar_##prefix##_sort_partition(                                   \
+		parent_type* parent,                                                       \
+		size_t begin,                                                              \
+		size_t end,                                                                \
+		bool (*func_less)(const child_type* child1, const child_type* child2)      \
+	) {                                                                            \
+		size_t p = end - 1;                                                        \
+		size_t firsthigh = begin;                                                  \
+		for (size_t i = begin; i < end; ++i) {                                     \
+			if (func_less(parent->field.items[i], parent->field.items[p])) {       \
+				kar_##prefix##_swap(parent, i, firsthigh);                         \
+				firsthigh++;                                                       \
+			}                                                                      \
+		}                                                                          \
+		kar_##prefix##_swap(parent, p, firsthigh);                                 \
+		return firsthigh;                                                          \
+	}                                                                              \
+	void kar_##prefix##_sort_quick(                                                \
+		parent_type* parent,                                                       \
+		size_t begin,                                                              \
+		size_t end,                                                                \
+		bool (*func_less)(const child_type* child1, const child_type* child2)      \
+	) {                                                                            \
+		if (end - begin <= 1) {                                                    \
+			return;                                                                \
+		}                                                                          \
+		size_t p = kar_##prefix##_sort_partition(parent, begin, end, func_less);   \
+		kar_##prefix##_sort_quick(parent, begin, p, func_less);                    \
+		kar_##prefix##_sort_quick(parent, p, end, func_less);                      \
+	}                                                                              \
+	void kar_##prefix##_sort(                                                      \
+		parent_type* parent,                                                       \
+		bool (*func_less)(const child_type* child1, const child_type* child2)      \
+	) {                                                                            \
+		kar_##prefix##_sort_quick(parent, 0, parent->field.count, func_less);      \
+	}
+	
 #define KAR_ARRAY_CODE_TEAR(prefix, parent_type, child_type, field)    \
 	child_type* kar_##prefix##_tear(parent_type* parent, size_t num) { \
 		if (num >= parent->field.count) {                              \
@@ -205,6 +268,8 @@
 	KAR_ARRAY_CODE_WIDE_CAPACITY(prefix, parent_type, child_type, field) \
 	KAR_ARRAY_CODE_ADD(prefix, parent_type, child_type, field)           \
 	KAR_ARRAY_CODE_INSERT(prefix, parent_type, child_type, field)        \
+	KAR_ARRAY_CODE_SWAP(prefix, parent_type, child_type, field)          \
+	KAR_ARRAY_CODE_SORT(prefix, parent_type, child_type, field)          \
 	KAR_ARRAY_CODE_TEAR(prefix, parent_type, child_type, field)          \
 	KAR_ARRAY_CODE_ERASE(prefix, parent_type, child_type, fn)            \
 	KAR_ARRAY_CODE_MOVE_TO_END(prefix, parent_type, field)

@@ -13,7 +13,7 @@
 typedef struct {
 	KarStream* stream;
 	KarCursor cursor;
-	char* currentChar;
+	KarString* currentChar;
 } KarStreamCursor;
 
 KarStreamCursor* kar_stream_cursor_create(KarStream* stream);
@@ -21,11 +21,11 @@ KarStreamCursor* kar_stream_cursor_create(KarStream* stream);
 void kar_stream_cursor_free(KarStreamCursor* stream);
 
 bool kar_stream_cursor_is_good(const KarStreamCursor* stream);
-bool kar_stream_cursor_is_equal(const KarStreamCursor* stream, const char* stamp);
-bool kar_stream_cursor_is_one_of(const KarStreamCursor* stream, const char** stamps, size_t stamp_count);
+bool kar_stream_cursor_is_equal(const KarStreamCursor* stream, const KarString* stamp);
+bool kar_stream_cursor_is_one_of(const KarStreamCursor* stream, const KarString** stamps, size_t stamp_count);
 bool kar_stream_cursor_is_eof(const KarStreamCursor* stream);
 
 bool kar_stream_cursor_next(KarStreamCursor* stream);
-char* kar_stream_cursor_get(KarStreamCursor* stream);
+KarString* kar_stream_cursor_get(KarStreamCursor* stream);
 
 #endif // KAR_STREAM_CURSOR_H

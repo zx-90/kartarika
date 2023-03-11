@@ -11,10 +11,10 @@
 #include "core/alloc.h"
 #include "core/string.h"
 
-KarModule* kar_module_create(const char* name) {
+KarModule* kar_module_create(const KarString* name) {
 	KAR_CREATE(module, KarModule);
 	
-	module->name = kar_string_create_copy(name);
+	module->name = kar_string_create(name);
 	module->token = kar_token_create();
 	module->token->type = KAR_TOKEN_MODULE;
 	module->errors = kar_project_error_list_create();
@@ -23,7 +23,7 @@ KarModule* kar_module_create(const char* name) {
 }
 
 void kar_module_free(KarModule* module) {
-	KAR_FREE(module->name);
+	kar_string_free(module->name);
 	kar_token_free(module->token);
 	kar_project_error_list_free(module->errors);
 	KAR_FREE(module);

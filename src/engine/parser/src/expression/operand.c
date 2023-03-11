@@ -88,7 +88,7 @@ static bool make_operator_before(KarToken* token, KarTokenType operator, KarProj
 			continue;
 		}
 		if (i == 0) {
-			char* error_text = kar_string_create_format("Нет первого операнда у операции \"%s\".", child->str);
+			KarString* error_text = kar_string_create_format("Нет первого операнда у операции \"%s\".", child->str);
 			kar_project_error_list_create_add(errors, &child->cursor, 1, error_text);
 			KAR_FREE(error_text);
 			return false;
@@ -129,7 +129,7 @@ static bool make_operator_after(KarToken* token, size_t op_num, const KarTokenTy
 			continue;
 		}
 		if (i == kar_token_child_count(token) - 1) {
-			char* error_text = kar_string_create_format("Нет операнда у операции \"%s\".", child->str);
+			KarString* error_text = kar_string_create_format("Нет операнда у операции \"%s\".", child->str);
 			kar_project_error_list_create_add(errors, &child->cursor, 1, error_text);
 			KAR_FREE(error_text);
 			return false;

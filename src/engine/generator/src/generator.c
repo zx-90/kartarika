@@ -21,7 +21,7 @@
 #include "core/string.h"
 #include "core/alloc.h"
 
-static bool print(const char* out, LLVMModuleRef module, LLVMBuilderRef builder) {
+static bool print(const KarString* out, LLVMModuleRef module, LLVMBuilderRef builder) {
 	LLVMTypeRef type = LLVMPointerType(LLVMInt8Type(), 0);
 	LLVMTypeRef puts_type = LLVMFunctionType(LLVMInt32Type(), &type, 1, false);
 	// TODO: Проверить, возможно printf будет неправильно работать с % (По аналогии с языком C/C++).
@@ -95,22 +95,22 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 			printf("ERROR 10\n");
 			return false;
 		}
-		char textToWrite[16];
+		KarString textToWrite[16];
 		sprintf(textToWrite,"%"SCNu32, val);
 		
-		char* out_chars = kar_string_create_copy(textToWrite);
+		KarString* out_chars = kar_string_create(textToWrite);
 		bool result = print(out_chars, module, builder);
 		KAR_FREE(out_chars);
 		return result;
 	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_FLOAT)) {
 		double d;
 		// TODO: Доделать все особые случаи.
-		if (!strcmp(child5->str, "НеЧисло")) {
+		if (kar_string_equal(child5->str, "НеЧисло")) {
 			d = NAN;
 		} else {
-			char* tmp1 = kar_string_create_replace(child5->str, ",", ".");
-			char* tmp2 = kar_string_create_replace(tmp1, "с", "E");
-			char* tmp3 = kar_string_create_replace(tmp2, "С", "E");
+			KarString* tmp1 = kar_string_create_replace(child5->str, ",", ".");
+			KarString* tmp2 = kar_string_create_replace(tmp1, "с", "E");
+			KarString* tmp3 = kar_string_create_replace(tmp2, "С", "E");
 			d = strtod(tmp3, NULL);
 			KAR_FREE(tmp1);
 			KAR_FREE(tmp2);
@@ -135,17 +135,17 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 		} else if (isinf(d) && d < 0.0) {
 			return print("-∞", module, builder);
 		} else if (absd >= 0.0001 && absd <= 1000.0) {
-			char output[50];
+			KarString output[50];
 			snprintf(output, 50, "%f", d);
-			char* tmp4 = kar_string_create_replace(output, ".", ",");
+			KarString* tmp4 = kar_string_create_replace(output, ".", ",");
 			bool result = print(tmp4, module, builder);
 			KAR_FREE(tmp4);
 			return result;
 		} else {
-			char output[50];
+			KarString output[50];
 			snprintf(output, 50, "%.4e", d);
-			char* tmp4 = kar_string_create_replace(output, ".", ",");
-			char* tmp5 = kar_string_create_replace(tmp4, "e", "с");
+			KarString* tmp4 = kar_string_create_replace(output, ".", ",");
+			KarString* tmp5 = kar_string_create_replace(tmp4, "e", "с");
 			bool result = print(tmp5, module, builder);
 			KAR_FREE(tmp4);
 			KAR_FREE(tmp5);
@@ -172,7 +172,7 @@ static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilder
 	if (token->type != KAR_TOKEN_METHOD) {
 		return false;
 	}
-	if (!strcmp(token->str, "Запустить")) {
+	if (kar_string_equal(token->str, "Запустить")) {
 		LLVMTypeRef func_type = LLVMFunctionType(LLVMVoidType(), NULL, 0, false);
 		LLVMValueRef main_func = LLVMAddFunction(module, "main", func_type);
 		LLVMBasicBlockRef entry = LLVMAppendBasicBlock(main_func, "entry");
@@ -255,11 +255,11 @@ bool kar_generator_run(KarModule* mod) {
 	LLVMInitializeAllAsmParsers();
 	LLVMInitializeAllAsmPrinters();
 
-	char* target_triple = LLVMGetDefaultTargetTriple();
+	KarString* target_triple = LLVMGetDefaultTargetTriple();
 	LLVMSetTarget(module, target_triple);
 
 	LLVMTargetRef target;
-	char* error;
+	KarString* error;
 	if (LLVMGetTargetFromTriple(target_triple, &target, &error)) {
 		printf("%s\n", error);
 		LLVMDisposeMessage(error);
@@ -308,10 +308,10 @@ bool kar_generator_run(KarModule* mod) {
 	
 	// TODO: Разобраться можно ли это как-то без clang делать. Только с помощью llvm.
 #ifdef __linux__
-	system("clang-9 asdf.o -o a.out");
+	bool result = system("clang-9 asdf.o -o a.out") == 0;
 #elif _WIN32
-	system("B:\\llvmexe\\LLVM\\bin\\clang.exe asdf.o -o a.exe");
+	bool result = system("clang.exe asdf.o -o a.exe") == 0;
 	/*system("B:\\llvmexe\\LLVM\\bin\\clang.exe link.exe /ENTRY:main asdf.o");*/
 #endif
-	return true;
+	return result;
 }

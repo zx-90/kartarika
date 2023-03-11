@@ -1,4 +1,4 @@
-/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2021,2023 Evgeny Zaytsev <zx_90@mail.ru>
  * Copyright © 2021 Abdullin Timur <abdtimurrif@gmail.com>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
@@ -12,19 +12,21 @@
 #include <stddef.h>
 #include <stdio.h>
 
-extern const char* KAR_FILE_SYSTEM_DELIMETER;
+#include "string_list.h"
 
-bool kar_file_system_is_file(const char* path);
-bool kar_file_system_is_directory(const char* path);
+extern const KarString* KAR_FILE_SYSTEM_DELIMETER;
 
-char* kar_file_system_get_basename(char* path);
+bool kar_file_system_is_file(const KarString* path);
+bool kar_file_system_is_directory(const KarString* path);
 
-char** kar_file_create_absolute_directory_list(const char* path, size_t* count);
+KarString* kar_file_system_get_basename(KarString* path);
 
-FILE* kar_file_system_create_handle(char* path);
+KarStringList* kar_file_create_absolute_directory_list(const KarString* path);
 
-char* kar_file_load(const char* path);
+FILE* kar_file_system_create_handle(KarString* path);
 
-const char* kar_file_get_working_dir();
+KarString* kar_file_load(const KarString* path);
+
+const KarString* kar_file_get_working_dir();
 
 #endif // KAR_FILE_SYSTEM_H

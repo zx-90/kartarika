@@ -1,4 +1,4 @@
-/* Copyright © 2020-2022 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020-2023 Evgeny Zaytsev <zx_90@mail.ru>
  * Copyright © 2021,2022 Abdullin Timur <abdtimurrif@gmail.com>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
 	// TODO: Добавить параметр для просмотра всех сообщений о ошибках.
 	// TODO: Добавить параметр для вывода структуры токенов.
 	kar_console_init();
-	char* test_path;
+	KarString* test_path;
 	if (argc < 2) {
 		test_path = "тесты";
 	} else if (argc == 2) {

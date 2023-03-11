@@ -8,17 +8,18 @@
 #define KAR_MODULE_H
 
 #include "core/array.h"
+#include "core/string.h"
 #include "token.h"
 #include "project_error_list.h"
 
 // TODO: Поле errors необходимо перенести в KarProject.
 typedef struct {
-	char* name;
+	KarString* name;
 	KarToken* token;
 	KarProjectErrorList* errors;
 } KarModule;
 
-KarModule* kar_module_create(const char* name);
+KarModule* kar_module_create(const KarString* name);
 void kar_module_free(KarModule* module);
 
 void kar_module_print_errors(KarModule* module);

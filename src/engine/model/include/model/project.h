@@ -17,7 +17,7 @@ typedef struct {
 	KAR_ARRAY_STRUCT(KarVartree) def_list;
 } KarProject;
 
-KarProject* kar_project_create(char* filename);
+KarProject* kar_project_create(KarString* filename);
 void kar_project_free(KarProject* project);
 
 KAR_ARRAY_HEADER(project_def_list, KarProject, KarVartree)

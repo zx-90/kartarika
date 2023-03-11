@@ -19,19 +19,19 @@
 typedef struct KarTokenStruct{
 	KarTokenType type;
 	KarCursor cursor;
-	char* str;
+	KarString* str;
 	KAR_ARRAY_STRUCT(struct KarTokenStruct) children;
 } KarToken;
 
 KarToken* kar_token_create();
-KarToken* kar_token_create_fill(KarTokenType type, KarCursor cursor, const char* str);
+KarToken* kar_token_create_fill(KarTokenType type, KarCursor cursor, const KarString* str);
 void kar_token_free(KarToken* token);
 
 bool kar_token_check_type(const KarToken* token, const KarTokenType type);
-bool kar_token_check_type_name(const KarToken* token, const KarTokenType type, const char* string);
+bool kar_token_check_type_name(const KarToken* token, const KarTokenType type, const KarString* string);
 
-void kar_token_set_str(KarToken* token, const char* str);
-void kar_token_add_str(KarToken* token, const char* str);
+void kar_token_set_str(KarToken* token, const KarString* str);
+void kar_token_add_str(KarToken* token, const KarString* str);
 
 KAR_ARRAY_HEADER(token_child, KarToken, KarToken)
 
@@ -43,6 +43,6 @@ KarToken* kar_token_join_children(KarToken* token, size_t first, size_t count);
 KarToken* kar_token_get_first_grandchild(KarToken* token);
 
 void kar_token_print(const KarToken* token, FILE* stream);
-char* kar_token_create_print(const KarToken* token);
+KarString* kar_token_create_print(const KarToken* token);
 
 #endif // KAR_TOKEN_H

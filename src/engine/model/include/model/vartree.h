@@ -44,7 +44,7 @@ typedef enum {
 } KarVartypeElement;
 
 typedef struct KarVartreeStruct {
-	char* name;
+	KarString* name;
 	KarVartypeElement type;
 	KAR_SET_STRUCT(struct KarVartreeStruct) children;
 	KAR_ARRAY_STRUCT(struct KarVartreeStruct) link;
@@ -53,31 +53,31 @@ typedef struct KarVartreeStruct {
 } KarVartree;
 
 KarVartree* kar_vartree_create_root();
-KarVartree* kar_vartree_create_package(const char* name);
+KarVartree* kar_vartree_create_package(const KarString* name);
 
-KarVartree* kar_vartree_create_module(const char* name);
-KarVartree* kar_vartree_create_module_link(const char* name, KarVartree* type);
+KarVartree* kar_vartree_create_module(const KarString* name);
+KarVartree* kar_vartree_create_module_link(const KarString* name, KarVartree* type);
 
-KarVartree* kar_vartree_create_function(const char* name, KarVartree** args, size_t args_count, KarVartree* return_type);
-KarVartree* kar_vartree_create_variable(const char* name, KarVartree* type);
+KarVartree* kar_vartree_create_function(const KarString* name, KarVartree** args, size_t args_count, KarVartree* return_type);
+KarVartree* kar_vartree_create_variable(const KarString* name, KarVartree* type);
 // TODO: Сделать функцию безопасной для поля void. Скорее надо будет разбить на несколько функций.
-KarVartree* kar_vartree_create_const(const char* name, KarVartree* type, void* value);
+KarVartree* kar_vartree_create_const(const KarString* name, KarVartree* type, void* value);
 
-KarVartree* kar_vartree_create_unclean(const char* name);
+KarVartree* kar_vartree_create_unclean(const KarString* name);
 KarVartree* kar_vartree_create_unclean_module(KarVartree* type);
 
-KarVartree* kar_vartree_create_string(const char* name);
-KarVartree* kar_vartree_create_float64(const char* name);
-KarVartree* kar_vartree_create_float32(const char* name);
-KarVartree* kar_vartree_create_unsigned64(const char* name);
-KarVartree* kar_vartree_create_unsigned32(const char* name);
-KarVartree* kar_vartree_create_unsigned16(const char* name);
-KarVartree* kar_vartree_create_unsigned8(const char* name);
-KarVartree* kar_vartree_create_integer64(const char* name);
-KarVartree* kar_vartree_create_integer32(const char* name);
-KarVartree* kar_vartree_create_integer16(const char* name);
-KarVartree* kar_vartree_create_integer8(const char* name);
-KarVartree* kar_vartree_create_bool(const char* name);
+KarVartree* kar_vartree_create_string(const KarString* name);
+KarVartree* kar_vartree_create_float64(const KarString* name);
+KarVartree* kar_vartree_create_float32(const KarString* name);
+KarVartree* kar_vartree_create_unsigned64(const KarString* name);
+KarVartree* kar_vartree_create_unsigned32(const KarString* name);
+KarVartree* kar_vartree_create_unsigned16(const KarString* name);
+KarVartree* kar_vartree_create_unsigned8(const KarString* name);
+KarVartree* kar_vartree_create_integer64(const KarString* name);
+KarVartree* kar_vartree_create_integer32(const KarString* name);
+KarVartree* kar_vartree_create_integer16(const KarString* name);
+KarVartree* kar_vartree_create_integer8(const KarString* name);
+KarVartree* kar_vartree_create_bool(const KarString* name);
 
 void kar_vartree_free(KarVartree* vartree);
 

@@ -12,14 +12,6 @@ KarStringList* kar_string_list_create() {
 	return list;
 }
 
-KarStringList* kar_string_list_create_stamp(char** list, size_t count) {
-	KarStringList* result = kar_string_list_create();
-	for (size_t i = 0; i < count; i++) {
-		kar_string_list_add(result, list[i]);
-	}
-	return result;
-}
-
 void kar_string_list_free(KarStringList* list) {
 	kar_string_list_clear(list);
 	KAR_FREE(list);

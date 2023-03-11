@@ -75,7 +75,7 @@ static bool parse_const_name(KarToken* token, KarProjectErrorList* errors) {
 		return false;
 	}
 	token->type = KAR_TOKEN_FIELD_CONST;
-	token->str = kar_string_create_copy(kar_token_child_get(token, CHILD_INDEX)->str);
+	token->str = kar_string_create(kar_token_child_get(token, CHILD_INDEX)->str);
 	kar_token_child_erase(token, CHILD_INDEX);
 	return true;
 }
@@ -91,7 +91,7 @@ static bool parse_var_name(KarToken* token, KarProjectErrorList* errors) {
 		return false;
 	}
 	token->type = KAR_TOKEN_FIELD_VAR;
-	token->str = kar_string_create_copy(kar_token_child_get(token, CHILD_INDEX)->str);
+	token->str = kar_string_create(kar_token_child_get(token, CHILD_INDEX)->str);
 	kar_token_child_erase(token, CHILD_INDEX);
 	return true;
 }

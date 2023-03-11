@@ -1,4 +1,4 @@
-/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2021,2023 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -12,7 +12,7 @@
 
 // TODO: Добавить логирование сообщений об ошибках.
 
-KarStream* kar_stream_create(const char* path) {
+KarStream* kar_stream_create(const KarString* path) {
 	FILE* file = fopen(path, "r");
 	// TODO: Сообщение об ошибке (но ещё перевод нужен): printf("Error: %d (%s)\n", errno, strerror(errno))
 	if (file == NULL) {
@@ -50,7 +50,7 @@ bool kar_stream_eof(KarStream* stream) {
 	return feof(stream->data);
 }
 
-char kar_stream_get(KarStream* stream) {
+KarString kar_stream_get(KarStream* stream) {
 	if (stream == NULL) {
 		return 0;
 	}
@@ -58,5 +58,5 @@ char kar_stream_get(KarStream* stream) {
 	if (result == EOF) {
 		return 0;
 	}
-	return (char)result;
+	return (KarString)result;
 }

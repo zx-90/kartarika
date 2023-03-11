@@ -1,4 +1,4 @@
-/* Copyright © 2020-2022 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020-2023 Evgeny Zaytsev <zx_90@mail.ru>
  * Copyright © 2021 Abdullin Timur <abdtimurrif@gmail.com>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
@@ -14,43 +14,43 @@
 #include "core/string.h"
 #include "core/file_system.h"
 
-static KarError* check_for_subdirs(char** files, size_t count) {
+static KarError* check_for_subdirs(KarStringList* files) {
 	size_t i;
-	for (i = 0; i < count; i++) {
-		if (kar_file_system_is_directory(files[i])) {
+	for (i = 0; i < kar_string_list_count(files); i++) {
+		KarString* filename = kar_string_list_get(files, i);
+		if (kar_file_system_is_directory(filename)) {
 			continue;
 		} else {
-			if (kar_file_system_is_file(files[i]) && !strcmp(kar_file_system_get_basename(files[i]), KAR_COMMENT_FILENAME)) {
+			if (kar_file_system_is_file(filename) && kar_string_equal(kar_file_system_get_basename(filename), KAR_COMMENT_FILENAME)) {
 				continue;
 			} else {
-				return kar_error_register(1, "Объект %s не является файлом.", files[i]);
+				return kar_error_register(1, "Объект %s не является файлом.", filename);
 			}
 		}
 	}
 	return NULL;
 }
 
-static KarError* run_dir(const char* path) {
-	size_t count;
-	char** files = kar_file_create_absolute_directory_list(path, &count);
+static KarError* run_dir(const KarString* path) {
+	KarStringList* files = kar_file_create_absolute_directory_list(path);
 	if (!files) {
 		return kar_error_get_last();
 	}
-	if (count == 0) {
+	if (kar_string_list_count(files) == 0) {
 		printf("Предупреждение. Каталог %s пуст.\n", path);
-		kar_string_list_free2(files, count);
+		kar_string_list_free(files);
 		return NULL;
 	}
 	
-	KarError* error = check_for_subdirs(files, count);
+	KarError* error = check_for_subdirs(files);
 	if (!error) {
-		//printf("КАТАЛОГ %s\n", path);
 		size_t i;
-		for (i = 0; i < count; i++) {
-			if (kar_file_system_is_directory(files[i])) {
-				error = run_dir(files[i]);
+		for (i = 0; i < kar_string_list_count(files); i++) {
+			KarString* filename = kar_string_list_get(files, i);
+			if (kar_file_system_is_directory(filename)) {
+				error = run_dir(filename);
 				if (error) {
-					kar_string_list_free2(files, count);
+					kar_string_list_free(files);
 					return error;
 				}
 			}
@@ -60,15 +60,15 @@ static KarError* run_dir(const char* path) {
 		KarTest* tf = kar_test_create();
 		KarError* result = kar_test_run(tf, path);
 		kar_test_free(tf);
-		kar_string_list_free2(files, count);
+		kar_string_list_free(files);
 		return result;
 	}
 	
-	kar_string_list_free2(files, count);
+	kar_string_list_free(files);
 	return NULL;
 }
 
-KarError* kar_test_suite_run(const char* path) {
+KarError* kar_test_suite_run(const KarString* path) {
 	if (!kar_file_system_is_directory(path)) {
 		return kar_error_register(1, "Ошибка при поиске тестов. Объект \"%s\" не является каталогом.", path);
 	}

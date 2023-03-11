@@ -9,23 +9,24 @@
 
 #include <string.h>
 
-#include "core/string.h"
 #include "core/alloc.h"
+#include "core/string.h"
+#include "core/unicode.h"
 #include "lexer/keyword.h"
 #include "lexer/check_alphabet.h"
 
-static void retype_if_check(KarToken* token, KarTokenType checkType, const char* str, KarTokenType newType) {
-	if (token->type == checkType && !strcmp(token->str, str)) {
+static void retype_if_check(KarToken* token, KarTokenType checkType, const KarString* str, KarTokenType newType) {
+	if (token->type == checkType && kar_string_equal(token->str, str)) {
 		token->type = newType;
 		kar_token_set_str(token, NULL);
 	}
 }
 
-static bool is_cypher(const char c) {
+static bool is_cypher(const KarString c) {
 	return (c >= 0x30 && c <= 0x39);
 }
 
-static bool is_exponent(const char* str) {
+static bool is_exponent(const KarString* str) {
 	return (memcmp(str, "С", 2) == 0
 		|| memcmp(str, "с", 2) == 0);
 }
@@ -36,7 +37,7 @@ enum KarExpPosition {
 	KAR_EXP_POSITION_ERROR
 };
 
-static enum KarExpPosition get_exp_status(const char* str) {
+static enum KarExpPosition get_exp_status(const KarString* str) {
 	if (is_exponent(str)) {
 		return KAR_EXP_POSITION_ERROR;
 	}
@@ -64,7 +65,8 @@ static enum KarExpPosition get_exp_status(const char* str) {
 	return result;
 }
 
-bool is_hexadecimal(char* str) {
+// TODO: Возможно часть логики надо перенести в unicode.c
+bool is_hexadecimal(KarString* str) {
 	size_t len = strlen(str);
 	if (len < 4) {
 		return false;
@@ -75,7 +77,7 @@ bool is_hexadecimal(char* str) {
 	
 	uint32_t buffer = 0;
 	for (size_t count = 3; count < len;) {
-		buffer = kar_string_get_unicode(&str[count], &count);
+		buffer = kar_unicode_get(&str[count], &count);
 		if (buffer < 0x0030 || 
 			(buffer > 0x0039 && buffer < 0x0410) ||
 			(buffer > 0x0415 &&	buffer < 0x0430) ||

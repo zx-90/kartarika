@@ -64,7 +64,7 @@ static int get_token_indent(KarToken* token) {
 		return -1;
 	}
 	int indent = 0;
-	char* c = token->str;
+	KarString* c = token->str;
 	while(*c) {
 		if (*c == '\t') {
 			indent = (indent + 4) / 4 * 4;

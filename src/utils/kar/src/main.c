@@ -1,4 +1,4 @@
-/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2021,2023 Evgeny Zaytsev <zx_90@mail.ru>
  * Copyright © 2021,2022 Abdullin Timur <abdtimurrif@gmail.com>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
@@ -20,12 +20,11 @@ int main(int argc, char** argv) {
 		fprintf(stderr, "Ошибка. Необходимо имя файла для запуска.\n");
 		return -1;
 	}
-	char* filename = argv[1];
+	KarString* filename = argv[1];
 	printf("%s\n", filename);
 	
 	KarStream* file = kar_stream_create(filename);
 	KarProject* project = kar_project_create(filename);
-	//KarModule* module = kar_module_create(filename);
 	
 	if (!kar_lexer_run(file, project->module)) {
 		fprintf(stderr, "Ошибка при парсинге файла в лексере.\n");

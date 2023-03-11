@@ -1,4 +1,4 @@
-/* Copyright © 2020-2022 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020-2023 Evgeny Zaytsev <zx_90@mail.ru>
  * Copyright © 2022 Abdullin Timur <abdtimurrif@gmail.com>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
@@ -9,6 +9,7 @@
 #define KAR_TOKEN_TYPE_H
 
 #include <stdbool.h>
+#include "core/string.h"
 
 typedef enum {
 	KAR_TOKEN_UNKNOWN,
@@ -149,7 +150,7 @@ typedef enum {
 	KAR_TOKEN_METHOD_RETURN_TYPE,
 } KarTokenType;
 
-const char* kar_token_type_get_name(const KarTokenType type);
+const KarString* kar_token_type_get_name(const KarTokenType type);
 
 bool kar_token_type_is_identifier(const KarTokenType type);
 bool kar_token_type_is_value(const KarTokenType type);

@@ -15,7 +15,6 @@ typedef struct {
 } KarStringList;
 
 KarStringList* kar_string_list_create();
-KarStringList* kar_string_list_create_stamp(char** list, size_t count);
 void kar_string_list_free(KarStringList* list);
 
 KAR_ARRAY_HEADER(string_list, KarStringList, KarString)

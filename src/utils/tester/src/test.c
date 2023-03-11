@@ -1,4 +1,4 @@
-/* Copyright © 2020-2022 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020-2023 Evgeny Zaytsev <zx_90@mail.ru>
  * Copyright © 2021,2022 Abdullin Timur <abdtimurrif@gmail.com>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
@@ -32,15 +32,12 @@ void kar_path_element_clear(KarPathElement* element) {
 	element->is = false;
 }
 
-bool kar_path_element_set(KarPathElement* element, const char* path) {
+bool kar_path_element_set(KarPathElement* element, const KarString* path) {
 	if (element->path != NULL) {
 		KAR_FREE(element->path);
 	}
 	
-	size_t len = strlen(path);
-	KAR_ALLOCS(element->path, char, len + 1);
-	strcpy(element->path, path);
-	
+	element->path = kar_string_create(path);
 	element->is = true;
 	
 	return true;
@@ -74,7 +71,7 @@ void kar_test_free(KarTest* test) {
 	KAR_FREE(test);
 }
 
-static KarError* check_file_object(const char* path, bool checkIsFile, KarPathElement* result) {
+static KarError* check_file_object(const KarString* path, bool checkIsFile, KarPathElement* result) {
 	if (checkIsFile) {
 		if (kar_file_system_is_file(path)) {
 			kar_path_element_set(result, path);
@@ -93,27 +90,27 @@ static KarError* check_file_object(const char* path, bool checkIsFile, KarPathEl
 	return NULL;
 }
 
-static KarError* check_for_test_directory(KarTest* test, char** files, size_t file_count) {
+static KarError* check_for_test_directory(KarTest* test, KarStringList* files) {
 	KarError* error = NULL;
 	size_t i;
-	for (i = 0; i < file_count; ++i) {
-		char* file = files[i];
-		const char* filename = kar_file_system_get_basename(file);
-		if (!strcmp(filename, KAR_PROJECT_FILENAME)) {
+	for (i = 0; i < kar_string_list_count(files); ++i) {
+		KarString* file = kar_string_list_get(files, i);
+		const KarString* filename = kar_file_system_get_basename(file);
+		if (kar_string_equal(filename, KAR_PROJECT_FILENAME)) {
 			error = check_file_object(file, true, &test->project_file);
-		} else if (!strcmp(filename, KAR_LEXER_ERROR_FILENAME)) {
+		} else if (kar_string_equal(filename, KAR_LEXER_ERROR_FILENAME)) {
 			error = check_file_object(file, true, &test->lexer_error_file);
-		} else if (!strcmp(filename, KAR_LEXER_FILENAME)) {
+		} else if (kar_string_equal(filename, KAR_LEXER_FILENAME)) {
 			error = check_file_object(file, true, &test->lexer_file);
-		} else if (!strcmp(filename, KAR_PARSER_ERROR_FILENAME)) {
+		} else if (kar_string_equal(filename, KAR_PARSER_ERROR_FILENAME)) {
 			error = check_file_object(file, true, &test->parser_error_file);
-		} else if (!strcmp(filename, KAR_PARSER_FILENAME)) {
+		} else if (kar_string_equal(filename, KAR_PARSER_FILENAME)) {
 			error = check_file_object(file, true, &test->parser_file);
-		} else if (!strcmp(filename, KAR_COMPILER_ERROR_FILENAME)) {
+		} else if (kar_string_equal(filename, KAR_COMPILER_ERROR_FILENAME)) {
 			error = check_file_object(file, true, &test->compiler_error_file);
-		} else if (!strcmp(filename, KAR_OUT_FILENAME)) {
+		} else if (kar_string_equal(filename, KAR_OUT_FILENAME)) {
 			error = check_file_object(file, true, &test->out_file);
-		} else if (!strcmp(filename, KAR_COMMENT_FILENAME)) {
+		} else if (kar_string_equal(filename, KAR_COMMENT_FILENAME)) {
 			error = check_file_object(file, true, &test->comment_file);
 		} else {
 			return kar_error_register(1,
@@ -187,12 +184,11 @@ static KarError* check_for_integrity(KarTest* test) {
 	return NULL;
 }
 
-static KarError* fill_test(KarTest* test, const char* dir) {
-	size_t file_count = 0;
-	char** files = kar_file_create_absolute_directory_list(dir, &file_count);
+static KarError* fill_test(KarTest* test, const KarString* dir) {
+	KarStringList* files = kar_file_create_absolute_directory_list(dir);
 	KarError* error;
-	error = check_for_test_directory(test, files, file_count);
-	kar_string_list_free2(files, file_count);
+	error = check_for_test_directory(test, files);
+	kar_string_list_free(files);
 	
 	if (error) {
 		return error;
@@ -201,7 +197,7 @@ static KarError* fill_test(KarTest* test, const char* dir) {
 	return check_for_integrity(test);
 }
 
-static KarCursor* compare_strings(char* str1, char* str2) {
+static KarCursor* compare_strings(KarString* str1, KarString* str2) {
 	KAR_CREATE(result, KarCursor);
 	kar_cursor_init(result);
 
@@ -234,14 +230,14 @@ static KarCursor* compare_strings(char* str1, char* str2) {
 	return NULL;
 }
 
-KarError* kar_test_run(KarTest* test, const char* dir) {
+KarError* kar_test_run(KarTest* test, const KarString* dir) {
 	KarError* error = fill_test(test, dir);
 	if (error) {
 		return error;
 	}
 	
 	// TODO: "/" Получать через ОС, и вообще перенести в file_system или куда-то туда.
-	char* path2 = kar_string_create_concat(dir, KAR_FILE_SYSTEM_DELIMETER);
+	KarString* path2 = kar_string_create_concat(dir, KAR_FILE_SYSTEM_DELIMETER);
 	KarProject* project = kar_project_create(test->project_file.path);
 	
 	{
@@ -256,9 +252,9 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 				return kar_error_register(1, "Ошибка в лексере. Ожидалось, что лексер отработает нормально.");
 			}
 			
-			char* testResult = kar_token_create_print(project->module->token);
-			char* gold_path = kar_string_create_concat(path2, kar_file_system_get_basename(test->lexer_file.path));
-			char* gold = kar_file_load(gold_path);
+			KarString* testResult = kar_token_create_print(project->module->token);
+			KarString* gold_path = kar_string_create_concat(path2, kar_file_system_get_basename(test->lexer_file.path));
+			KarString* gold = kar_file_load(gold_path);
 			KAR_FREE(gold_path);
 			
 			KarCursor* cursor = compare_strings(testResult, gold);
@@ -299,7 +295,7 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 		bool parserResult = kar_parser_run(project->module);
 		if (test->parser_file.is) {
 			if (!parserResult) {
-				char* moduleResult = kar_token_create_print(project->module->token);
+				KarString* moduleResult = kar_token_create_print(project->module->token);
 				KarError* result = kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер отработает нормально.\n"
 					"Структура модуля:\n%s",
 					moduleResult
@@ -311,9 +307,9 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 				return result;
 			}
 			
-			char* testResult = kar_token_create_print(project->module->token);
-			char* gold_path = kar_string_create_concat(path2, kar_file_system_get_basename(test->parser_file.path));
-			char* gold = kar_file_load(gold_path);
+			KarString* testResult = kar_token_create_print(project->module->token);
+			KarString* gold_path = kar_string_create_concat(path2, kar_file_system_get_basename(test->parser_file.path));
+			KarString* gold = kar_file_load(gold_path);
 			KAR_FREE(gold_path);
 			
 			KarCursor* cursor = compare_strings(testResult, gold);
@@ -334,7 +330,7 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 			KAR_FREE(cursor);
 		} else if (test->parser_error_file.is) {
 			if (parserResult) {
-				char* moduleResult = kar_token_create_print(project->module->token);
+				KarString* moduleResult = kar_token_create_print(project->module->token);
 				KarError* result = kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер вернет ошибку, но он отработал нормально.\n"
 					"Структура модуля:\n%s",
 					moduleResult
@@ -374,17 +370,16 @@ KarError* kar_test_run(KarTest* test, const char* dir) {
 	
 	if (test->out_file.is) {
 		// TODO: Зависит от ОС. Перетащить в соответствующий модуль.
-		// TODO: Проверить откомпилировалась ли программа.
 		#ifdef __linux__
-				system("./a.out > out.txt 2> out.txt");
+				system("./a.out > out.txt 2>&1");
 		#elif _WIN32
-				system("a.exe > out.txt 2> out.txt");
+				system("a.exe > out.txt 2>&1");
 		#endif
 
-		char* gold_path = kar_string_create_concat(path2, kar_file_system_get_basename(test->out_file.path));
-		char* gold = kar_file_load(gold_path);
+		KarString* gold_path = kar_string_create_concat(path2, kar_file_system_get_basename(test->out_file.path));
+		KarString* gold = kar_file_load(gold_path);
 		KAR_FREE(gold_path);
-		char* out = kar_file_load("out.txt");
+		KarString* out = kar_file_load("out.txt");
 
 		KarCursor* cursor = compare_strings(out, gold);
 

@@ -1,5 +1,5 @@
 /* Copyright © 2021 Abdullin Timur <abdtimurrif@gmail.com>
- * Copyright © 2021 Evgeny Zaytsev <zx_90@mail.ru>
+ * Copyright © 2021,2023 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -19,9 +19,9 @@
 #include "core/string.h"
 #include "core/error.h"
 
-const char* KAR_FILE_SYSTEM_DELIMETER = "\\";
+const KarString* KAR_FILE_SYSTEM_DELIMETER = "\\";
 
-static LPWSTR create_utf16_by_utf8(const char* utf8) {
+static LPWSTR create_utf16_by_utf8(const KarString* utf8) {
 	int wSize = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, utf8, -1, NULL, 0);
 	KAR_CREATES(utf16, WCHAR, wSize);
 	if (!utf16) {
@@ -35,7 +35,7 @@ static LPWSTR create_utf16_by_utf8(const char* utf8) {
 	return utf16;
 }
 
-static char* create_utf8_by_utf16(LPWSTR utf16) {
+static KarString* create_utf8_by_utf16(LPWSTR utf16) {
 	int size = WideCharToMultiByte(CP_UTF8, 0, utf16, -1, NULL, 0, NULL, NULL);
 	KAR_CREATES(utf8, CHAR, size);
 	if (!utf8) {
@@ -49,7 +49,7 @@ static char* create_utf8_by_utf16(LPWSTR utf16) {
 	return utf8;
 }
 
-static DWORD get_file_attributes(const char* path){
+static DWORD get_file_attributes(const KarString* path){
 	LPWSTR wPath = create_utf16_by_utf8(path);
 	if (wPath == NULL) {
 		return INVALID_FILE_ATTRIBUTES;
@@ -59,7 +59,7 @@ static DWORD get_file_attributes(const char* path){
 	return ftyp;
 }
 
-bool kar_file_system_is_file(const char* path) {
+bool kar_file_system_is_file(const KarString* path) {
 	DWORD ftyp = get_file_attributes(path);
 	if (ftyp == INVALID_FILE_ATTRIBUTES) {
 		return false;
@@ -70,7 +70,7 @@ bool kar_file_system_is_file(const char* path) {
 	return false;
 }
 
-bool kar_file_system_is_directory(const char* path) {
+bool kar_file_system_is_directory(const KarString* path) {
 	DWORD ftyp = get_file_attributes(path);
 	if (ftyp == INVALID_FILE_ATTRIBUTES) {
 		return false;
@@ -81,7 +81,7 @@ bool kar_file_system_is_directory(const char* path) {
 	return false;  
 }
 
-char* kar_file_system_get_basename(char* path) {
+KarString* kar_file_system_get_basename(KarString* path) {
 	LPWSTR wPath = create_utf16_by_utf8(path);
 	if (wPath == NULL) {
 		return NULL;
@@ -89,13 +89,13 @@ char* kar_file_system_get_basename(char* path) {
 
 	LPCWSTR wPath2 = PathFindFileNameW(wPath);
 
-	char* path2 = create_utf8_by_utf16(wPath2);
+	KarString* path2 = create_utf8_by_utf16(wPath2);
 	KAR_FREE(wPath);
 	return path2;
 	
 }
 
-static LPWSTR create_utf16_path(const char* path) {
+static LPWSTR create_utf16_path(const KarString* path) {
 	LPWSTR wPath = create_utf16_by_utf8(path);
 	if (wPath == NULL) {
 		return NULL;
@@ -130,7 +130,7 @@ static size_t get_file_count(LPWSTR wPath) {
 	FindClose(file);
 	return count;
 }
-char** kar_file_create_absolute_directory_list(const char* path, size_t* count) {
+KarStringList* kar_file_create_absolute_directory_list(const KarString* path) {
 	
 	LPWSTR wPath = create_utf16_path(path);
 	if (wPath == NULL) {
@@ -138,35 +138,23 @@ char** kar_file_create_absolute_directory_list(const char* path, size_t* count) 
 		return NULL;
 	}
 
-	*count = get_file_count(wPath);
-	if (*count == -1) {
-		KAR_FREE(wPath);
-		kar_error_register(1, "Ошибка. Невозможно найти файлы в каталоге %s.", path);
-		return NULL;
-	}
-	if (*count == 0) {
-		KAR_FREE(wPath);
-		KAR_CREATES(result, char*, 0);
-		return result;
-	}
-
+	KarStringList* result = kar_string_list_create();
 	WIN32_FIND_DATAW findData;
-	KAR_CREATES(result, char *, *count);
 	HANDLE file = FindFirstFileW(wPath, &findData);
 	KAR_FREE(wPath);
 	if (file == INVALID_HANDLE_VALUE) {
-		KAR_FREE(result);
+		kar_string_list_free(result);
 		kar_error_register(1, "Ошибка. Невозможно найти файлы в каталоге %s.", path);
+		FindClose(file);
 		return NULL;
 	}
 
-	size_t number = 0;
-
 	// TODO: Здесь надо скачивать это соединение "\\" через функции ОС.
-	char* path2 = kar_string_create_concat(path, "\\");
+	KarString* path2 = kar_string_create_concat(path, KAR_FILE_SYSTEM_DELIMETER);
 	if (!path2) {
-		KAR_FREE(result);
-		*count = 0;
+		kar_string_list_free(result);
+		kar_error_register(1, "Ошибка. Невозможно найти файлы в каталоге %s.", path);
+		FindClose(file);
 		return NULL;
 	}
 
@@ -177,24 +165,23 @@ char** kar_file_create_absolute_directory_list(const char* path, size_t* count) 
 		if (wcscmp(findData.cFileName, L"..") == 0) {
 			continue;
 		}
-		char* name = create_utf8_by_utf16(findData.cFileName);
+		KarString* name = create_utf8_by_utf16(findData.cFileName);
 		if (name == NULL) {
-			kar_string_list_free2(result, number);
-			*count = 0;
+			kar_string_list_free(result);
 			KAR_FREE(path2);
+			FindClose(file);
 			return NULL;
 		}
 
-		result[number] = kar_string_create_concat(path2, name);
+		kar_string_list_add(result, kar_string_create_concat(path2, name));
 		KAR_FREE(name);
-		number++;
 	} while (FindNextFileW(file, &findData));
 	KAR_FREE(path2);
 	FindClose(file);
 	return result;
 }
 
-FILE* kar_file_system_create_handle(char* path) {
+FILE* kar_file_system_create_handle(KarString* path) {
 	LPWSTR wPath = create_utf16_by_utf8(path);
 	if (wPath == NULL) {
 		kar_error_register(1, "Ошибка выделения памяти.");
@@ -205,7 +192,7 @@ FILE* kar_file_system_create_handle(char* path) {
 	return result;
 }
 
-char* kar_file_load(const char* path) {
+KarString* kar_file_load(const KarString* path) {
 	LPWSTR wPath = create_utf16_by_utf8(path);
 	if (wPath == NULL) {
 		kar_error_register(1, "Ошибка выделения памяти.");
@@ -220,8 +207,8 @@ char* kar_file_load(const char* path) {
 	size_t size = (size_t)ftell(f);
 
 	fseek(f, 0, SEEK_SET);
-	KAR_CREATES(result, char, size + 1);
-	if (size != fread(result, sizeof(char), size, f)) {
+	KAR_CREATES(result, KarString, size + 1);
+	if (size != fread(result, sizeof(KarString), size, f)) {
 		KAR_FREE(result);
 		fclose(f);
 		return NULL;
@@ -233,9 +220,9 @@ char* kar_file_load(const char* path) {
 	return result;
 }
 
-static LPSTR path = NULL;
+static KarString* path = NULL;
 
-const char* kar_file_get_working_dir() {
+const KarString* kar_file_get_working_dir() {
 	if (path) {
 		return path;
 	}
@@ -246,7 +233,7 @@ const char* kar_file_get_working_dir() {
 		return NULL;
 	}
 
-	char* path = create_utf8_by_utf16(working_dir);
+	path = create_utf8_by_utf16(working_dir);
 	free(working_dir);
 	return path;
 }

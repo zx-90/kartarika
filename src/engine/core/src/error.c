@@ -1,4 +1,4 @@
-/* Copyright © 2020 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2023 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -13,7 +13,7 @@
 
 static KarError error = {0, NULL};
 
-KarError* kar_error_register(size_t number, const char* format, ...) {
+KarError* kar_error_register(size_t number, const KarString* format, ...) {
 	error.number = number;
 	if (error.description) {
 		KAR_FREE(error.description);
@@ -40,6 +40,6 @@ size_t kar_error_get_last_number() {
 	return error.number;
 }
 
-const char* kar_error_get_last_description() {
+const KarString* kar_error_get_last_description() {
 	return error.description;
 }

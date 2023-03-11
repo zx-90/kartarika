@@ -1,4 +1,4 @@
-/* Copyright © 2020,2022 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2022,2023 Evgeny Zaytsev <zx_90@mail.ru>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
  * file LICENSE or copy at https://www.gnu.org/licenses/lgpl-3.0.html
@@ -22,7 +22,7 @@
 
 typedef struct {
 	bool is;
-	char* path;
+	KarString* path;
 } KarPathElement;
 
 typedef struct {
@@ -38,16 +38,15 @@ typedef struct {
 	KarPathElement out_file;
 	
 	KarPathElement comment_file;
-	
 } KarTest;
 
 void kar_path_element_init(KarPathElement* element);
 void kar_path_element_clear(KarPathElement* element);
-bool kar_path_element_set(KarPathElement* element, const char* path);
+bool kar_path_element_set(KarPathElement* element, const KarString* path);
 
 KarTest* kar_test_create();
 void kar_test_free(KarTest* test);
 
-KarError* kar_test_run(KarTest* test, const char* dir);
+KarError* kar_test_run(KarTest* test, const KarString* dir);
 
 #endif // KAR_TEST_H

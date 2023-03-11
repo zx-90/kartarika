@@ -11,20 +11,18 @@
 
 #include "core/cursor.h"
 #include "core/array.h"
+#include "core/string.h"
 
 // TODO: Возможно надо добавить имя модуля или другую привязку к модулю.
 typedef struct {
 	KarCursor cursor;
 	int code;
-	char* description;
+	KarString* description;
 } KarProjectError;
 
-KarProjectError* kar_project_error_create(KarCursor* cursor, int code, const char* description);
+KarProjectError* kar_project_error_create(KarCursor* cursor, int code, const KarString* description);
 void kar_project_error_free(KarProjectError* error);
 
-void kar_project_error_print(const char* module_name, KarProjectError* error);
-
-// ----------------------------------------------------------------------------
-
+void kar_project_error_print(const KarString* module_name, KarProjectError* error);
 
 #endif // KAR_PROJECT_ERROR_H

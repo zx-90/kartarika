@@ -1,4 +1,4 @@
-/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2021,2023 Evgeny Zaytsev <zx_90@mail.ru>
  * Copyright © 2021,2022 Abdullin Timur <abdtimurrif@gmail.com>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
@@ -15,7 +15,7 @@
 
 // TODO: Добавить логирование сообщений об ошибках.
 
-KarStream* kar_stream_create(const char* path) {
+KarStream* kar_stream_create(const KarString* path) {
 	FILE* file = kar_file_system_create_handle(path);
 	// TODO: Сообщение об ошибке (но ещё перевод нужен): printf("Error: %d (%s)\n", errno, strerror(errno))
 	if (file == NULL) {
@@ -52,12 +52,12 @@ bool kar_stream_eof(KarStream* stream) {
 	return stream->eof;
 }
 
-char kar_stream_get(KarStream* stream) {
+KarString kar_stream_get(KarStream* stream) {
 	if (stream == NULL) {
 		return 0;
 	}
 	DWORD read;
-	char result;
+	KarString result;
 	if (!ReadFile(stream->data, &result, 1, &read, NULL)) {
 		stream->good = false;
 		return 0;

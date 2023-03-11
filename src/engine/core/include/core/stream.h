@@ -1,4 +1,4 @@
-/* Copyright © 2020 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2023 Evgeny Zaytsev <zx_90@mail.ru>
  * Copyright © 2021 Abdullin Timur <abdtimurrif@gmail.com>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
@@ -11,6 +11,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "string.h"
+
 typedef struct {
 	FILE* data;
 	bool good;
@@ -18,11 +20,11 @@ typedef struct {
 	bool eof;
 } KarStream;
 
-KarStream* kar_stream_create(const char* path);
+KarStream* kar_stream_create(const KarString* path);
 void kar_stream_free(KarStream* stream);
 
 bool kar_stream_good(KarStream* stream);
 bool kar_stream_eof(KarStream* stream);
-char kar_stream_get(KarStream* stream);
+KarString kar_stream_get(KarStream* stream);
 
 #endif // KAR_STREAM_H

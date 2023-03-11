@@ -1,4 +1,4 @@
-/* Copyright © 2020,2021 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020,2021,2023 Evgeny Zaytsev <zx_90@mail.ru>
  * Copyright © 2021 Abdullin Timur <abdtimurrif@gmail.com>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
@@ -20,14 +20,14 @@
 #include "core/alloc.h"
 #include "core/string.h"
 
-const char* KAR_FILE_SYSTEM_DELIMETER = "/";
+const KarString* KAR_FILE_SYSTEM_DELIMETER = "/";
 
-bool kar_file_system_is_file(const char* path) {
+bool kar_file_system_is_file(const KarString* path) {
 	struct stat sts;
 	return (stat(path, &sts) == 0);
 }
 
-bool kar_file_system_is_directory(const char* path) {
+bool kar_file_system_is_directory(const KarString* path) {
 
 	DIR* dir = opendir(path);
 	bool result = (dir != NULL);
@@ -35,72 +35,44 @@ bool kar_file_system_is_directory(const char* path) {
 	return result;
 }
 
-char* kar_file_system_get_basename(char* path) {
+KarString* kar_file_system_get_basename(KarString* path) {
 	return basename(path);
 }
 
-static char** create_directory_list(const char* path, size_t* count) {
+KarStringList* kar_file_create_absolute_directory_list(const KarString* path) {
 	DIR* dir = opendir(path);
 	if (!dir) {
 		return NULL;
 	}
-	struct dirent* ent;
 
-	*count = 0;
-	while ((ent = readdir(dir)) != NULL) {
-		(*count)++;
+	KarString* path2 = kar_string_create_concat(path, "/");
+	if (!path2) {
+		return NULL;
 	}
-	KAR_CREATES(result, char*, *count);
+	KarStringList* result = kar_string_list_create();
 
-	rewinddir(dir);
-
-	size_t i = 0;
+	struct dirent* ent;
 	while ((ent = readdir(dir)) != NULL) {
-		if (!strcmp(ent->d_name, ".") || !strcmp(ent->d_name, "..")) {
-			(*count)--;
+		if (kar_string_equal(ent->d_name, ".") || kar_string_equal(ent->d_name, "..")) {
 			continue;
 		}
-		KAR_CREATES(element, char, strlen(ent->d_name) + 1);
-		strcpy(element, ent->d_name);
-		result[i] = element;
-		i++;
+		KarString* name = kar_string_create(ent->d_name);
+		KarString* fullName = kar_string_create_concat(path2, name);
+		kar_string_free(name);
+		kar_string_list_add(result, fullName);
 	}
-
 	closedir(dir);
-	kar_string_list_quick_sort(result, *count);
+	kar_string_free(path2);
+	
+	kar_string_list_sort(result, kar_string_less);
 	return result;
 }
 
-char** kar_file_create_absolute_directory_list(const char* path, size_t* count) {
-	char** result = create_directory_list(path, count);
-	if (!result) {
-		return NULL;
-	}
-
-	// TODO: Здесь надо скачивать это соединение "/" через функции ОС.
-	char* path2 = kar_string_create_concat(path, "/");
-	if (!path2) {
-		kar_string_list_free2(result, *count);
-		*count = 0;
-		return NULL;
-	}
-
-	size_t i;
-	for (i = 0; i < *count; i++) {
-		char* file_name = result[i];
-		char* absolute_file_name = kar_string_create_concat(path2, file_name);
-		KAR_FREE(result[i]);
-		result[i] = absolute_file_name;
-	}
-	KAR_FREE(path2);
-	return result;
-}
-
-FILE* kar_file_system_create_handle(char* path) {
+FILE* kar_file_system_create_handle(KarString* path) {
 	return fopen(path, "r");
 }
 
-char* kar_file_load(const char* path) {
+KarString* kar_file_load(const KarString* path) {
 	FILE* f = fopen(path, "rb");
 	if (f == NULL) {
 		return NULL;
@@ -110,8 +82,8 @@ char* kar_file_load(const char* path) {
 	size_t size = (size_t)ftell(f);
 
 	fseek(f, 0, SEEK_SET);
-	KAR_CREATES(result, char, size + 1);
-	if (size != fread(result, sizeof(char), size, f)) {
+	KAR_CREATES(result, KarString, size + 1);
+	if (size != fread(result, sizeof(KarString), size, f)) {
 		KAR_FREE(result);
 		fclose(f);
 		return NULL;
@@ -123,9 +95,9 @@ char* kar_file_load(const char* path) {
 	return result;
 }
 
-static char* working_dir = NULL;
+static KarString* working_dir = NULL;
 
-const char* kar_file_get_working_dir() {
+const KarString* kar_file_get_working_dir() {
 	if (working_dir) {
 		return working_dir;
 	}

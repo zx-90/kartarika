@@ -1,4 +1,4 @@
-/* Copyright © 2020-2022 Evgeny Zaytsev <zx_90@mail.ru>
+/* Copyright © 2020-2023 Evgeny Zaytsev <zx_90@mail.ru>
  * Copyright © 2022 Abdullin Timur <abdtimurrif@gmail.com>
  * 
  * Distributed under the terms of the GNU LGPL v3 license. See accompanying
@@ -7,7 +7,7 @@
 
 #include "model/token_type.h"
 
-const char* kar_token_type_get_name(const KarTokenType type)
+const KarString* kar_token_type_get_name(const KarTokenType type)
 {
 #define PROCESS_VAL(p) case(KAR_TOKEN_##p): return #p;
 	switch(type){
