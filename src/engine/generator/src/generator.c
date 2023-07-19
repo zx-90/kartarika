@@ -21,15 +21,19 @@
 #include "core/string.h"
 #include "core/alloc.h"
 
+LLVMValueRef puts_func = NULL;
+
 static bool print(const KarString* out, LLVMModuleRef module, LLVMBuilderRef builder) {
 	LLVMTypeRef type = LLVMPointerType(LLVMInt8Type(), 0);
 	LLVMTypeRef puts_type = LLVMFunctionType(LLVMInt32Type(), &type, 1, false);
-	// TODO: Проверить, возможно printf будет неправильно работать с % (По аналогии с языком C/C++).
 	// TODO: Выдает ошибку если вызвать Кар.Печатать 2 раза
-	LLVMValueRef puts_func = LLVMAddFunction(module, "printf", puts_type);
+    if (puts_func == NULL) {
+    puts_func = LLVMAddFunction(module, "_kartarika_library_write_chars", puts_type);
+
+    }
 	
 	LLVMValueRef out_string = LLVMBuildGlobalStringPtr(builder, out, "helloWorld");
-	LLVMBuildCall(builder, puts_func, &out_string, 1, "printf");
+    LLVMBuildCall(builder, puts_func, &out_string, 1, "_kartarika_library_write_chars");
 	
 	return true;
 }
@@ -231,6 +235,7 @@ static bool generate_module(const KarToken* token, LLVMModuleRef module, LLVMBui
 
 // TODO: Надо передавать KarProject вместо KarModule. 
 bool kar_generator_run(KarModule* mod) {
+    puts_func = NULL;
 	// TODO: обработка ошибок. Добавить.
 	// TODO: Windows настроить кодировку консоли.
 	// TODO: Откомпилированная программа выдает лишнюю строчку в консоль.
@@ -308,9 +313,9 @@ bool kar_generator_run(KarModule* mod) {
 	
 	// TODO: Разобраться можно ли это как-то без clang делать. Только с помощью llvm.
 #ifdef __linux__
-	bool result = system("clang-9 asdf.o -o a.out") == 0;
+    bool result = system("clang-9 asdf.o library.o -o a.out") == 0;
 #elif _WIN32
-	bool result = system("clang.exe asdf.o -o a.exe") == 0;
+    bool result = system("clang.exe asdf.o library.o -o a.exe") == 0;
 	/*system("B:\\llvmexe\\LLVM\\bin\\clang.exe link.exe /ENTRY:main asdf.o");*/
 #endif
 	return result;

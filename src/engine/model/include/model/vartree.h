@@ -44,7 +44,8 @@ typedef enum {
 } KarVartypeElement;
 
 typedef struct KarVartreeStruct {
-	KarString* name;
+    KarString* libName;
+    KarString* name;
 	KarVartypeElement type;
 	KAR_SET_STRUCT(struct KarVartreeStruct) children;
 	KAR_ARRAY_STRUCT(struct KarVartreeStruct) link;
@@ -58,7 +59,7 @@ KarVartree* kar_vartree_create_package(const KarString* name);
 KarVartree* kar_vartree_create_module(const KarString* name);
 KarVartree* kar_vartree_create_module_link(const KarString* name, KarVartree* type);
 
-KarVartree* kar_vartree_create_function(const KarString* name, KarVartree** args, size_t args_count, KarVartree* return_type);
+KarVartree* kar_vartree_create_function(const KarString* libName, const KarString* name, KarVartree** args, size_t args_count, KarVartree* return_type);
 KarVartree* kar_vartree_create_variable(const KarString* name, KarVartree* type);
 // TODO: Сделать функцию безопасной для поля void. Скорее надо будет разбить на несколько функций.
 KarVartree* kar_vartree_create_const(const KarString* name, KarVartree* type, void* value);

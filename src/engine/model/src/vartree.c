@@ -16,6 +16,7 @@ static void(*link_free)(KarVartree* item) = NULL;
 static KarVartree* vartree_create(KarVartypeElement element) {
 	KAR_CREATE(vartree, KarVartree);
 	
+    vartree->libName = NULL;
 	vartree->name = NULL;
 	vartree->type = element;
 	kar_vartree_child_init(vartree);
@@ -49,8 +50,9 @@ KarVartree* kar_vartree_create_module_link(const KarString* name, KarVartree* ty
 	return result;
 }
 
-KarVartree* kar_vartree_create_function(const KarString* name, KarVartree** args, size_t args_count, KarVartree* return_type) {
+KarVartree* kar_vartree_create_function(const KarString* libName, const KarString* name, KarVartree** args, size_t args_count, KarVartree* return_type) {
 	KarVartree* result = vartree_create_name(KAR_VARTYPE_FUNCTION, name);
+    result->libName = kar_string_create(libName);
 	kar_vartree_link_add(result, return_type);
 	for (size_t i = 0; i < args_count; i++) {
 		kar_vartree_link_add(result, args[i]);

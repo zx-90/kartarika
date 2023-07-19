@@ -6,9 +6,12 @@ mkdir -p _build
 
 pushd _build
 
-cmake ..
-make
+#cmake ..
+cmake -DCMAKE_BUILD_TYPE=Debug .
+cmake --build .
 
 popd
 
 ./_build/bin/tester
+
+echo "END"

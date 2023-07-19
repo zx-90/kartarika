@@ -78,11 +78,11 @@ static bool fill_standard_lib(KarProject* project) {
 	kar_vartree_child_add(type_float32, kar_vartree_create_const("ЭкспонентаМин", type_integer, (void*)-125));
 	kar_vartree_child_add(type_float32, kar_vartree_create_const("ЭкспонентаМакс", type_integer, (void*)128));
 	float f = 1.17549e-38f;
-	kar_vartree_child_add(type_float32, kar_vartree_create_const("Мин", type_float32, *(void**)&f));
+	kar_vartree_child_add(type_float32, kar_vartree_create_const("Мин", type_float32, (void*)((size_t)f)));
 	f = 3.40282e+38f;
-	kar_vartree_child_add(type_float32, kar_vartree_create_const("Макс", type_float32, *(void**)&f));
+	kar_vartree_child_add(type_float32, kar_vartree_create_const("Макс", type_float32, (void*)((size_t)f)));
 	f = 1.19209e-07f;
-	kar_vartree_child_add(type_float32, kar_vartree_create_const("Эпсилон", type_float32, *(void**)&f));
+	kar_vartree_child_add(type_float32, kar_vartree_create_const("Эпсилон", type_float32, (void*)((size_t)f)));
 	
 	KarVartree* type_float64 = kar_vartree_create_float64("Дробное64");
 	kar_vartree_child_add(types, type_float64);
@@ -91,11 +91,11 @@ static bool fill_standard_lib(KarProject* project) {
 	kar_vartree_child_add(type_float64, kar_vartree_create_const("ЭкспонентаМин", type_integer, (void*)-1021));
 	kar_vartree_child_add(type_float64, kar_vartree_create_const("ЭкспонентаМакс", type_integer, (void*)1024));
 	double d = 2.22507e-308;
-	kar_vartree_child_add(type_float64, kar_vartree_create_const("Мин", type_float64, *(void**)&d));
+	kar_vartree_child_add(type_float64, kar_vartree_create_const("Мин", type_float64, (void*)((size_t)d)));
 	d = 1.79769e+308;
-	kar_vartree_child_add(type_float64, kar_vartree_create_const("Макс", type_float64, *(void**)&d));
+	kar_vartree_child_add(type_float64, kar_vartree_create_const("Макс", type_float64, (void*)((size_t)d)));
 	d = 2.22045e-16;
-	kar_vartree_child_add(type_float64, kar_vartree_create_const("Эпсилон", type_float64, *(void**)&d));
+	kar_vartree_child_add(type_float64, kar_vartree_create_const("Эпсилон", type_float64, (void*)((size_t)d)));
 	
 	KarVartree* type_float = kar_vartree_create_module_link("Дробное", type_float64);
 	kar_vartree_child_add(types, type_float);
@@ -108,52 +108,61 @@ static bool fill_standard_lib(KarProject* project) {
 	
 	KarVartree* type_string = kar_vartree_create_string("Строка");
 	kar_vartree_child_add(types, type_string);
-	kar_vartree_child_add(type_string, kar_vartree_create_function("Длина", NULL, 0, type_unsigned));
-	kar_vartree_child_add(type_string, kar_vartree_create_function("Найти", &type_string, 1, type_unclean_unsigned));
+    kar_vartree_child_add(type_string, kar_vartree_create_function("_kartarika_library_string_length", "Длина", NULL, 0, type_unsigned));
+    kar_vartree_child_add(type_string, kar_vartree_create_function("_kartarika_library_string_find", "Найти", &type_string, 1, type_unclean_unsigned));
 	KarVartree* string_find_from_args[] = {type_unsigned, type_string};
-	kar_vartree_child_add(type_string, kar_vartree_create_function("НайтиСПозиции", string_find_from_args, 2, type_unclean_unsigned));
+    kar_vartree_child_add(type_string, kar_vartree_create_function("_kartarika_library_string_find_from", "НайтиСПозиции", string_find_from_args, 2, type_unclean_unsigned));
 	KarVartree* string_substring_args[] = {type_unsigned, type_unsigned};
-	kar_vartree_child_add(type_string, kar_vartree_create_function("Подстрока", string_substring_args, 2, type_string));
+    kar_vartree_child_add(type_string, kar_vartree_create_function("_kartarika_library_string_substring", "Подстрока", string_substring_args, 2, type_string));
 	
 	KarVartree* type_unclean_string = kar_vartree_create_unclean_module(type_string);
 	kar_vartree_child_add(type_unclean, type_unclean_string);
 
-	KarVartree* threads = kar_vartree_create_package("Потоки");
-	kar_vartree_child_add(kar, threads);
-	
-	KarVartree* type_thread_in = kar_vartree_create_module("ПотокВвода");
-	kar_vartree_child_add(threads, type_thread_in);
-	kar_vartree_child_add(type_thread_in, kar_vartree_create_function("Читать", NULL, 0, type_unclean_string));
-	
-	KarVartree* type_thread_out = kar_vartree_create_module("ПотокВывода");
-	kar_vartree_child_add(threads, type_thread_out);
-	kar_vartree_child_add(type_thread_out, kar_vartree_create_function("Писать", &type_bool, 1, NULL));
-	kar_vartree_child_add(type_thread_out, kar_vartree_create_function("Писать", &type_integer8, 1, NULL));
-	kar_vartree_child_add(type_thread_out, kar_vartree_create_function("Писать", &type_integer16, 1, NULL));
-	kar_vartree_child_add(type_thread_out, kar_vartree_create_function("Писать", &type_integer32, 1, NULL));
-	kar_vartree_child_add(type_thread_out, kar_vartree_create_function("Писать", &type_integer64, 1, NULL));
-	kar_vartree_child_add(type_thread_out, kar_vartree_create_function("Писать", &type_integer, 1, NULL));
-	kar_vartree_child_add(type_thread_out, kar_vartree_create_function("Писать", &type_unsigned8, 1, NULL));
-	kar_vartree_child_add(type_thread_out, kar_vartree_create_function("Писать", &type_unsigned16, 1, NULL));
-	kar_vartree_child_add(type_thread_out, kar_vartree_create_function("Писать", &type_unsigned32, 1, NULL));
-	kar_vartree_child_add(type_thread_out, kar_vartree_create_function("Писать", &type_unsigned64, 1, NULL));
-	kar_vartree_child_add(type_thread_out, kar_vartree_create_function("Писать", &type_unsigned, 1, NULL));
-	kar_vartree_child_add(type_thread_out, kar_vartree_create_function("Писать", &type_float32, 1, NULL));
-	kar_vartree_child_add(type_thread_out, kar_vartree_create_function("Писать", &type_float64, 1, NULL));
-	kar_vartree_child_add(type_thread_out, kar_vartree_create_function("Писать", &type_float, 1, NULL));
-	kar_vartree_child_add(type_thread_out, kar_vartree_create_function("Писать", &type_string, 1, NULL));
-	
 	KarVartree* type_console = kar_vartree_create_module("Консоль");
 	kar_vartree_child_add(kar, type_console);
-	kar_vartree_child_add(type_console, kar_vartree_create_variable("Ввод", type_thread_in));
-	kar_vartree_child_add(type_console, kar_vartree_create_variable("Вывод", type_thread_out));
-	kar_vartree_child_add(type_console, kar_vartree_create_variable("Ошибка", type_thread_out));
-	
-	KarVartree* type_math = kar_vartree_create_module("Мат");
+    kar_vartree_child_add(type_console, kar_vartree_create_function("_kartarika_library_read_string", "Ввод", NULL, 0, type_unclean_string));
+    kar_vartree_child_add(type_console, kar_vartree_create_function("_kartarika_library_write_bool", "Вывод", &type_bool, 1, NULL));
+    kar_vartree_child_add(type_console, kar_vartree_create_function("_kartarika_library_write_int8", "Вывод", &type_integer8, 1, NULL));
+    kar_vartree_child_add(type_console, kar_vartree_create_function("_kartarika_library_write_int16", "Вывод", &type_integer16, 1, NULL));
+    kar_vartree_child_add(type_console, kar_vartree_create_function("_kartarika_library_write_int32", "Вывод", &type_integer32, 1, NULL));
+    kar_vartree_child_add(type_console, kar_vartree_create_function("_kartarika_library_write_int64", "Вывод", &type_integer64, 1, NULL));
+    // TODO: Возможно это  можно убрать, так как ссылка.
+    kar_vartree_child_add(type_console, kar_vartree_create_function("_kartarika_library_write_int32", "Вывод", &type_integer, 1, NULL));
+    kar_vartree_child_add(type_console, kar_vartree_create_function("_kartarika_library_write_uint8", "Вывод", &type_unsigned8, 1, NULL));
+    kar_vartree_child_add(type_console, kar_vartree_create_function("_kartarika_library_write_uint16", "Вывод", &type_unsigned16, 1, NULL));
+    kar_vartree_child_add(type_console, kar_vartree_create_function("_kartarika_library_write_uint32", "Вывод", &type_unsigned32, 1, NULL));
+    kar_vartree_child_add(type_console, kar_vartree_create_function("_kartarika_library_write_uint64", "Вывод", &type_unsigned64, 1, NULL));
+    // TODO: Возможно это  можно убрать, так как ссылка.
+    kar_vartree_child_add(type_console, kar_vartree_create_function("_kartarika_library_write_uint32", "Вывод", &type_unsigned, 1, NULL));
+    kar_vartree_child_add(type_console, kar_vartree_create_function("_kartarika_library_write_float32", "Вывод", &type_float32, 1, NULL));
+    kar_vartree_child_add(type_console, kar_vartree_create_function("_kartarika_library_write_float64", "Вывод", &type_float64, 1, NULL));
+    kar_vartree_child_add(type_console, kar_vartree_create_function("_kartarika_library_write_float64", "Вывод", &type_float, 1, NULL));
+    kar_vartree_child_add(type_console, kar_vartree_create_function("_kartarika_library_write_string", "Вывод", &type_string, 1, NULL));
+
+    KarVartree* type_thread_error = kar_vartree_create_module("ПотокОшибок");
+    kar_vartree_child_add(kar, type_thread_error);
+    kar_vartree_child_add(type_thread_error, kar_vartree_create_function("_kartarika_library_write_bool", "Вывод", &type_bool, 1, NULL));
+    kar_vartree_child_add(type_thread_error, kar_vartree_create_function("_kartarika_library_write_int8", "Вывод", &type_integer8, 1, NULL));
+    kar_vartree_child_add(type_thread_error, kar_vartree_create_function("_kartarika_library_write_int16", "Вывод", &type_integer16, 1, NULL));
+    kar_vartree_child_add(type_thread_error, kar_vartree_create_function("_kartarika_library_write_int32", "Вывод", &type_integer32, 1, NULL));
+    kar_vartree_child_add(type_thread_error, kar_vartree_create_function("_kartarika_library_write_int64", "Вывод", &type_integer64, 1, NULL));
+    // TODO: Возможно это  можно убрать, так как ссылка.
+    kar_vartree_child_add(type_thread_error, kar_vartree_create_function("_kartarika_library_write_int32", "Вывод", &type_integer, 1, NULL));
+    kar_vartree_child_add(type_thread_error, kar_vartree_create_function("_kartarika_library_write_uint8", "Вывод", &type_unsigned8, 1, NULL));
+    kar_vartree_child_add(type_thread_error, kar_vartree_create_function("_kartarika_library_write_uint16", "Вывод", &type_unsigned16, 1, NULL));
+    kar_vartree_child_add(type_thread_error, kar_vartree_create_function("_kartarika_library_write_uint32", "Вывод", &type_unsigned32, 1, NULL));
+    kar_vartree_child_add(type_thread_error, kar_vartree_create_function("_kartarika_library_write_uint64", "Вывод", &type_unsigned64, 1, NULL));
+    // TODO: Возможно это  можно убрать, так как ссылка.
+    kar_vartree_child_add(type_thread_error, kar_vartree_create_function("_kartarika_library_write_uint32", "Вывод", &type_unsigned, 1, NULL));
+    kar_vartree_child_add(type_thread_error, kar_vartree_create_function("_kartarika_library_write_float32", "Вывод", &type_float32, 1, NULL));
+    kar_vartree_child_add(type_thread_error, kar_vartree_create_function("_kartarika_library_write_float64", "Вывод", &type_float64, 1, NULL));
+    kar_vartree_child_add(type_thread_error, kar_vartree_create_function("_kartarika_library_write_float64", "Вывод", &type_float, 1, NULL));
+    kar_vartree_child_add(type_thread_error, kar_vartree_create_function("_kartarika_library_write_string", "Вывод", &type_string, 1, NULL));
+
+    KarVartree* type_math = kar_vartree_create_module("Мат");
 	kar_vartree_child_add(kar, type_math);
-	kar_vartree_child_add(type_math, kar_vartree_create_function("ЗадатьПСЧ", &type_unsigned, 1, NULL));
-	kar_vartree_child_add(type_math, kar_vartree_create_function("ВзятьПСЧ", NULL, 0, type_unsigned));
-	kar_vartree_child_add(type_math, kar_vartree_create_function("ВзятьСлучайное", NULL, 0, type_unsigned));
+    kar_vartree_child_add(type_math, kar_vartree_create_function("_kartarika_library_get_prn", "ВзятьПСЧ", &type_unsigned, 1, NULL));
+    kar_vartree_child_add(type_math, kar_vartree_create_function("_kartarika_library_get_random", "ВзятьСлучайное", NULL, 0, type_unsigned));
 	
 	return true;
 }

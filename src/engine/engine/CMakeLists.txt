@@ -16,3 +16,5 @@ target_link_libraries(engine analyzer)
 target_link_libraries(engine generator)
 
 target_include_directories(engine PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+
+add_custom_command(TARGET engine POST_BUILD COMMAND ${CMAKE_C_COMPILER} -c ${CMAKE_SOURCE_DIR}/src/kar/library.c -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/library.o)
