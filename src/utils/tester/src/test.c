@@ -197,6 +197,7 @@ static KarError* fill_test(KarTest* test, const KarString* dir) {
 	return check_for_integrity(test);
 }
 
+// TODO: Возможно нужно перенести в Core.
 static KarCursor* compare_strings(KarString* str1, KarString* str2) {
 	KAR_CREATE(result, KarCursor);
 	kar_cursor_init(result);
