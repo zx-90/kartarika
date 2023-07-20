@@ -26,10 +26,8 @@ LLVMValueRef puts_func = NULL;
 static bool print(const KarString* out, LLVMModuleRef module, LLVMBuilderRef builder) {
 	LLVMTypeRef type = LLVMPointerType(LLVMInt8Type(), 0);
 	LLVMTypeRef puts_type = LLVMFunctionType(LLVMInt32Type(), &type, 1, false);
-	// TODO: Выдает ошибку если вызвать Кар.Печатать 2 раза
     if (puts_func == NULL) {
-    puts_func = LLVMAddFunction(module, "_kartarika_library_write_chars", puts_type);
-
+        puts_func = LLVMAddFunction(module, "_kartarika_library_write_chars", puts_type);
     }
 	
 	LLVMValueRef out_string = LLVMBuildGlobalStringPtr(builder, out, "helloWorld");
@@ -50,7 +48,7 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 		return false;
 	}
 	const KarToken* child2 = kar_token_child_get(child1, 0);
-	if (!kar_token_check_type_name(child2, KAR_TOKEN_IDENTIFIER, "Кар")) {
+    if (!kar_token_check_type_name(child2, KAR_TOKEN_IDENTIFIER, "Консоль")) {
 		printf("ERROR 3\n");
 		return false;
 	}
@@ -60,7 +58,7 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 		return false;
 	}
 	const KarToken* child4a = kar_token_child_get(child3, 0);
-	if (!kar_token_check_type_name(child4a, KAR_TOKEN_IDENTIFIER, "Печатать")) {
+    if (!kar_token_check_type_name(child4a, KAR_TOKEN_IDENTIFIER, "Вывод")) {
 		printf("ERROR 5\n");
 		return false;
 	}
