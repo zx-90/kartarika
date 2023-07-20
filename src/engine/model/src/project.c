@@ -14,7 +14,8 @@ KarProject* kar_project_create(KarString* filename) {
 	project->module = kar_module_create(filename);
 	project->vartree = NULL;
 	kar_project_def_list_init(project);
-	
+    project->errors = kar_project_error_list_create();
+
 	return project;
 }
 
@@ -24,7 +25,8 @@ void kar_project_free(KarProject* project) {
 		kar_vartree_free(project->vartree);
 	}
 	kar_project_def_list_clear(project);
-	KAR_FREE(project);
+    kar_project_error_list_free(project->errors);
+    KAR_FREE(project);
 }
 
 KAR_ARRAY_CODE(project_def_list, KarProject, KarVartree, def_list, kar_vartree_free)

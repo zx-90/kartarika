@@ -18,7 +18,13 @@ void kar_project_error_list_free(KarProjectErrorList* error_list) {
 
 KAR_ARRAY_CODE(project_error_list, KarProjectErrorList, KarProjectError, errors, kar_project_error_free)
 
-void kar_project_error_list_create_add(KarProjectErrorList* error_list, KarCursor* cursor, int code, const KarString* description) {
-	kar_project_error_list_add(error_list, kar_project_error_create(cursor, code, description));
+void kar_project_error_list_create_add(KarProjectErrorList* error_list, KarString* moduleName, KarCursor* cursor, int code, const KarString* description) {
+    kar_project_error_list_add(error_list, kar_project_error_create(moduleName, cursor, code, description));
 }
 
+void kar_project_error_list_print(KarProjectErrorList *errors) {
+    for (size_t i = 0; i < kar_project_error_list_count(errors); ++i) {
+        // TODO: Найти замену для module->name.
+        kar_project_error_print(kar_project_error_list_get(errors, i));
+    }
+}

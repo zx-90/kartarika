@@ -7,15 +7,15 @@
 #include "model/token.h"
 #include "model/project_error_list.h"
 
-bool kar_parser_extern_brackets(KarToken* token, KarProjectErrorList* errors);
+bool kar_parser_extern_brackets(KarToken* token, KarString* moduleName, KarProjectErrorList* errors);
 bool kar_parser_split_by_lines(KarToken* token, KarProjectErrorList* errors);
 bool kar_parser_erase_empty_lines(KarToken* token);
 bool kar_parser_split_by_blocks(KarToken* token, KarProjectErrorList* errors);
 
 
-bool kar_parser_parse_structure(KarToken* token, KarProjectErrorList* errors) {
+bool kar_parser_parse_structure(KarToken* token, KarString* moduleName, KarProjectErrorList* errors) {
 	bool b = true;
-	b = b && kar_parser_extern_brackets(token, errors);
+    b = b && kar_parser_extern_brackets(token, moduleName, errors);
 	b = b && kar_parser_split_by_lines(token, errors);
 	b = b && kar_parser_erase_empty_lines(token);
 	b = b && kar_parser_split_by_blocks(token, errors);

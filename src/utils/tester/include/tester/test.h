@@ -9,7 +9,7 @@
 
 #include <stdbool.h>
 
-#include "core/error.h"
+#include "error.h"
 
 #define KAR_PROJECT_FILENAME "проект.кар"
 #define KAR_LEXER_ERROR_FILENAME "лексер.ошибка"

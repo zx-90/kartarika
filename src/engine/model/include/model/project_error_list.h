@@ -18,6 +18,8 @@ void kar_project_error_list_free(KarProjectErrorList* error);
 
 KAR_ARRAY_HEADER(project_error_list, KarProjectErrorList, KarProjectError)
 
-void kar_project_error_list_create_add(KarProjectErrorList* error_list, KarCursor* cursor, int code, const KarString* description);
+void kar_project_error_list_create_add(KarProjectErrorList* error_list, KarString* moduleName, KarCursor* cursor, int code, const KarString* description);
+
+void kar_project_error_list_print(KarProjectErrorList* errors);
 
 #endif // KAR_PROJECT_ERROR_LIST_H

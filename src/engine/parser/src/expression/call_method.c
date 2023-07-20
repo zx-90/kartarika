@@ -60,7 +60,7 @@ bool kar_parser_make_call_method(KarToken* token)
 // Обработка вызова функции.
 // ----------------------------------------------------------------------------
 
-static bool make_arguments(KarToken* token, KarProjectErrorList* errors) {
+static bool make_arguments(KarToken* token, KarString* moduleName, KarProjectErrorList* errors) {
 	if (token->type != KAR_TOKEN_SIGN_CALL_METHOD) {
 		return true;
 	}
@@ -74,12 +74,12 @@ static bool make_arguments(KarToken* token, KarProjectErrorList* errors) {
 		KarToken* curItem = kar_token_child_tear(token, currentPlace);
 		if (curItem->type == KAR_TOKEN_SIGN_COMMA) {
 			if (currentArg == NULL) {
-				kar_project_error_list_create_add(errors, &curItem->cursor, 1, "Неожиданное появление знака \",\".");
+                kar_project_error_list_create_add(errors, moduleName, &curItem->cursor, 1, "Неожиданное появление знака \",\".");
 				kar_token_free(curItem);
 				return false;
 			}
 			if (kar_token_child_count(token) == currentPlace) {
-				kar_project_error_list_create_add(errors, &curItem->cursor, 1, "Нет операнда слева у знака \",\".");
+                kar_project_error_list_create_add(errors, moduleName, &curItem->cursor, 1, "Нет операнда слева у знака \",\".");
 				kar_token_free(curItem);
 				return false;
 			}
@@ -100,12 +100,12 @@ static bool make_arguments(KarToken* token, KarProjectErrorList* errors) {
 	return true;
 }
 
-bool kar_parser_make_arguments(KarToken* token, KarProjectErrorList* errors) 
+bool kar_parser_make_arguments(KarToken* token, KarString* moduleName, KarProjectErrorList* errors)
 {
 	for (size_t i = 0; i < kar_token_child_count(token); i++) {
-		if (!kar_parser_make_arguments(kar_token_child_get(token, i), errors)) {
+        if (!kar_parser_make_arguments(kar_token_child_get(token, i), moduleName, errors)) {
 			return false;
 		}
 	}
-	return make_arguments(token, errors);
+    return make_arguments(token, moduleName, errors);
 }

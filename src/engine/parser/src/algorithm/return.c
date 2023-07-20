@@ -15,7 +15,7 @@ static void prepare_return(KarToken* token) {
 	kar_token_child_erase(token, 0);
 }
 
-KarParserStatus kar_parser_make_return(KarToken* token, KarProjectErrorList* errors) {
+KarParserStatus kar_parser_make_return(KarToken* token, KarString* moduleName, KarProjectErrorList* errors) {
 	size_t returnPos = kar_token_child_find(token, KAR_TOKEN_COMMAND_RETURN);
 	
 	if (returnPos == kar_token_child_count(token)) {
@@ -24,7 +24,7 @@ KarParserStatus kar_parser_make_return(KarToken* token, KarProjectErrorList* err
 	
 	KarToken* returnToken = kar_token_child_get(token, returnPos);
 	if (returnPos != 0) {
-		kar_project_error_list_create_add(errors, &returnToken->cursor, 1, "Ключевое слово вернуть должно стоять в начале команды.");
+        kar_project_error_list_create_add(errors, moduleName, &returnToken->cursor, 1, "Ключевое слово вернуть должно стоять в начале команды.");
 		return KAR_PARSER_STATUS_ERROR;
 	}
 	
@@ -36,12 +36,12 @@ KarParserStatus kar_parser_make_return(KarToken* token, KarProjectErrorList* err
 	
 	KarToken* expression = kar_token_child_get(token, 1);
 	if (!kar_parser_is_expression(expression->type)) {
-		kar_project_error_list_create_add(errors, &expression->cursor, 1, "Здесь ожидалось выражение.");
+        kar_project_error_list_create_add(errors, moduleName, &expression->cursor, 1, "Здесь ожидалось выражение.");
 		return KAR_PARSER_STATUS_ERROR;
 	}
 	
 	if (kar_token_child_count(token) > 2) {
-		kar_project_error_list_create_add(errors, &kar_token_child_get(token, 2)->cursor, 1, "Здесь ожидался конец команды.");
+        kar_project_error_list_create_add(errors, moduleName, &kar_token_child_get(token, 2)->cursor, 1, "Здесь ожидался конец команды.");
 		return KAR_PARSER_STATUS_ERROR;
 	}
 	

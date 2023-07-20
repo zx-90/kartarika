@@ -17,7 +17,6 @@
 #include <llvm-c/TargetMachine.h>
 #include <llvm-c/BitWriter.h>
 
-#include "core/error.h"
 #include "core/string.h"
 #include "core/alloc.h"
 
@@ -232,7 +231,7 @@ static bool generate_module(const KarToken* token, LLVMModuleRef module, LLVMBui
 }*/
 
 // TODO: Надо передавать KarProject вместо KarModule. 
-bool kar_generator_run(KarModule* mod) {
+bool kar_generator_run(KarModule* mod, KarProjectErrorList* errors) {
     puts_func = NULL;
 	// TODO: обработка ошибок. Добавить.
 	// TODO: Windows настроить кодировку консоли.
@@ -242,7 +241,7 @@ bool kar_generator_run(KarModule* mod) {
 	LLVMBuilderRef builder = LLVMCreateBuilderInContext(context);
 	
 	if (!generate_module(mod->token, module, builder)) {
-		kar_error_register(1, "Ошибка в генераторе.");
+        kar_project_error_list_create_add(errors, mod->name, &mod->token->cursor, 1, "Ошибка в генераторе.");
 		return false;
 	}
 	

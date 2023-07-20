@@ -6,18 +6,18 @@
 
 #include "parser/parser.h"
 
-bool kar_parser_parse_structure(KarToken* token, KarProjectErrorList* errors);
-bool kar_parser_parse_expression(KarToken* token, KarProjectErrorList* errors);
-bool kar_parser_parse_root(KarToken* token, KarProjectErrorList* errors);
+bool kar_parser_parse_structure(KarToken* token, KarString* moduleName, KarProjectErrorList* errors);
+bool kar_parser_parse_expression(KarToken* token, KarString* moduleName, KarProjectErrorList* errors);
+bool kar_parser_parse_root(KarToken* token, KarString* moduleName, KarProjectErrorList* errors);
 
-bool kar_parser_run(KarModule* module) {
+bool kar_parser_run(KarModule* module, KarProjectErrorList* errors) {
 	KarToken* token = module->token;
-	KarProjectErrorList* errors = module->errors;
+
 	bool b = true;
 	
-	b = b && kar_parser_parse_structure(token, errors);
-	b = b && kar_parser_parse_expression(token, errors);
-	b = b && kar_parser_parse_root(token, errors);
+    b = b && kar_parser_parse_structure(token, kar_module_get_full_name(module),errors);
+    b = b && kar_parser_parse_expression(token, kar_module_get_full_name(module), errors);
+    b = b && kar_parser_parse_root(token, kar_module_get_full_name(module), errors);
 	
 	return b;
 }

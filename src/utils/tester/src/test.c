@@ -243,11 +243,11 @@ KarError* kar_test_run(KarTest* test, const KarString* dir) {
 	
 	{
 		KarStream* file = kar_stream_create(test->project_file.path);
-		bool lexerResult = kar_lexer_run(file, project->module);
+        bool lexerResult = kar_lexer_run(file, project->module, project->errors);
 		kar_stream_free(file);
 		if (test->lexer_file.is) {
 			if (!lexerResult) {
-				kar_module_print_errors(project->module);
+                kar_project_error_list_print(project->errors);
 				kar_project_free(project);
 				KAR_FREE(path2);
 				return kar_error_register(1, "Ошибка в лексере. Ожидалось, что лексер отработает нормально.");
@@ -293,7 +293,7 @@ KarError* kar_test_run(KarTest* test, const KarString* dir) {
 		test->compiler_error_file.is ||
 		test->out_file.is
 	) {
-		bool parserResult = kar_parser_run(project->module);
+        bool parserResult = kar_parser_run(project->module, project->errors);
 		if (test->parser_file.is) {
 			if (!parserResult) {
 				KarString* moduleResult = kar_token_create_print(project->module->token);
@@ -302,7 +302,7 @@ KarError* kar_test_run(KarTest* test, const KarString* dir) {
 					moduleResult
 				);
 				KAR_FREE(moduleResult);
-				kar_module_print_errors(project->module);
+                kar_project_error_list_print(project->errors);
 				kar_project_free(project);
 				KAR_FREE(path2);
 				return result;
@@ -353,7 +353,7 @@ KarError* kar_test_run(KarTest* test, const KarString* dir) {
 		test->out_file.is
 	) {
 		// TODO: Компилировать и собирать исполняемый файл в отдельном каталоге.
-		bool generatorResult = kar_analyzer_run(project) && kar_generator_run(project->module);
+        bool generatorResult = kar_analyzer_run(project) && kar_generator_run(project->module, project->errors);
 		if (generatorResult) {
 			if (test->compiler_error_file.is) {
 				kar_project_free(project);

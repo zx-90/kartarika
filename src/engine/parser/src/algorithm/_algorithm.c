@@ -9,18 +9,18 @@
 #include "parser/base.h"
 
 KarParserStatus kar_parser_make_algo_expression(KarToken* token);
-KarParserStatus kar_parser_make_return(KarToken* token, KarProjectErrorList* errors);
-KarParserStatus kar_parser_make_declaration(KarToken* token, KarProjectErrorList* errors);
-KarParserStatus kar_parser_make_assign(KarToken* token, KarProjectErrorList* errors);
+KarParserStatus kar_parser_make_return(KarToken* token, KarString* moduleName, KarProjectErrorList* errors);
+KarParserStatus kar_parser_make_declaration(KarToken* token, KarString* moduleName, KarProjectErrorList* errors);
+KarParserStatus kar_parser_make_assign(KarToken* token, KarString* moduleName, KarProjectErrorList* errors);
 
-KarParserStatus kar_parser_make_block(KarToken* token, KarProjectErrorList* errors);
-KarParserStatus kar_parser_make_empty_block(KarToken* token, KarProjectErrorList* errors);
-KarParserStatus kar_parser_make_clean(KarToken* parent, size_t commandNum, KarProjectErrorList* errors);
-KarParserStatus kar_parser_make_if(KarToken* parent, size_t commandNum, KarProjectErrorList* errors);
-KarParserStatus kar_parser_make_while(KarToken* token, KarProjectErrorList* errors);
-KarParserStatus kar_parser_make_break(KarToken* token, KarProjectErrorList* errors);
+KarParserStatus kar_parser_make_block(KarToken* token, KarString* moduleName, KarProjectErrorList* errors);
+KarParserStatus kar_parser_make_empty_block(KarToken* token, KarString* moduleName, KarProjectErrorList* errors);
+KarParserStatus kar_parser_make_clean(KarToken* parent, size_t commandNum, KarString* moduleName, KarProjectErrorList* errors);
+KarParserStatus kar_parser_make_if(KarToken* parent, size_t commandNum, KarString* moduleName, KarProjectErrorList* errors);
+KarParserStatus kar_parser_make_while(KarToken* token, KarString* moduleName, KarProjectErrorList* errors);
+KarParserStatus kar_parser_make_break(KarToken* token, KarString* moduleName, KarProjectErrorList* errors);
 
-bool kar_parser_parse_command(KarToken* parent, size_t commandNum, KarProjectErrorList* errors) {
+bool kar_parser_parse_command(KarToken* parent, size_t commandNum, KarString* moduleName, KarProjectErrorList* errors) {
 	KarParserStatus status;
 	KarToken* token = kar_token_child_get(parent, commandNum);
 	
@@ -31,70 +31,70 @@ bool kar_parser_parse_command(KarToken* parent, size_t commandNum, KarProjectErr
 		return false;
 	}
 	
-	status = kar_parser_make_return(token, errors);
+    status = kar_parser_make_return(token, moduleName, errors);
 	if (status == KAR_PARSER_STATUS_PARSED) {
 		return true;
 	} else if (status == KAR_PARSER_STATUS_ERROR) {
 		return false;
 	}
 	
-	status = kar_parser_make_declaration(token, errors);
+    status = kar_parser_make_declaration(token, moduleName, errors);
 	if (status == KAR_PARSER_STATUS_PARSED) {
 		return true;
 	} else if (status == KAR_PARSER_STATUS_ERROR) {
 		return false;
 	}
 	
-	status = kar_parser_make_assign(token, errors);
+    status = kar_parser_make_assign(token, moduleName, errors);
 	if (status == KAR_PARSER_STATUS_PARSED) {
 		return true;
 	} else if (status == KAR_PARSER_STATUS_ERROR) {
 		return false;
 	}
 	
-	status = kar_parser_make_block(token, errors);
+    status = kar_parser_make_block(token, moduleName, errors);
 	if (status == KAR_PARSER_STATUS_PARSED) {
 		return true;
 	} else if (status == KAR_PARSER_STATUS_ERROR) {
 		return false;
 	}
 	
-	status = kar_parser_make_clean(parent, commandNum, errors);
+    status = kar_parser_make_clean(parent, commandNum, moduleName, errors);
 	if (status == KAR_PARSER_STATUS_PARSED) {
 		return true;
 	} else if (status == KAR_PARSER_STATUS_ERROR) {
 		return false;
 	}
 	
-	status = kar_parser_make_if(parent, commandNum, errors);
+    status = kar_parser_make_if(parent, commandNum, moduleName, errors);
 	if (status == KAR_PARSER_STATUS_PARSED) {
 		return true;
 	} else if (status == KAR_PARSER_STATUS_ERROR) {
 		return false;
 	}
 	
-	status = kar_parser_make_while(token, errors);
+    status = kar_parser_make_while(token, moduleName, errors);
 	if (status == KAR_PARSER_STATUS_PARSED) {
 		return true;
 	} else if (status == KAR_PARSER_STATUS_ERROR) {
 		return false;
 	}
 	
-	status = kar_parser_make_break(token, errors);
+    status = kar_parser_make_break(token, moduleName, errors);
 	if (status == KAR_PARSER_STATUS_PARSED) {
 		return true;
 	} else if (status == KAR_PARSER_STATUS_ERROR) {
 		return false;
 	}
 	
-	kar_project_error_list_create_add(errors, &token->cursor, 1, "Неизвестная команда алгоритма.");
+    kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Неизвестная команда алгоритма.");
 	return false;
 }
 
-bool kar_parser_parse_algorithm(KarToken* token, KarProjectErrorList* errors) {
+bool kar_parser_parse_algorithm(KarToken* token, KarString* moduleName, KarProjectErrorList* errors) {
 	KarParserStatus status;
 	
-	status = kar_parser_make_empty_block(token, errors);
+    status = kar_parser_make_empty_block(token, moduleName, errors);
 	if (status == KAR_PARSER_STATUS_PARSED) {
 		return true;
 	} else if (status == KAR_PARSER_STATUS_ERROR) {
@@ -103,7 +103,7 @@ bool kar_parser_parse_algorithm(KarToken* token, KarProjectErrorList* errors) {
 	
 	bool b = true;
 	for (size_t i = 0; i < kar_token_child_count(token); ++i) {
-		b = kar_parser_parse_command(token, i, errors) && b;
+        b = kar_parser_parse_command(token, i, moduleName, errors) && b;
 	}
 	return b;
 }

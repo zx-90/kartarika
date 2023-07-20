@@ -16,7 +16,7 @@
 #include "lexer/keyword.h"
 #include "lexer/check_alphabet.h"
 
-KarFirstLexer* kar_first_lexer_create(KarStream* stream, KarModule* module) {
+KarFirstLexer* kar_first_lexer_create(KarStream* stream, KarModule* module, KarProjectErrorList *errors) {
 	KAR_CREATE(lexer, KarFirstLexer);
 	
 	lexer->streamCursor = kar_stream_cursor_create(stream);
@@ -27,6 +27,7 @@ KarFirstLexer* kar_first_lexer_create(KarStream* stream, KarModule* module) {
 	kar_token_set_str(lexer->current, "");
 	
 	lexer->module = module;
+    lexer->errors = errors;
 	lexer->status = KAR_LEXER_STATUS_INDENT;
 	
 	return lexer;
@@ -40,7 +41,13 @@ void kar_first_lexer_free(KarFirstLexer* lexer) {
 
 // -----------------------------------
 static void set_error(KarFirstLexer* lexer, int code, const KarString* description) {
-	kar_project_error_list_create_add(lexer->module->errors, &lexer->streamCursor->cursor, code, description);
+    kar_project_error_list_create_add(
+        lexer->errors,
+        kar_module_get_full_name(lexer->module),
+        &lexer->streamCursor->cursor,
+        code,
+        description
+    );
 }
 
 static const KarString* SPACES[] = {
@@ -388,5 +395,5 @@ bool kar_first_lexer_run(KarFirstLexer* lexer) {
 		}
 	}
 	push_token(lexer);
-	return kar_project_error_list_count(lexer->module->errors) == 0;
+    return kar_project_error_list_count(lexer->errors) == 0;
 }

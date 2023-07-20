@@ -9,9 +9,10 @@
 #include "core/alloc.h"
 #include "core/string.h"
 
-KarProjectError* kar_project_error_create(KarCursor* cursor, int code, const KarString* description) {
+KarProjectError* kar_project_error_create(KarString *moduleName, KarCursor* cursor, int code, const KarString* description) {
 	KAR_CREATE(error, KarProjectError);
 	
+    error->moduleName = kar_string_create(moduleName);
 	error->cursor = *cursor;
 	error->code = code;
 	error->description = kar_string_create(description);
@@ -20,13 +21,16 @@ KarProjectError* kar_project_error_create(KarCursor* cursor, int code, const Kar
 }
 
 void kar_project_error_free(KarProjectError* error) {
+    /*if (error->moduleName != NULL) {
+        KAR_FREE(error->moduleName);
+    }*/
 	kar_string_free(error->description);
 	KAR_FREE(error);
 }
 
-void kar_project_error_print(const KarString* module_name, KarProjectError* error) {
+void kar_project_error_print(KarProjectError* error) {
 	fprintf(stdout, "Ошибка номер %d\n", error->code);
-	fprintf(stdout, "\tМодуль: %s\n", module_name);
+    fprintf(stdout, "\tМодуль: %s\n", error->moduleName);
 	fprintf(stdout, "\tСтрока %d, столбец %d\n", error->cursor.line, error->cursor.column);
 	fprintf(stdout, "\t%s\n", error->description);
 	fflush(stdout);

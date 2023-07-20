@@ -9,6 +9,6 @@
 
 #include "model/module.h"
 
-bool kar_second_lexer_run(KarModule* module);
+bool kar_second_lexer_run(KarModule* module, KarProjectErrorList* errors);
 
 #endif // KAR_SECOND_LEXER_H

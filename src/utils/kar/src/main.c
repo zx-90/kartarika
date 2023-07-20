@@ -26,15 +26,15 @@ int main(int argc, char** argv) {
 	KarStream* file = kar_stream_create(filename);
 	KarProject* project = kar_project_create(filename);
 	
-	if (!kar_lexer_run(file, project->module)) {
+    if (!kar_lexer_run(file, project->module, project->errors)) {
 		fprintf(stderr, "Ошибка при парсинге файла в лексере.\n");
-		kar_module_print_errors(project->module);
+        kar_project_error_list_print(project->errors);
 		kar_project_free(project);
 		kar_stream_free(file);
 		return 1;
 	}
 	
-	if (!kar_parser_run(project->module)) {
+    if (!kar_parser_run(project->module, project->errors)) {
 		fprintf(stderr, "Ошибка при парсинге файла в парсере.\n");
 		kar_project_free(project);
 		kar_stream_free(file);
@@ -44,15 +44,15 @@ int main(int argc, char** argv) {
 	
 	if (!kar_analyzer_run(project)) {
 		fprintf(stderr, "Ошибка при генерации исполняемого файла.\n");
-		kar_module_print_errors(project->module);
+        kar_project_error_list_print(project->errors);
 		kar_project_free(project);
 		kar_stream_free(file);
 		return 1;
 	}
 	
-	if (!kar_generator_run(project->module)) {
+    if (!kar_generator_run(project->module, project->errors)) {
 		fprintf(stderr, "Ошибка при генерации исполняемого файла.\n");
-		kar_module_print_errors(project->module);
+        kar_project_error_list_print(project->errors);
 		kar_project_free(project);
 		kar_stream_free(file);
 		return 1;

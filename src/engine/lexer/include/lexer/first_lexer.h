@@ -23,10 +23,11 @@ typedef struct {
 	KarStreamCursor* streamCursor;
 	KarLexerStatus status;
 	KarModule* module;
+    KarProjectErrorList* errors;
 	KarToken* current;
 } KarFirstLexer;
 
-KarFirstLexer* kar_first_lexer_create(KarStream* stream, KarModule* module);
+KarFirstLexer* kar_first_lexer_create(KarStream* stream, KarModule* module, KarProjectErrorList* errors);
 void kar_first_lexer_free(KarFirstLexer* lexer);
 
 bool kar_first_lexer_run(KarFirstLexer* lexer);

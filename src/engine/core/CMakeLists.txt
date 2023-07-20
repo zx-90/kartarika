@@ -13,7 +13,6 @@ src/string.c
 src/string_list.c
 src/unicode.c
 ${lib_core_SRC_system}
-src/error.c
 src/stack.c
 
 src/cursor.c

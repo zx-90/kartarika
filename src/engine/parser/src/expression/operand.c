@@ -29,7 +29,7 @@ static bool is_token_type_in_list(KarTokenType type, size_t num, const KarTokenT
 // Операторы с двумя операндами (А оп Б).
 // ----------------------------------------------------------------------------
 
-static bool make_two_operators(KarToken* token, size_t num, const KarTokenType* operands, KarProjectErrorList* errors) {
+static bool make_two_operators(KarToken* token, size_t num, const KarTokenType* operands, KarString* moduleName, KarProjectErrorList* errors) {
 	for (size_t i = 0; i < kar_token_child_count(token); ++i) {
 		KarToken* child = kar_token_child_get(token, i);
 		if (!is_token_type_in_list(child->type, num, operands)) {
@@ -37,25 +37,25 @@ static bool make_two_operators(KarToken* token, size_t num, const KarTokenType* 
 		}
 		
 		if (i == 0) {
-			kar_project_error_list_create_add(errors, &child->cursor, 1, "Нет первого операнда у операции.");
+            kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Нет первого операнда у операции.");
 			return false;
 		}
 		if (i == kar_token_child_count(token) - 1) {
-			kar_project_error_list_create_add(errors, &child->cursor, 1, "Нет второго операнда у операции.");
+            kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Нет второго операнда у операции.");
 			return false;
 		}
 		KarToken* first = kar_token_child_get(token, i - 1);
 		KarToken* second = kar_token_child_get(token, i + 1);
 		if (!kar_parser_is_expression(first->type)) {
-			kar_project_error_list_create_add(errors, &child->cursor, 1, "Первый оператор не корректен.");
+            kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Первый оператор не корректен.");
 			return false;
 		}
 		if (!kar_parser_is_expression(second->type)) {
-			kar_project_error_list_create_add(errors, &child->cursor, 1, "Второй оператор не корректен.");
+            kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Второй оператор не корректен.");
 			return false;
 		}
 		if (is_token_type_in_list(second->type, num, operands)) {
-			kar_project_error_list_create_add(errors, &child->cursor, 1, "Следующий операнд того же порядка что и текущий.");
+            kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Следующий операнд того же порядка что и текущий.");
 			return false;
 		}
 		kar_token_child_tear(token, i + 1);
@@ -67,21 +67,21 @@ static bool make_two_operators(KarToken* token, size_t num, const KarTokenType* 
 	return true;
 }
 
-static bool foreach_two_operators(KarToken* token, size_t num, const KarTokenType* operands, KarProjectErrorList* errors) 
+static bool foreach_two_operators(KarToken* token, size_t num, const KarTokenType* operands, KarString* moduleName, KarProjectErrorList* errors)
 {
 	for (size_t i = 0; i < kar_token_child_count(token); i++) {
-		if (!foreach_two_operators(kar_token_child_get(token, i), num, operands, errors)) {
+        if (!foreach_two_operators(kar_token_child_get(token, i), num, operands, moduleName, errors)) {
 			return false;
 		}
 	}
-	return make_two_operators(token, num, operands, errors);
+    return make_two_operators(token, num, operands, moduleName, errors);
 }
 
 // ----------------------------------------------------------------------------
 // Операторы с операндом перед оператором (А оп).
 // ----------------------------------------------------------------------------
 
-static bool make_operator_before(KarToken* token, KarTokenType operator, KarProjectErrorList* errors) {
+static bool make_operator_before(KarToken* token, KarTokenType operator, KarString* moduleName, KarProjectErrorList* errors) {
 	for (size_t i = 0; i < kar_token_child_count(token); ++i) {
 		KarToken* child = kar_token_child_get(token, i);
 		if (child->type != operator) {
@@ -89,14 +89,14 @@ static bool make_operator_before(KarToken* token, KarTokenType operator, KarProj
 		}
 		if (i == 0) {
 			KarString* error_text = kar_string_create_format("Нет первого операнда у операции \"%s\".", child->str);
-			kar_project_error_list_create_add(errors, &child->cursor, 1, error_text);
+            kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, error_text);
 			KAR_FREE(error_text);
 			return false;
 		}
 		
 		KarToken* operator = kar_token_child_get(token, i - 1);
 		if (!kar_parser_is_expression(operator->type)) {
-			kar_project_error_list_create_add(errors, &child->cursor, 1, "Оператор не корректен.");
+            kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Оператор не корректен.");
 			return false;
 		}
 		
@@ -107,21 +107,21 @@ static bool make_operator_before(KarToken* token, KarTokenType operator, KarProj
 	return true;
 }
 
-static bool foreach_operator_before(KarToken* token, KarTokenType operator, KarProjectErrorList* errors) 
+static bool foreach_operator_before(KarToken* token, KarTokenType operator, KarString* moduleName, KarProjectErrorList* errors)
 {
 	for (size_t i = 0; i < kar_token_child_count(token); i++) {
-		if (!foreach_operator_before(kar_token_child_get(token, i), operator, errors)) {
+        if (!foreach_operator_before(kar_token_child_get(token, i), operator, moduleName, errors)) {
 			return false;
 		}
 	}
-	return make_operator_before(token, operator, errors);
+    return make_operator_before(token, operator, moduleName, errors);
 }
 
 // ----------------------------------------------------------------------------
 // Операторы с операндом перед оператором (оп А).
 // ----------------------------------------------------------------------------
 
-static bool make_operator_after(KarToken* token, size_t op_num, const KarTokenType* operands, KarProjectErrorList* errors) {
+static bool make_operator_after(KarToken* token, size_t op_num, const KarTokenType* operands, KarString* moduleName, KarProjectErrorList* errors) {
 	for (size_t num = kar_token_child_count(token); num > 0; --num) {
 		size_t i = num - 1;
 		KarToken* child = kar_token_child_get(token, i);
@@ -130,14 +130,14 @@ static bool make_operator_after(KarToken* token, size_t op_num, const KarTokenTy
 		}
 		if (i == kar_token_child_count(token) - 1) {
 			KarString* error_text = kar_string_create_format("Нет операнда у операции \"%s\".", child->str);
-			kar_project_error_list_create_add(errors, &child->cursor, 1, error_text);
+            kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, error_text);
 			KAR_FREE(error_text);
 			return false;
 		}
 		
 		KarToken* operator = kar_token_child_get(token, i + 1);
 		if (!kar_parser_is_expression(operator->type)) {
-			kar_project_error_list_create_add(errors, &child->cursor, 1, "Оператор не корректен.");
+            kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Оператор не корректен.");
 			return false;
 		}
 		
@@ -147,14 +147,14 @@ static bool make_operator_after(KarToken* token, size_t op_num, const KarTokenTy
 	return true;
 }
 
-static bool foreach_operator_after(KarToken* token, size_t op_num, const KarTokenType* operands, KarProjectErrorList* errors) 
+static bool foreach_operator_after(KarToken* token, size_t op_num, const KarTokenType* operands, KarString* moduleName, KarProjectErrorList* errors)
 {
 	for (size_t i = 0; i < kar_token_child_count(token); i++) {
-		if (!foreach_operator_after(kar_token_child_get(token, i), op_num, operands, errors)) {
+        if (!foreach_operator_after(kar_token_child_get(token, i), op_num, operands, moduleName, errors)) {
 			return false;
 		}
 	}
-	return make_operator_after(token, op_num, operands, errors);
+    return make_operator_after(token, op_num, operands, moduleName, errors);
 }
 
 // ----------------------------------------------------------------------------
@@ -284,28 +284,28 @@ static const KarTokenType OPERAND_LIST_OR[] = {
 };
 static size_t OPERAND_LIST_OR_SIZE = sizeof(OPERAND_LIST_OR) / sizeof(KarTokenType);
 
-bool kar_parser_make_operands(KarToken* token, KarProjectErrorList* errors)
+bool kar_parser_make_operands(KarToken* token, KarString* moduleName, KarProjectErrorList* errors)
 {
 	bool b = true;
 	
-	b = b && foreach_operator_before(token, KAR_TOKEN_SIGN_UNCLEAN, errors);
-	b = b && foreach_two_operators(token, OPERAND_LIST_CLEAN_SIZE, OPERAND_LIST_CLEAN, errors);
+    b = b && foreach_operator_before(token, KAR_TOKEN_SIGN_UNCLEAN, moduleName, errors);
+    b = b && foreach_two_operators(token, OPERAND_LIST_CLEAN_SIZE, OPERAND_LIST_CLEAN, moduleName, errors);
 	
 	b = b && foreach_find_single(token, errors);
-	b = b && foreach_operator_after(token, OPERAND_LIST_SINGLE_NOT_SIZE, OPERAND_LIST_SINGLE_NOT, errors);
+    b = b && foreach_operator_after(token, OPERAND_LIST_SINGLE_NOT_SIZE, OPERAND_LIST_SINGLE_NOT, moduleName, errors);
 
-	b = b && foreach_two_operators(token, OPERAND_LIST_MUL_DIV_SIZE, OPERAND_LIST_MUL_DIV, errors);
-	b = b && foreach_two_operators(token, OPERAND_LIST_PLUS_MINUS_SIZE, OPERAND_LIST_PLUS_MINUS, errors);
+    b = b && foreach_two_operators(token, OPERAND_LIST_MUL_DIV_SIZE, OPERAND_LIST_MUL_DIV, moduleName, errors);
+    b = b && foreach_two_operators(token, OPERAND_LIST_PLUS_MINUS_SIZE, OPERAND_LIST_PLUS_MINUS, moduleName, errors);
 	
-	b = b && foreach_two_operators(token, OPERAND_LIST_RIGHT_LEFT_SIZE, OPERAND_LIST_RIGHT_LEFT, errors);
-	b = b && foreach_two_operators(token, OPERAND_LIST_GREATER_LESS_SIZE, OPERAND_LIST_GREATER_LESS, errors);
-	b = b && foreach_two_operators(token, OPERAND_LIST_EQUAL_NOT_EQUAL_SIZE, OPERAND_LIST_EQUAL_NOT_EQUAL, errors);
+    b = b && foreach_two_operators(token, OPERAND_LIST_RIGHT_LEFT_SIZE, OPERAND_LIST_RIGHT_LEFT, moduleName, errors);
+    b = b && foreach_two_operators(token, OPERAND_LIST_GREATER_LESS_SIZE, OPERAND_LIST_GREATER_LESS, moduleName, errors);
+    b = b && foreach_two_operators(token, OPERAND_LIST_EQUAL_NOT_EQUAL_SIZE, OPERAND_LIST_EQUAL_NOT_EQUAL, moduleName, errors);
 
-	b = b && foreach_two_operators(token, OPERAND_LIST_BIT_AND_SIZE, OPERAND_LIST_BIT_AND, errors);
-	b = b && foreach_two_operators(token, OPERAND_LIST_BIT_XOR_SIZE, OPERAND_LIST_BIT_XOR, errors);
-	b = b && foreach_two_operators(token, OPERAND_LIST_BIT_OR_SIZE, OPERAND_LIST_BIT_OR, errors);
-	b = b && foreach_two_operators(token, OPERAND_LIST_AND_SIZE, OPERAND_LIST_AND, errors);
-	b = b && foreach_two_operators(token, OPERAND_LIST_OR_SIZE, OPERAND_LIST_OR, errors);
+    b = b && foreach_two_operators(token, OPERAND_LIST_BIT_AND_SIZE, OPERAND_LIST_BIT_AND, moduleName, errors);
+    b = b && foreach_two_operators(token, OPERAND_LIST_BIT_XOR_SIZE, OPERAND_LIST_BIT_XOR, moduleName, errors);
+    b = b && foreach_two_operators(token, OPERAND_LIST_BIT_OR_SIZE, OPERAND_LIST_BIT_OR, moduleName, errors);
+    b = b && foreach_two_operators(token, OPERAND_LIST_AND_SIZE, OPERAND_LIST_AND, moduleName, errors);
+    b = b && foreach_two_operators(token, OPERAND_LIST_OR_SIZE, OPERAND_LIST_OR, moduleName, errors);
 	
 	return b;
 }

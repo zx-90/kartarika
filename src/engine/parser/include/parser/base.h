@@ -21,6 +21,6 @@ bool kar_token_is_type(KarTokenType type);
 bool kar_parser_check_ifelse(KarToken* token);
 bool kar_parser_check_else(KarToken* token);
 
-bool kar_parser_parse_algorithm(KarToken* token, KarProjectErrorList* errors);
+bool kar_parser_parse_algorithm(KarToken* token, KarString* moduleName, KarProjectErrorList* errors);
 
 #endif // KAR_PARSER_BASE_H

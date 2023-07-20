@@ -7,6 +7,7 @@ set(tester_SRC
 src/main.c
 src/test_suite.c
 src/test.c
+src/error.c
 
 )
 

@@ -15,14 +15,15 @@
 
 // TODO: Возможно надо добавить имя модуля или другую привязку к модулю.
 typedef struct {
+    KarString* moduleName;
 	KarCursor cursor;
 	int code;
 	KarString* description;
 } KarProjectError;
 
-KarProjectError* kar_project_error_create(KarCursor* cursor, int code, const KarString* description);
+KarProjectError* kar_project_error_create(KarString* moduleName, KarCursor* cursor, int code, const KarString* description);
 void kar_project_error_free(KarProjectError* error);
 
-void kar_project_error_print(const KarString* module_name, KarProjectError* error);
+void kar_project_error_print(KarProjectError* error);
 
 #endif // KAR_PROJECT_ERROR_H

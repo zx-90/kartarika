@@ -23,11 +23,11 @@ static bool is_empty_line(KarToken* token) {
 	return true;
 }
 
-bool kar_parser_split_by_lines(KarToken* token, KarProjectErrorList* errors)
+bool kar_parser_split_by_lines(KarToken* token, KarString* moduleName, KarProjectErrorList* errors)
 {
 	if (kar_token_child_count(token) < 1 || kar_token_child_get(token, 0)->type != KAR_TOKEN_INDENT)
 	{
-		kar_project_error_list_create_add(errors, 0, 1, "Внутрення ошибка. В модуле нет ни одного токена.");
+        kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Внутрення ошибка. В модуле нет ни одного токена.");
 		return false;
 	}
 	

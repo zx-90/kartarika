@@ -6,8 +6,8 @@ mkdir -p _build
 
 pushd _build
 
-#cmake ..
-cmake -DCMAKE_BUILD_TYPE=Debug .
+cmake ..
+#cmake -DCMAKE_BUILD_TYPE=Debug .
 cmake --build .
 
 popd

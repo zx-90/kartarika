@@ -9,6 +9,6 @@
 
 #include "model/module.h"
 
-bool kar_generator_run(KarModule* module);
+bool kar_generator_run(KarModule* module, KarProjectErrorList* errors);
 
 #endif // KAR_GENERATOR_H

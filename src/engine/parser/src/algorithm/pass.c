@@ -8,7 +8,7 @@
 #include "model/project_error_list.h"
 #include "parser/base.h"
 
-KarParserStatus kar_parser_make_empty_block(KarToken* token, KarProjectErrorList* errors) {
+KarParserStatus kar_parser_make_empty_block(KarToken* token, KarString* moduleName, KarProjectErrorList* errors) {
 	// TODO: Написать тесты на команду пропустить.
 	// TODO: Заменить токен INDENT на токен COMMAND_PASS.
 	if (kar_token_child_count(token) != 1) {
@@ -22,11 +22,11 @@ KarParserStatus kar_parser_make_empty_block(KarToken* token, KarProjectErrorList
 	}
 	
 	if (tokenNum != 0) {
-		kar_project_error_list_create_add(errors, &command->cursor, 1, "Неизвестные токены перед командой пропустить.");
+        kar_project_error_list_create_add(errors, moduleName, &command->cursor, 1, "Неизвестные токены перед командой пропустить.");
 		return KAR_PARSER_STATUS_ERROR;
 	}
 	if (kar_token_child_count(command) > 1) {
-		kar_project_error_list_create_add(errors, &kar_token_child_get(command, 1)->cursor, 1, "Неизвестные токены после команды пропустить.");
+        kar_project_error_list_create_add(errors, moduleName, &kar_token_child_get(command, 1)->cursor, 1, "Неизвестные токены после команды пропустить.");
 		return KAR_PARSER_STATUS_ERROR;
 	}
 	

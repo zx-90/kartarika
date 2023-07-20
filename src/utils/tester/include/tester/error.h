@@ -9,7 +9,7 @@
 
 #include <stddef.h>
 
-#include "string.h"
+#include "core/string.h"
 
 typedef struct {
 	size_t number;

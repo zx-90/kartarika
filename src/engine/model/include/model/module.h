@@ -16,12 +16,11 @@
 typedef struct {
 	KarString* name;
 	KarToken* token;
-	KarProjectErrorList* errors;
 } KarModule;
 
 KarModule* kar_module_create(const KarString* name);
 void kar_module_free(KarModule* module);
 
-void kar_module_print_errors(KarModule* module);
+KarString* kar_module_get_full_name(KarModule* module);
 
 #endif // KAR_MODULE_H

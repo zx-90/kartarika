@@ -10,6 +10,6 @@
 #include "core/stream.h"
 #include "model/module.h"
 
-bool kar_lexer_run(KarStream* stream, KarModule* module);
+bool kar_lexer_run(KarStream* stream, KarModule* module, KarProjectErrorList* errors);
 
 #endif // KAR_LEXER_H

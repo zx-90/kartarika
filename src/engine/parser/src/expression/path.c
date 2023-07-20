@@ -10,7 +10,7 @@
 #include "model/project_error_list.h"
 #include "parser/base.h"
 
-static bool make_path(KarToken* token, KarProjectErrorList* errors) {
+static bool make_path(KarToken* token, KarString* moduleName, KarProjectErrorList* errors) {
 	for (size_t i = kar_token_child_count(token); i > 0; --i) {
 		size_t num = i - 1;
 		KarToken* child = kar_token_child_get(token, num);
@@ -19,21 +19,21 @@ static bool make_path(KarToken* token, KarProjectErrorList* errors) {
 		}
 		
 		if (num == 0) {
-			kar_project_error_list_create_add(errors, &child->cursor, 1, "Нет первого операнда у операции \".\".");
+            kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Нет первого операнда у операции \".\".");
 			return false;
 		}
 		if (num == kar_token_child_count(token) - 1) {
-			kar_project_error_list_create_add(errors, &child->cursor, 1, "Нет второго операнда у операции \"+\".");
+            kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Нет второго операнда у операции \"+\".");
 			return false;
 		}
 		KarToken* first = kar_token_child_get(token, num - 1);
 		KarToken* second = kar_token_child_get(token, num + 1);
 		if (!kar_parser_is_expression(first->type)) {
-			kar_project_error_list_create_add(errors, &child->cursor, 1, "У операции \".\" нет первого операнда или он не корректен.");
+            kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "У операции \".\" нет первого операнда или он не корректен.");
 			return false;
 		}
 		if (!kar_parser_is_expression(second->type)) {
-			kar_project_error_list_create_add(errors, &child->cursor, 1, "У операции \".\" нет второго операнда или он не корректен.");
+            kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "У операции \".\" нет второго операнда или он не корректен.");
 			return false;
 		}
 		kar_token_child_tear(token, num + 1);
@@ -45,17 +45,17 @@ static bool make_path(KarToken* token, KarProjectErrorList* errors) {
 	return true;
 }
 
-static bool foreach(KarToken* token, KarProjectErrorList* errors) 
+static bool foreach(KarToken* token, KarString* moduleName, KarProjectErrorList* errors)
 {
 	for (size_t i = 0; i < kar_token_child_count(token); i++) {
-		if (!foreach(kar_token_child_get(token, i), errors)) {
+        if (!foreach(kar_token_child_get(token, i), moduleName, errors)) {
 			return false;
 		}
 	}
-	return make_path(token, errors);
+    return make_path(token, moduleName, errors);
 }
 
-bool kar_parser_make_path(KarToken* token, KarProjectErrorList* errors)
+bool kar_parser_make_path(KarToken* token, KarString* moduleName, KarProjectErrorList* errors)
 {
-	return foreach(token, errors);
+    return foreach(token, moduleName, errors);
 }

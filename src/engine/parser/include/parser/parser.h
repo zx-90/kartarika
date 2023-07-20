@@ -11,6 +11,6 @@
 
 #include "model/module.h"
 
-bool kar_parser_run(KarModule* module);
+bool kar_parser_run(KarModule* module, KarProjectErrorList* errors);
 
 #endif // KAR_PARSER_H
