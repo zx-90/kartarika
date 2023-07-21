@@ -35,36 +35,35 @@ static bool print(const KarString* out, LLVMModuleRef module, LLVMBuilderRef bui
 	return true;
 }
 
-static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder) {
+static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder, KarString* moduleName, KarProjectErrorList* errors) {
 	if (token->type != KAR_TOKEN_COMMAND_EXPRESSION) {
-		// TODO: Здесь и дальше вместо printf-error необходимо добавить описания ошибок в kar_module_error.
-		printf("ERROR 1\n");
+        kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Токен не является командой.");
 		return false;
 	}
 	const KarToken* child1 = kar_token_child_get(token, 0);
 	if (!kar_token_check_type(child1, KAR_TOKEN_SIGN_GET_FIELD)) {
-		printf("ERROR 2\n");
-		return false;
+        kar_project_error_list_create_add(errors, moduleName, &child1->cursor, 1, "Внутренняя ошибка. Токен команды не имеет потомков.");
+        return false;
 	}
 	const KarToken* child2 = kar_token_child_get(child1, 0);
     if (!kar_token_check_type_name(child2, KAR_TOKEN_IDENTIFIER, "Консоль")) {
-		printf("ERROR 3\n");
-		return false;
+        kar_project_error_list_create_add(errors, moduleName, &child2->cursor, 1, "Поддерживается только модуль \"Консоль\".");
+        return false;
 	}
 	const KarToken* child3 = kar_token_child_get(child1, 1);
 	if (!kar_token_check_type(child3, KAR_TOKEN_SIGN_CALL_METHOD)) {
-		printf("ERROR 4\n");
-		return false;
+        kar_project_error_list_create_add(errors, moduleName, &child3->cursor, 1, "В модуле \"Консоль\" поддерживается только вызов метода.");
+        return false;
 	}
 	const KarToken* child4a = kar_token_child_get(child3, 0);
     if (!kar_token_check_type_name(child4a, KAR_TOKEN_IDENTIFIER, "Вывод")) {
-		printf("ERROR 5\n");
-		return false;
+        kar_project_error_list_create_add(errors, moduleName, &child4a->cursor, 1, "Поддерживается только метод \"Консоль.Вывод()\".");
+        return false;
 	}
 	const KarToken* child4 = kar_token_child_get(child3, 1);
 	if (!kar_token_check_type(child4, KAR_TOKEN_SIGN_ARGUMENT)) {
-		printf("ERROR 6\n");
-		return false;
+        kar_project_error_list_create_add(errors, moduleName, &child4->cursor, 1, "Отсутствуют аргументы у метода \"Консоль.Вывод()\".");
+        return false;
 	}
 	const KarToken* child5 = kar_token_child_get(child4, 0);
 	
@@ -76,25 +75,25 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 		// TODO: Эту проверку необходимо перенести в анализатор.
 		// TODO: Проверку надо более тщательно организовать. Сейчас работает только проверка на длину строки.
 		if (strlen(child5->str) > 11) {
-			printf("ERROR 7\n");
-			return false;
+            kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Слишком большое число.");
+            return false;
 		}
 		int32_t val;
 		if (1 != sscanf(child5->str, "%"SCNd32, &val)) {
-			printf("ERROR 8\n");
-			return false;
+            kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Не корректное число.");
+            return false;
 		}
 		return print(child5->str, module, builder);
 	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_HEXADECIMAL)) {
 		// TODO: Эту проверку необходимо перенести в анализатор.
 		if (strlen(child5->str) > 7) {
-			printf("ERROR 9\n");
-			return false;
+            kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Слишком большое шестнадцатеричное число.");
+            return false;
 		}
 		uint32_t val;
 		if (1 != sscanf(child5->str + 3, "%x", &val)) {
-			printf("ERROR 10\n");
-			return false;
+            kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Не корректное шестнадцатеричное число.");
+            return false;
 		}
 		KarString textToWrite[16];
 		sprintf(textToWrite,"%"SCNu32, val);
@@ -117,14 +116,14 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 			KAR_FREE(tmp2);
 			KAR_FREE(tmp3);
 			if (isnan(d) || isinf(d)) {
-				printf("ERROR 11\n");
-				return false;
+                kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Не корректное дробное число.");
+                return false;
 			}
 		}
 		
 		if (errno == ERANGE) {
-			printf("ERROR 12\n");
-			return false;
+            kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Не корректное дробное число.");
+            return false;
 		}
 		
 		double absd = fabs(d);
@@ -153,8 +152,8 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 			return result;
 		}
 		
-		printf("ERROR 13\n");
-		return false;
+        kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Не корректное дробное число.");
+        return false;
 	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_NAN)) {
 		return print("НеЧисло", module, builder);
 	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_INFINITY)) {
@@ -165,11 +164,11 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
 		return print(child5->str, module, builder);
 	}
 	
-		printf("ERROR 14\n");
-	return false;
+    kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Тип аргумента функции не соответствует ожидаемому.");
+    return false;
 }
 	
-static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder) {
+static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder, KarString* moduleName, KarProjectErrorList* errors) {
 	if (token->type != KAR_TOKEN_METHOD) {
 		return false;
 	}
@@ -182,7 +181,7 @@ static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilder
 		KarToken* body = kar_token_child_get_last(token, 0);
 	
 		for (size_t i = 0; i < kar_token_child_count(body); ++i) {
-			if (!generate_identifier(kar_token_child_get(body, i), module, builder)) {
+            if (!generate_identifier(kar_token_child_get(body, i), module, builder, moduleName, errors)) {
 				LLVMBuildRetVoid(builder);
 				return false;
 			}
@@ -190,25 +189,26 @@ static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilder
 		LLVMBuildRetVoid(builder);
 	} else {
 		// Далее здесь необходимо дописать поддержку других методов.
-		printf("ERROR 15\n");
+        kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Методы не поддерживаются. Поддерживается только метод \"Запустить\".");
 		return false;
 	}
 	return true;
 }
 	
-static bool generate_module(const KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder) {
+static bool generate_module(KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder, KarString* moduleName, KarProjectErrorList* errors) {
 	if (token->type != KAR_TOKEN_MODULE) {
-		printf("ERROR 16\n");
+        kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Внутрення ошибка. Токен не является типом модуль.");
 		return false;
 	}
 	for (size_t i = 0; i < kar_token_child_count(token); ++i) {
-		if (kar_token_child_get(token, i)->type == KAR_TOKEN_METHOD) {
-			if (!generate_function(kar_token_child_get(token, i), module, builder)) {
+        KarToken* child = kar_token_child_get(token, i);
+        if (child->type == KAR_TOKEN_METHOD) {
+            if (!generate_function(kar_token_child_get(token, i), module, builder, moduleName, errors)) {
 				return false;
 			}
 		} else {
-			printf("ERROR 17\n");
-			return false;
+            kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Внутрення ошибка. Токен не является корневым элементом.");
+            return false;
 		}
 	}
 	return true;
@@ -240,7 +240,7 @@ bool kar_generator_run(KarModule* mod, KarProjectErrorList* errors) {
 	LLVMModuleRef module = LLVMModuleCreateWithNameInContext("asdf", context);
 	LLVMBuilderRef builder = LLVMCreateBuilderInContext(context);
 	
-	if (!generate_module(mod->token, module, builder)) {
+    if (!generate_module(mod->token, module, builder, mod->name, errors)) {
         kar_project_error_list_create_add(errors, mod->name, &mod->token->cursor, 1, "Ошибка в генераторе.");
 		return false;
 	}
