@@ -60,6 +60,7 @@ KarVartree* kar_vartree_create_package(const KarString* name);
 KarVartree* kar_vartree_create_module(const KarString* name);
 KarVartree* kar_vartree_create_module_link(const KarString* name, KarVartree* type);
 
+KarString* kar_vartree_create_full_function_name(const KarString* name, KarVartree** args, size_t args_count);
 KarVartree* kar_vartree_create_function(const KarString* name, const KarString* libName, KarVartree** args, size_t args_count, KarVartree* return_type);
 KarVartree* kar_vartree_create_variable(const KarString* name, KarVartree* type);
 // TODO: Сделать функцию безопасной для поля void. Скорее надо будет разбить на несколько функций.
@@ -85,6 +86,8 @@ void kar_vartree_free(KarVartree* vartree);
 
 bool kar_vartree_less(KarVartree* vartree1, KarVartree* vartree2);
 bool kar_vartree_equal(KarVartree* vartree1, KarVartree* vartree2);
+
+KarVartree* kar_vertree_find(KarVartree *parent, const KarString* name);
 
 KAR_SET_HEADER(vartree_child, KarVartree, KarVartree)
 KAR_ARRAY_HEADER(vartree_link, KarVartree, KarVartree)

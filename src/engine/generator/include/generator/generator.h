@@ -7,8 +7,8 @@
 #ifndef KAR_GENERATOR_H
 #define KAR_GENERATOR_H
 
-#include "model/module.h"
+#include "model/project.h"
 
-bool kar_generator_run(KarModule* module, KarProjectErrorList* errors);
+bool kar_generator_run(KarProject* project);
 
 #endif // KAR_GENERATOR_H

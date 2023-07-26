@@ -353,7 +353,7 @@ KarError* kar_test_run(KarTest* test, const KarString* dir) {
 		test->out_file.is
 	) {
 		// TODO: Компилировать и собирать исполняемый файл в отдельном каталоге.
-        bool generatorResult = kar_analyzer_run(project) && kar_generator_run(project->module, project->errors);
+        bool generatorResult = kar_analyzer_run(project) && kar_generator_run(project);
 		if (generatorResult) {
 			if (test->compiler_error_file.is) {
 				kar_project_free(project);

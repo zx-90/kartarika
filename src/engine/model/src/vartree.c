@@ -10,6 +10,7 @@
 
 #include "core/alloc.h"
 #include "core/string_list.h"
+#include "core/string_builder.h"
 
 static void(*link_free)(KarVartree* item) = NULL;
 
@@ -51,8 +52,44 @@ KarVartree* kar_vartree_create_module_link(const KarString* name, KarVartree* ty
 	return result;
 }
 
+KarString* kar_vartree_create_full_path(KarVartree* var) {
+    KarString* result = kar_string_create(var->name);
+    while (kar_vartree_child_parent(var) != NULL) {
+        var = kar_vartree_child_parent(var);
+        if (var->name == NULL) {
+            continue;
+        }
+        KarString* newResult = kar_string_create_concat(".", result);
+        KarString* newResult2 = kar_string_create_concat(var->name, newResult);
+
+        KAR_FREE(result);
+        KAR_FREE(newResult);
+        result = newResult2;
+    }
+    return result;
+}
+
+KarString* kar_vartree_create_full_function_name(const KarString* name, KarVartree** args, size_t args_count) {
+    KarStringBuilder builder;
+    kar_string_builder_init(&builder);
+
+    kar_string_builder_push_string(&builder, name);
+    kar_string_builder_push_string(&builder, "(");
+    for (size_t i = 0; i < args_count; i++) {
+        if (i != 0) {
+            kar_string_builder_push_string(&builder, ",");
+        }
+        KarString* argName = kar_vartree_create_full_path(args[i]);
+        kar_string_builder_push_string(&builder, argName);
+        KAR_FREE(argName);
+    }
+    kar_string_builder_push_string(&builder, ")");
+
+    return kar_string_builder_clear_get(&builder);
+}
+
 KarVartree* kar_vartree_create_function(const KarString* name, const KarString* issueName, KarVartree** args, size_t args_count, KarVartree* return_type) {
-	KarVartree* result = vartree_create_name(KAR_VARTYPE_FUNCTION, name);
+    KarVartree* result = vartree_create_name(KAR_VARTYPE_FUNCTION, kar_vartree_create_full_function_name(name, args, args_count));
     result->issueName = kar_string_create(issueName);
 	kar_vartree_link_add(result, return_type);
 	for (size_t i = 0; i < args_count; i++) {
@@ -79,7 +116,7 @@ KarVartree* kar_vartree_create_unclean(const KarString* name) {
 }
 
 KarVartree* kar_vartree_create_unclean_module(KarVartree* type) {
-	KarVartree* result = vartree_create(KAR_VARTYPE_UNCLEAN_MODULE);
+    KarVartree* result = vartree_create_name(KAR_VARTYPE_UNCLEAN_MODULE, "?");
 	kar_vartree_link_add(result, type);
 	return result;
 }
@@ -160,6 +197,16 @@ bool kar_vartree_equal(KarVartree* vartree1, KarVartree* vartree2) {
 		return false;
 	}
 	return kar_string_equal(vartree1->name, vartree2->name);
+}
+
+KarVartree* kar_vertree_find(KarVartree* parent, const KarString* name) {
+    for (size_t i = 0; i < kar_vartree_child_count(parent); i++) {
+        KarVartree* child = kar_vartree_child_get(parent, i);
+        if (kar_string_equal(child->name, name)) {
+            return child;
+        }
+    }
+    return NULL;
 }
 
 KAR_SET_CODE(vartree_child, KarVartree, KarVartree, children, kar_vartree_less, kar_vartree_equal, kar_vartree_free)

@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 	
-    if (!kar_generator_run(project->module, project->errors)) {
+    if (!kar_generator_run(project)) {
 		fprintf(stderr, "Ошибка при генерации исполняемого файла.\n");
         kar_project_error_list_print(project->errors);
 		kar_project_free(project);

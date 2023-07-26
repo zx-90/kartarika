@@ -23,6 +23,7 @@ bool kar_string_builder_init_book(KarStringBuilder* builder, size_t book);
 void kar_string_builder_clear(KarStringBuilder* builder);
 KarString* kar_string_builder_clear_get(KarStringBuilder* builder);
 
-bool kar_string_builder_push(KarStringBuilder* str, const KarString c);
+bool kar_string_builder_push(KarStringBuilder* builder, const KarString c);
+bool kar_string_builder_push_string(KarStringBuilder* builder, const KarString* str);
 
 #endif // KAR_STRING_BUILDER_H

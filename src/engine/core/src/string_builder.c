@@ -34,13 +34,25 @@ KarString* kar_string_builder_clear_get(KarStringBuilder* builder) {
 	return builder->str;
 }
 
-bool kar_string_builder_push(KarStringBuilder* str, const KarString c) {
-	if (str->length == str->capacity - 1) {
-		str->capacity *= 2;
-		KAR_REALLOC(str->str, KarString, str->capacity);
+bool kar_string_builder_push(KarStringBuilder* builder, const KarString c) {
+    if (builder->length == builder->capacity - 1) {
+        builder->capacity *= 2;
+        KAR_REALLOC(builder->str, KarString, builder->capacity);
 	}
-	str->str[str->length] = c;
-	str->length++;
-	str->str[str->length] = 0;
+    builder->str[builder->length] = c;
+    builder->length++;
+    builder->str[builder->length] = 0;
 	return true;
+}
+
+bool kar_string_builder_push_string(KarStringBuilder* builder, const KarString* str) {
+    size_t len = strlen(str);
+    while (builder->length + len > builder->capacity) {
+        builder->capacity *= 2;
+        KAR_REALLOC(builder->str, KarString, builder->capacity);
+    }
+    strcpy(builder->str + builder->length, str);
+    builder->length += len;
+    builder->str[builder->length] = 0;
+    return true;
 }

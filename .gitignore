@@ -4,7 +4,7 @@ build
 sandbox
 *.old
 *.kdev*
-*.user
+*.user*
 out.txt
 
 # Prerequisites

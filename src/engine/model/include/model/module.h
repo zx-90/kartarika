@@ -12,7 +12,6 @@
 #include "token.h"
 #include "project_error_list.h"
 
-// TODO: Поле errors необходимо перенести в KarProject.
 typedef struct {
 	KarString* name;
 	KarToken* token;

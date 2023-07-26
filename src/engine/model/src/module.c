@@ -29,5 +29,6 @@ void kar_module_free(KarModule* module) {
 
 KarString* kar_module_get_full_name(KarModule* module) {
     // TODO: Вычислять полное имя модуля с полным путём.
+    //       Используется для логирования информации об ошибке.
     return module->name;
 }

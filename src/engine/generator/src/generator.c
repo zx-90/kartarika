@@ -23,9 +23,9 @@
 LLVMValueRef puts_func = NULL;
 
 static bool print(const KarString* out, LLVMModuleRef module, LLVMBuilderRef builder) {
-	LLVMTypeRef type = LLVMPointerType(LLVMInt8Type(), 0);
-	LLVMTypeRef puts_type = LLVMFunctionType(LLVMInt32Type(), &type, 1, false);
     if (puts_func == NULL) {
+        LLVMTypeRef type = LLVMPointerType(LLVMInt8Type(), 0);
+        LLVMTypeRef puts_type = LLVMFunctionType(LLVMInt32Type(), &type, 1, false);
         puts_func = LLVMAddFunction(module, "_kartarika_library_write_chars", puts_type);
     }
 	
@@ -35,39 +35,42 @@ static bool print(const KarString* out, LLVMModuleRef module, LLVMBuilderRef bui
 	return true;
 }
 
-static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder, KarString* moduleName, KarProjectErrorList* errors) {
+static bool generate_identifier(KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder, KarString* moduleName, KarVartree* vartree, KarProjectErrorList* errors) {
 	if (token->type != KAR_TOKEN_COMMAND_EXPRESSION) {
         kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Токен не является командой.");
 		return false;
 	}
-	const KarToken* child1 = kar_token_child_get(token, 0);
+    KarToken* child1 = kar_token_child_get(token, 0);
 	if (!kar_token_check_type(child1, KAR_TOKEN_SIGN_GET_FIELD)) {
         kar_project_error_list_create_add(errors, moduleName, &child1->cursor, 1, "Внутренняя ошибка. Токен команды не имеет потомков.");
         return false;
 	}
-	const KarToken* child2 = kar_token_child_get(child1, 0);
+    KarToken* child2 = kar_token_child_get(child1, 0);
     if (!kar_token_check_type_name(child2, KAR_TOKEN_IDENTIFIER, "Консоль")) {
         kar_project_error_list_create_add(errors, moduleName, &child2->cursor, 1, "Поддерживается только модуль \"Консоль\".");
         return false;
 	}
-	const KarToken* child3 = kar_token_child_get(child1, 1);
+    KarToken* child3 = kar_token_child_get(child1, 1);
 	if (!kar_token_check_type(child3, KAR_TOKEN_SIGN_CALL_METHOD)) {
         kar_project_error_list_create_add(errors, moduleName, &child3->cursor, 1, "В модуле \"Консоль\" поддерживается только вызов метода.");
         return false;
 	}
-	const KarToken* child4a = kar_token_child_get(child3, 0);
+    KarToken* child4a = kar_token_child_get(child3, 0);
     if (!kar_token_check_type_name(child4a, KAR_TOKEN_IDENTIFIER, "Вывод")) {
         kar_project_error_list_create_add(errors, moduleName, &child4a->cursor, 1, "Поддерживается только метод \"Консоль.Вывод()\".");
         return false;
 	}
-	const KarToken* child4 = kar_token_child_get(child3, 1);
+    KarToken* child4 = kar_token_child_get(child3, 1);
 	if (!kar_token_check_type(child4, KAR_TOKEN_SIGN_ARGUMENT)) {
         kar_project_error_list_create_add(errors, moduleName, &child4->cursor, 1, "Отсутствуют аргументы у метода \"Консоль.Вывод()\".");
+        // TODO: ЛИШНЯЯ СТРОКА. УДАЛИТЬ!!!
+        kar_project_error_list_create_add(errors, vartree->name, &child4->cursor, 1, "Отсутствуют аргументы у метода \"Консоль.Вывод()\".");
         return false;
 	}
-	const KarToken* child5 = kar_token_child_get(child4, 0);
+    KarToken* child5 = kar_token_child_get(child4, 0);
 	
 	if (kar_token_check_type(child5, KAR_TOKEN_VAL_TRUE)) {
+        //kar_vartree_find(child2, );
 		return print("Да", module, builder);
 	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_FALSE)) {
 		return print("Нет", module, builder);
@@ -168,7 +171,7 @@ static bool generate_identifier(const KarToken* token, LLVMModuleRef module, LLV
     return false;
 }
 	
-static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder, KarString* moduleName, KarProjectErrorList* errors) {
+static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder, KarString* moduleName, KarVartree* vartree, KarProjectErrorList* errors) {
 	if (token->type != KAR_TOKEN_METHOD) {
 		return false;
 	}
@@ -181,7 +184,7 @@ static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilder
 		KarToken* body = kar_token_child_get_last(token, 0);
 	
 		for (size_t i = 0; i < kar_token_child_count(body); ++i) {
-            if (!generate_identifier(kar_token_child_get(body, i), module, builder, moduleName, errors)) {
+            if (!generate_identifier(kar_token_child_get(body, i), module, builder, moduleName, vartree, errors)) {
 				LLVMBuildRetVoid(builder);
 				return false;
 			}
@@ -195,7 +198,7 @@ static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilder
 	return true;
 }
 	
-static bool generate_module(KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder, KarString* moduleName, KarProjectErrorList* errors) {
+static bool generate_module(KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder, KarString* moduleName, KarVartree* vartree, KarProjectErrorList* errors) {
 	if (token->type != KAR_TOKEN_MODULE) {
         kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Внутрення ошибка. Токен не является типом модуль.");
 		return false;
@@ -203,7 +206,7 @@ static bool generate_module(KarToken* token, LLVMModuleRef module, LLVMBuilderRe
 	for (size_t i = 0; i < kar_token_child_count(token); ++i) {
         KarToken* child = kar_token_child_get(token, i);
         if (child->type == KAR_TOKEN_METHOD) {
-            if (!generate_function(kar_token_child_get(token, i), module, builder, moduleName, errors)) {
+            if (!generate_function(kar_token_child_get(token, i), module, builder, moduleName, vartree, errors)) {
 				return false;
 			}
 		} else {
@@ -231,7 +234,7 @@ static bool generate_module(KarToken* token, LLVMModuleRef module, LLVMBuilderRe
 }*/
 
 // TODO: Надо передавать KarProject вместо KarModule. 
-bool kar_generator_run(KarModule* mod, KarProjectErrorList* errors) {
+bool kar_generator_run(KarProject* project) {
     puts_func = NULL;
 	// TODO: обработка ошибок. Добавить.
 	// TODO: Windows настроить кодировку консоли.
@@ -240,8 +243,9 @@ bool kar_generator_run(KarModule* mod, KarProjectErrorList* errors) {
 	LLVMModuleRef module = LLVMModuleCreateWithNameInContext("asdf", context);
 	LLVMBuilderRef builder = LLVMCreateBuilderInContext(context);
 	
-    if (!generate_module(mod->token, module, builder, mod->name, errors)) {
-        kar_project_error_list_create_add(errors, mod->name, &mod->token->cursor, 1, "Ошибка в генераторе.");
+    KarModule* mod = project->module;
+    if (!generate_module(mod->token, module, builder, mod->name, project->vartree, project->errors)) {
+        kar_project_error_list_create_add(project->errors, mod->name, &mod->token->cursor, 1, "Ошибка в генераторе.");
 		return false;
 	}
 	
