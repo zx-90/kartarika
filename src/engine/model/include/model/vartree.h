@@ -45,20 +45,22 @@ typedef enum {
 
 typedef struct KarVartreeStruct {
     KarString* name;
-    bool initialized;
-    KarString* issueName;
     KarVartypeElement type;
 	KAR_SET_STRUCT(struct KarVartreeStruct) children;
-	KAR_ARRAY_STRUCT(struct KarVartreeStruct) link;
-	// TODO: value должно зависеть от типа.
+    // TODO: value должно зависеть от типа.
 	void* value;
+    void (*freeValue)(void*);
+
+    /*bool initialized;
+    KarString* issueName;
+    KAR_ARRAY_STRUCT(struct KarVartreeStruct) link;*/
 } KarVartree;
 
 KarVartree* kar_vartree_create_root();
 KarVartree* kar_vartree_create_package(const KarString* name);
 
-KarVartree* kar_vartree_create_module(const KarString* name);
-KarVartree* kar_vartree_create_module_link(const KarString* name, KarVartree* type);
+KarVartree* kar_vartree_create_class(const KarString* name);
+KarVartree* kar_vartree_create_class_link(const KarString* name, KarVartree* type);
 
 KarString* kar_vartree_create_full_function_name(const KarString* name, KarVartree** args, size_t args_count);
 KarVartree* kar_vartree_create_function(const KarString* name, const KarString* libName, KarVartree** args, size_t args_count, KarVartree* return_type);
