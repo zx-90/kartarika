@@ -10,6 +10,7 @@ src/project_error.c
 src/project_error_list.c
 
 src/vartree.c
+src/vars.c
 src/project.c
 )
 

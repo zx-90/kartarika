@@ -9,18 +9,15 @@
 
 #include "core/array.h"
 #include "module.h"
-#include "vartree.h"
+#include "vars.h"
 
 typedef struct {
 	KarModule* module;
-	KarVartree* vartree;
-	KAR_ARRAY_STRUCT(KarVartree) def_list;
+    KarVars* vars;
     KarProjectErrorList* errors;
 } KarProject;
 
 KarProject* kar_project_create(KarString* filename);
 void kar_project_free(KarProject* project);
-
-KAR_ARRAY_HEADER(project_def_list, KarProject, KarVartree)
 
 #endif // KAR_PROJECT_H

@@ -51,6 +51,8 @@
 	void kar_##prefix##_sort(parent_type* parent, bool (*func_less)(const child_type* child1, const child_type* child2));
 #define KAR_ARRAY_HEADER_TEAR(prefix, parent_type, child_type)        \
 	child_type* kar_##prefix##_tear(parent_type* parent, size_t num);
+#define KAR_ARRAY_HEADER_TEAR_ALL(prefix, parent_type)                \
+    void kar_##prefix##_tear_all(parent_type* parent);
 #define KAR_ARRAY_HEADER_ERASE(prefix, parent_type)                   \
 	void kar_##prefix##_erase(parent_type* parent, size_t num);
 #define KAR_ARRAY_HEADER_MOVE_TO_END(prefix, parent_type)             \
@@ -69,6 +71,7 @@
     KAR_ARRAY_HEADER_SWAP(prefix, parent_type)                 \
     KAR_ARRAY_HEADER_SORT(prefix, parent_type, child_type)     \
     KAR_ARRAY_HEADER_TEAR(prefix, parent_type, child_type)     \
+    KAR_ARRAY_HEADER_TEAR_ALL(prefix, parent_type)             \
     KAR_ARRAY_HEADER_ERASE(prefix, parent_type)                \
     KAR_ARRAY_HEADER_MOVE_TO_END(prefix, parent_type)
 
@@ -234,6 +237,11 @@
 		return teared;                                                 \
 	}
 
+#define KAR_ARRAY_CODE_TEAR_ALL(prefix, parent_type)    \
+    void kar_##prefix##_tear_all(parent_type* parent) { \
+        kar_##prefix##_init(parent);                    \
+    }
+
 #define KAR_ARRAY_CODE_ERASE(prefix, parent_type, child_type, fn) \
 	void kar_##prefix##_erase(parent_type* parent, size_t num) {  \
 		child_type* teared = kar_##prefix##_tear(parent, num);    \
@@ -271,7 +279,8 @@
 	KAR_ARRAY_CODE_SWAP(prefix, parent_type, child_type, field)          \
 	KAR_ARRAY_CODE_SORT(prefix, parent_type, child_type, field)          \
 	KAR_ARRAY_CODE_TEAR(prefix, parent_type, child_type, field)          \
-	KAR_ARRAY_CODE_ERASE(prefix, parent_type, child_type, fn)            \
+    KAR_ARRAY_CODE_TEAR_ALL(prefix, parent_type)                         \
+    KAR_ARRAY_CODE_ERASE(prefix, parent_type, child_type, fn)            \
 	KAR_ARRAY_CODE_MOVE_TO_END(prefix, parent_type, field)
 
 #endif // KAR_ARRAY_H

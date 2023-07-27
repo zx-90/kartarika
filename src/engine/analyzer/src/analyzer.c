@@ -8,9 +8,9 @@
 
 #include "model/token.h"
 
-static bool fill_standard_lib(KarProject* project) {
+static bool fill_standard_lib(KarVars* vars) {
 	KarVartree* root = kar_vartree_create_root();
-	project->vartree = root;
+    vars->vartree = root;
 	//KarVartree** def_list = project->def_list;
 	
 	KarVartree* libraries = kar_vartree_create_package("Библиотеки");
@@ -164,14 +164,34 @@ static bool fill_standard_lib(KarProject* project) {
     kar_vartree_child_add(type_math, kar_vartree_create_function("ВзятьПСЧ", "_kartarika_library_get_prn", &type_unsigned, 1, NULL));
     kar_vartree_child_add(type_math, kar_vartree_create_function("ВзятьСлучайное", "_kartarika_library_get_random", NULL, 0, type_unsigned));
 	
-	return true;
+
+    kar_vars_default_list_add(vars, types);
+    kar_vars_default_list_add(vars, kar);
+
+    vars->standard.boolType = type_bool;
+    vars->standard.int8Type = type_integer8;
+    vars->standard.int16Type = type_integer16;
+    vars->standard.int32Type = type_integer32;
+    vars->standard.int64Type = type_integer64;
+    vars->standard.intType = type_integer;
+    vars->standard.unsigned8Type = type_unsigned8;
+    vars->standard.unsigned16Type = type_unsigned16;
+    vars->standard.unsigned32Type = type_unsigned32;
+    vars->standard.unsigned64Type = type_unsigned64;
+    vars->standard.unsignedType = type_unsigned;
+    vars->standard.float32Type = type_float32;
+    vars->standard.float64Type = type_float64;
+    vars->standard.floatType = type_float;
+    vars->standard.stringType = type_string;
+
+    return true;
 }
 
 bool kar_analyzer_run(KarProject* project) {
 	if (!project) {
 		return false;
 	}
-	if (!fill_standard_lib(project)) {
+    if (!fill_standard_lib(project->vars)) {
 		return false;
 	}
 	return true;
