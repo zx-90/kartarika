@@ -38,6 +38,8 @@ typedef struct {
 KarVars* kar_vars_create();
 void kar_vars_free(KarVars* vars);
 
+KarVartree* kar_vars_find(KarVars* vars, KarString* name);
+
 KAR_ARRAY_HEADER(vars_default_list, KarVars, KarVartree)
 
 #endif // KAR_VARS_H

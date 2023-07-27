@@ -47,13 +47,8 @@ typedef struct KarVartreeStruct {
     KarString* name;
     KarVartypeElement type;
 	KAR_SET_STRUCT(struct KarVartreeStruct) children;
-    // TODO: value должно зависеть от типа.
 	void* value;
     void (*freeValue)(void*);
-
-    /*bool initialized;
-    KarString* issueName;
-    KAR_ARRAY_STRUCT(struct KarVartreeStruct) link;*/
 } KarVartree;
 
 KarVartree* kar_vartree_create_root();
@@ -89,7 +84,7 @@ void kar_vartree_free(KarVartree* vartree);
 bool kar_vartree_less(KarVartree* vartree1, KarVartree* vartree2);
 bool kar_vartree_equal(KarVartree* vartree1, KarVartree* vartree2);
 
-KarVartree* kar_vertree_find(KarVartree *parent, const KarString* name);
+KarVartree* kar_vartree_find(KarVartree *parent, const KarString* name);
 
 KAR_SET_HEADER(vartree_child, KarVartree, KarVartree)
 KAR_ARRAY_HEADER(vartree_link, KarVartree, KarVartree)

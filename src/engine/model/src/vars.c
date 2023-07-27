@@ -38,4 +38,14 @@ void kar_vars_free(KarVars* vars) {
     KAR_FREE(vars)
 }
 
+KarVartree* kar_vars_find(KarVars* vars, KarString* name) {
+    for (size_t i = 0; i < kar_vars_default_list_count(vars); i++) {
+        KarVartree* result = kar_vartree_find(kar_vars_default_list_get(vars, i), name);
+        if (result != NULL) {
+            return result;
+        }
+    }
+    return NULL;
+}
+
 KAR_ARRAY_CODE(vars_default_list, KarVars, KarVartree, default_list, kar_vartree_free)

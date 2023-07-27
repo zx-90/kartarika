@@ -23,10 +23,6 @@ static KarVartree* vartree_create(KarVartypeElement element) {
     vartree->value = NULL;
     vartree->freeValue = NULL;
 
-    /*vartree->initialized = false;
-    vartree->issueName = NULL;
-    kar_vartree_link_init(vartree);*/
-	
 	return vartree;
 }
 
@@ -131,11 +127,6 @@ KarVartree* kar_vartree_create_function(const KarString* name, const KarString* 
     KarVartree* result = vartree_create_name(KAR_VARTYPE_FUNCTION, kar_vartree_create_full_function_name(name, args, args_count));
     result->value = kar_vartree_function_value_create(issueName, args, args_count, return_type);
     result->freeValue = &kar_vartree_function_value_free;
-    //result->issueName = kar_string_create(issueName);
-    /*kar_vartree_link_add(result, return_type);
-	for (size_t i = 0; i < args_count; i++) {
-		kar_vartree_link_add(result, args[i]);
-    }*/
 	return result;
 }
 
@@ -272,7 +263,7 @@ bool kar_vartree_equal(KarVartree* vartree1, KarVartree* vartree2) {
 	return kar_string_equal(vartree1->name, vartree2->name);
 }
 
-KarVartree* kar_vertree_find(KarVartree* parent, const KarString* name) {
+KarVartree* kar_vartree_find(KarVartree* parent, const KarString* name) {
     for (size_t i = 0; i < kar_vartree_child_count(parent); i++) {
         KarVartree* child = kar_vartree_child_get(parent, i);
         if (kar_string_equal(child->name, name)) {
@@ -283,4 +274,3 @@ KarVartree* kar_vertree_find(KarVartree* parent, const KarString* name) {
 }
 
 KAR_SET_CODE(vartree_child, KarVartree, KarVartree, children, kar_vartree_less, kar_vartree_equal, kar_vartree_free)
-//KAR_ARRAY_CODE(vartree_link, KarVartree, KarVartree, link, link_free)

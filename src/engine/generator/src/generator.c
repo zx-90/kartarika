@@ -63,14 +63,26 @@ static bool generate_identifier(KarToken* token, LLVMModuleRef module, LLVMBuild
     KarToken* child4 = kar_token_child_get(child3, 1);
 	if (!kar_token_check_type(child4, KAR_TOKEN_SIGN_ARGUMENT)) {
         kar_project_error_list_create_add(errors, moduleName, &child4->cursor, 1, "Отсутствуют аргументы у метода \"Консоль.Вывод()\".");
-        // TODO: ЛИШНЯЯ СТРОКА. УДАЛИТЬ!!!
-        kar_project_error_list_create_add(errors, vars->vartree->name, &child4->cursor, 1, "Отсутствуют аргументы у метода \"Консоль.Вывод()\".");
         return false;
 	}
     KarToken* child5 = kar_token_child_get(child4, 0);
 	
 	if (kar_token_check_type(child5, KAR_TOKEN_VAL_TRUE)) {
-        //kar_vartree_find(child2, );
+        KarString* functionName = kar_vartree_create_full_function_name(child4a->str, &vars->standard.boolType, 1);
+        KarVartree* console = kar_vars_find(vars, child2->str);
+        if (console == NULL) {
+            kar_project_error_list_create_add(errors, moduleName, &child2->cursor, 1, "Не могу найти объект \"Консоль\".");
+            KAR_FREE(functionName);
+            return false;
+        }
+        KarVartree* function = kar_vartree_find(console, functionName);
+        if (function == NULL) {
+            kar_project_error_list_create_add(errors, moduleName, &child2->cursor, 1, "Не могу найти объект \"Консоль.Вывод(Кар.Типы.Буль)\".");
+            KAR_FREE(console);
+            KAR_FREE(functionName);
+            return false;
+        }
+
 		return print("Да", module, builder);
 	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_FALSE)) {
 		return print("Нет", module, builder);

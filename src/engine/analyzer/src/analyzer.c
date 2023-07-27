@@ -11,7 +11,6 @@
 static bool fill_standard_lib(KarVars* vars) {
 	KarVartree* root = kar_vartree_create_root();
     vars->vartree = root;
-	//KarVartree** def_list = project->def_list;
 	
 	KarVartree* libraries = kar_vartree_create_package("Библиотеки");
 	kar_vartree_child_add(root, libraries);
@@ -167,6 +166,7 @@ static bool fill_standard_lib(KarVars* vars) {
 
     kar_vars_default_list_add(vars, types);
     kar_vars_default_list_add(vars, kar);
+    kar_vars_default_list_add(vars, root);
 
     vars->standard.boolType = type_bool;
     vars->standard.int8Type = type_integer8;
