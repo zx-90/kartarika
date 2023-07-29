@@ -12,7 +12,7 @@
 #include "core/string_list.h"
 #include "core/string_builder.h"
 
-static void(*nullFree)(KarVartree* item) = NULL;
+#include "model/vartree_function_params.h"
 
 static KarVartree* vartree_create(KarVartypeElement element) {
 	KAR_CREATE(vartree, KarVartree);
@@ -20,8 +20,8 @@ static KarVartree* vartree_create(KarVartypeElement element) {
 	vartree->name = NULL;
     vartree->type = element;
     kar_vartree_child_init(vartree);
-    vartree->value = NULL;
-    vartree->freeValue = NULL;
+    vartree->params = NULL;
+    vartree->freeParams = NULL;
 
 	return vartree;
 }
@@ -46,97 +46,20 @@ KarVartree* kar_vartree_create_class(const KarString* name) {
 
 KarVartree* kar_vartree_create_class_link(const KarString* name, KarVartree* type) {
 	KarVartree* result = vartree_create_name(KAR_VARTYPE_MODULE_LINK, name);
-    result->value = type;
+    result->params = type;
 	return result;
-}
-
-KarString* kar_vartree_create_full_path(KarVartree* var) {
-    KarString* result = kar_string_create(var->name);
-    while (kar_vartree_child_parent(var) != NULL) {
-        var = kar_vartree_child_parent(var);
-        if (var->name == NULL) {
-            continue;
-        }
-        KarString* newResult = kar_string_create_concat(".", result);
-        KarString* newResult2 = kar_string_create_concat(var->name, newResult);
-
-        KAR_FREE(result);
-        KAR_FREE(newResult);
-        result = newResult2;
-    }
-    return result;
-}
-
-//-----------------------------------------------------------------------------
-// Описание функций.
-//-----------------------------------------------------------------------------
-
-KarString* kar_vartree_create_full_function_name(const KarString* name, KarVartree** args, size_t args_count) {
-    KarStringBuilder builder;
-    kar_string_builder_init(&builder);
-
-    kar_string_builder_push_string(&builder, name);
-    kar_string_builder_push_string(&builder, "(");
-    for (size_t i = 0; i < args_count; i++) {
-        if (i != 0) {
-            kar_string_builder_push_string(&builder, ",");
-        }
-        KarString* argName = kar_vartree_create_full_path(args[i]);
-        kar_string_builder_push_string(&builder, argName);
-        KAR_FREE(argName);
-    }
-    kar_string_builder_push_string(&builder, ")");
-
-    return kar_string_builder_clear_get(&builder);
-}
-
-typedef struct {
-    bool initialized;
-    KarString* issueName;
-    KAR_ARRAY_STRUCT(KarVartree) args;
-    KarVartree* returnType;
-} KarVartreeFunctionValue;
-
-KAR_ARRAY_CODE(vartree_function_value_args, KarVartreeFunctionValue, KarVartree, args, nullFree)
-
-KarVartreeFunctionValue* kar_vartree_function_value_create(const KarString* issueName, KarVartree** args, size_t args_count, KarVartree* return_type) {
-    KAR_CREATE(value, KarVartreeFunctionValue);
-
-    value->initialized = false;
-    value->issueName = kar_string_create(issueName);
-    kar_vartree_function_value_args_init(value);
-    for (size_t i = 0; i < args_count; i++) {
-        kar_vartree_function_value_args_add(value, args[i]);
-    }
-    value->returnType = return_type;
-
-    return value;
-}
-
-void kar_vartree_function_value_free(void* ptr) {
-    KarVartreeFunctionValue* value = (KarVartreeFunctionValue*)ptr;
-    if (value->issueName != NULL) {
-        KAR_FREE(value->issueName);
-    }
-    kar_vartree_function_value_args_clear(value);
-
-    KAR_FREE(value);
 }
 
 KarVartree* kar_vartree_create_function(const KarString* name, const KarString* issueName, KarVartree** args, size_t args_count, KarVartree* return_type) {
     KarVartree* result = vartree_create_name(KAR_VARTYPE_FUNCTION, kar_vartree_create_full_function_name(name, args, args_count));
-    result->value = kar_vartree_function_value_create(issueName, args, args_count, return_type);
-    result->freeValue = &kar_vartree_function_value_free;
+    result->params = kar_vartree_function_create(issueName, args, args_count, return_type);
+    result->freeParams = &kar_vartree_function_free;
 	return result;
 }
 
-//-----------------------------------------------------------------------------
-// Описание функций закончено.
-//-----------------------------------------------------------------------------
-
 KarVartree* kar_vartree_create_variable(const KarString* name, KarVartree* type) {
 	KarVartree* result = vartree_create_name(KAR_VARTYPE_VARIABLE, name);
-    result->value = type;
+    result->params = type;
 	return result;
 }
 
@@ -166,8 +89,8 @@ void kar_vartree_const_value_free(void* ptr) {
 
 KarVartree* kar_vartree_create_const(const KarString* name, KarVartree* type, void* value) {
 	KarVartree* result = vartree_create_name(KAR_VARTYPE_CONST, name);
-    result->value = kar_vartree_const_value_create(type, value);
-    result->freeValue = &kar_vartree_const_value_free;
+    result->params = kar_vartree_const_value_create(type, value);
+    result->freeParams = &kar_vartree_const_value_free;
 	return result;
 }
 
@@ -181,7 +104,7 @@ KarVartree* kar_vartree_create_unclean(const KarString* name) {
 
 KarVartree* kar_vartree_create_unclean_module(KarVartree* type) {
     KarVartree* result = vartree_create_name(KAR_VARTYPE_UNCLEAN_MODULE, "?");
-    result->value = type;
+    result->params = type;
 	return result;
 }
 
@@ -238,8 +161,8 @@ void kar_vartree_free(KarVartree* vartree) {
 		kar_string_free(vartree->name);
 	}
 	kar_vartree_child_clear(vartree);
-    if (vartree->freeValue != NULL) {
-        vartree->freeValue(vartree->value);
+    if (vartree->freeParams != NULL) {
+        vartree->freeParams(vartree->params);
     }
 }
 
@@ -273,4 +196,11 @@ KarVartree* kar_vartree_find(KarVartree* parent, const KarString* name) {
     return NULL;
 }
 
-KAR_SET_CODE(vartree_child, KarVartree, KarVartree, children, kar_vartree_less, kar_vartree_equal, kar_vartree_free)
+KAR_TREE_SET_CODE(vartree_child, KarVartree, children, kar_vartree_less, kar_vartree_equal, kar_vartree_free)
+
+KarVartreeFunctionParams* kar_vartree_get_function_params(KarVartree* vartree) {
+    if (vartree->type != KAR_VARTYPE_FUNCTION) {
+        return NULL;
+    }
+    return (KarVartreeFunctionParams*)vartree->params;
+}

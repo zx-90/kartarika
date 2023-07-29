@@ -2,7 +2,10 @@ cmake_minimum_required(VERSION 3.8)
 
 set(lib_generator_SRC
 
-src/generator.c
+    src/llvm_function.c
+    src/llvm_data.c
+
+    src/generator.c
 
 )
 

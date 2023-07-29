@@ -18,7 +18,6 @@
 
 #define KAR_SET_STRUCT(child_type) \
 	struct {                       \
-        child_type* parent;        \
 		size_t count;              \
 		size_t capacity;           \
 		child_type** items;        \
@@ -32,8 +31,6 @@
 	void kar_##prefix##_init(parent_type* parent);
 #define KAR_SET_HEADER_CLEAR(prefix, parent_type)                   \
 	void kar_##prefix##_clear(parent_type* parent);
-#define KAR_SET_HEADER_PARENT(prefix, parent_type)                  \
-    parent_type* kar_##prefix##_parent(const parent_type* parent);
 #define KAR_SET_HEADER_COUNT(prefix, parent_type)                   \
 	size_t kar_##prefix##_count(const parent_type* parent);
 #define KAR_SET_HEADER_EMPTY(prefix, parent_type)                   \
@@ -54,7 +51,6 @@
 #define KAR_SET_HEADER(prefix, parent_type, child_type)      \
 	KAR_SET_HEADER_INIT(prefix, parent_type)                 \
 	KAR_SET_HEADER_CLEAR(prefix, parent_type)                \
-    KAR_SET_HEADER_PARENT(prefix, parent_type)               \
     KAR_SET_HEADER_COUNT(prefix, parent_type)                \
 	KAR_SET_HEADER_EMPTY(prefix, parent_type)                \
 	KAR_SET_HEADER_CAPACITY(prefix, parent_type)             \
@@ -70,7 +66,6 @@
 
 #define KAR_SET_CODE_INIT(prefix, parent_type, field) \
 	void kar_##prefix##_init(parent_type* parent) {   \
-        parent->field.parent = NULL;                  \
 		parent->field.count = 0;                      \
 		parent->field.capacity = 0;                   \
 		parent->field.items = NULL;                   \
@@ -88,11 +83,6 @@
 		}                                                          \
 		kar_##prefix##_init(parent);                               \
 	}
-
-#define KAR_SET_CODE_PARENT(prefix, parent_type, field)             \
-    parent_type* kar_##prefix##_parent(const parent_type* parent) { \
-        return (parent_type*)parent->field.parent;                                \
-    }
 
 #define KAR_SET_CODE_COUNT(prefix, parent_type, field)       \
 	size_t kar_##prefix##_count(const parent_type* parent) { \
@@ -171,7 +161,6 @@
 		}                                                                           \
 		                                                                            \
 		parent->field.items[num] = added;                                           \
-        added->field.parent = parent;                                               \
 		parent->field.count++;                                                      \
 		return num;                                                                 \
 	}
@@ -182,7 +171,6 @@
 			return NULL;                                               \
 		}                                                              \
 		void* teared = parent->field.items[num];                       \
-        ((parent_type*)teared)->field.parent = NULL;                   \
 		parent->field.count--;                                         \
 		size_t n;                                                      \
 		for (n = num; n < parent->field.count; ++n) {                  \
@@ -202,7 +190,6 @@
 #define KAR_SET_CODE(prefix, parent_type, child_type, field, less_fn, equal_fn, free_fn) \
 	KAR_SET_CODE_INIT(prefix, parent_type, field)                                        \
 	KAR_SET_CODE_CLEAR(prefix, parent_type, field, free_fn)                              \
-    KAR_SET_CODE_PARENT(prefix, parent_type, field)                                      \
 	KAR_SET_CODE_COUNT(prefix, parent_type, field)                                       \
 	KAR_SET_CODE_EMPTY(prefix, parent_type, field)                                       \
 	KAR_SET_CODE_CAPACITY(prefix, parent_type, field)                                    \

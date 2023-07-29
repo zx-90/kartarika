@@ -7,9 +7,11 @@
 #ifndef KAR_VARTREE_H
 #define KAR_VARTREE_H
 
-#include "core/set.h"
+#include "core/tree_set.h"
 #include "core/array.h"
 #include "core/string_list.h"
+
+#include "vartree_function_params.h"
 
 typedef enum {
 	KAR_VARTYPE_UNKNOWN,
@@ -46,9 +48,9 @@ typedef enum {
 typedef struct KarVartreeStruct {
     KarString* name;
     KarVartypeElement type;
-	KAR_SET_STRUCT(struct KarVartreeStruct) children;
-	void* value;
-    void (*freeValue)(void*);
+    KAR_TREE_SET_STRUCT(struct KarVartreeStruct) children;
+    void* params;
+    void (*freeParams)(void*);
 } KarVartree;
 
 KarVartree* kar_vartree_create_root();
@@ -57,7 +59,6 @@ KarVartree* kar_vartree_create_package(const KarString* name);
 KarVartree* kar_vartree_create_class(const KarString* name);
 KarVartree* kar_vartree_create_class_link(const KarString* name, KarVartree* type);
 
-KarString* kar_vartree_create_full_function_name(const KarString* name, KarVartree** args, size_t args_count);
 KarVartree* kar_vartree_create_function(const KarString* name, const KarString* libName, KarVartree** args, size_t args_count, KarVartree* return_type);
 KarVartree* kar_vartree_create_variable(const KarString* name, KarVartree* type);
 // TODO: Сделать функцию безопасной для поля void. Скорее надо будет разбить на несколько функций.
@@ -86,7 +87,9 @@ bool kar_vartree_equal(KarVartree* vartree1, KarVartree* vartree2);
 
 KarVartree* kar_vartree_find(KarVartree *parent, const KarString* name);
 
-KAR_SET_HEADER(vartree_child, KarVartree, KarVartree)
+KAR_TREE_SET_HEADER(vartree_child, KarVartree)
 KAR_ARRAY_HEADER(vartree_link, KarVartree, KarVartree)
+
+KarVartreeFunctionParams* kar_vartree_get_function_params(KarVartree* vartree);
 
 #endif // KAR_VARTREE_H

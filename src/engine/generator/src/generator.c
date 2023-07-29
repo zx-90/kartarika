@@ -19,23 +19,25 @@
 
 #include "core/string.h"
 #include "core/alloc.h"
+#include "model/vartree_function_params.h"
+#include "generator/llvm_data.h"
 
 LLVMValueRef puts_func = NULL;
 
-static bool print(const KarString* out, LLVMModuleRef module, LLVMBuilderRef builder) {
+static bool print(const KarString* out, KarLLVMData* llvmData) {
     if (puts_func == NULL) {
         LLVMTypeRef type = LLVMPointerType(LLVMInt8Type(), 0);
-        LLVMTypeRef puts_type = LLVMFunctionType(LLVMInt32Type(), &type, 1, false);
-        puts_func = LLVMAddFunction(module, "_kartarika_library_write_chars", puts_type);
+        LLVMTypeRef puts_type = LLVMFunctionType(LLVMVoidType(), &type, 1, false);
+        puts_func = LLVMAddFunction(llvmData->module, "_kartarika_library_write_chars", puts_type);
     }
 	
-	LLVMValueRef out_string = LLVMBuildGlobalStringPtr(builder, out, "helloWorld");
-    LLVMBuildCall(builder, puts_func, &out_string, 1, "_kartarika_library_write_chars");
+    LLVMValueRef out_string = LLVMBuildGlobalStringPtr(llvmData->builder, out, "helloWorld");
+    LLVMBuildCall(llvmData->builder, puts_func, &out_string, 1, "_kartarika_library_write_chars");
 	
 	return true;
 }
 
-static bool generate_identifier(KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+static bool generate_identifier(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	if (token->type != KAR_TOKEN_COMMAND_EXPRESSION) {
         kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Токен не является командой.");
 		return false;
@@ -82,10 +84,33 @@ static bool generate_identifier(KarToken* token, LLVMModuleRef module, LLVMBuild
             KAR_FREE(functionName);
             return false;
         }
+        KarVartreeFunctionParams* params = kar_vartree_get_function_params(function);
+        KarLLVMFunction* llvmFunc = kar_llvm_function_create(params);
+        size_t num = kar_llvm_data_functions_add(llvmData, llvmFunc);
+        if (num == (size_t)-1) {
+            kar_llvm_function_free(llvmFunc);
+            // TODO: Здесь надо искать быстрее, не просты перебором, так как массив отсортирован.
+            llvmFunc = NULL;
+            for (size_t i = 0; i < kar_llvm_data_functions_count(llvmData); i++) {
+                KarLLVMFunction* child = kar_llvm_data_functions_get(llvmData, i);
+                if (kar_string_equal(params->issueName, child->params->issueName)) {
+                    llvmFunc = child;
+                    break;
+                }
+            }
+        } else {
+            kar_llvm_function_init(llvmFunc, llvmData->module, vars);
+        }
+        if (llvmFunc == NULL) {
+            kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Внутренняя ошибка генератора. Не могу найти функцию.");
+            return false;
+        }
 
-		return print("Да", module, builder);
+        LLVMValueRef b = LLVMConstInt(LLVMInt1Type(), 1, 0);
+        LLVMBuildCall(llvmData->builder, kar_llvm_function_get_ref(llvmFunc), &b, 1, llvmFunc->params->issueName);
+        return true;
 	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_FALSE)) {
-		return print("Нет", module, builder);
+        return print("Нет", llvmData);
 	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_INTEGER)) {
 		// TODO: Эту проверку необходимо перенести в анализатор.
 		// TODO: Проверку надо более тщательно организовать. Сейчас работает только проверка на длину строки.
@@ -98,7 +123,7 @@ static bool generate_identifier(KarToken* token, LLVMModuleRef module, LLVMBuild
             kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Не корректное число.");
             return false;
 		}
-		return print(child5->str, module, builder);
+        return print(child5->str, llvmData);
 	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_HEXADECIMAL)) {
 		// TODO: Эту проверку необходимо перенести в анализатор.
 		if (strlen(child5->str) > 7) {
@@ -114,7 +139,7 @@ static bool generate_identifier(KarToken* token, LLVMModuleRef module, LLVMBuild
 		sprintf(textToWrite,"%"SCNu32, val);
 		
 		KarString* out_chars = kar_string_create(textToWrite);
-		bool result = print(out_chars, module, builder);
+        bool result = print(out_chars, llvmData);
 		KAR_FREE(out_chars);
 		return result;
 	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_FLOAT)) {
@@ -144,16 +169,16 @@ static bool generate_identifier(KarToken* token, LLVMModuleRef module, LLVMBuild
 		double absd = fabs(d);
 		// TODO: Доделать все особые случаи.
 		if (isnan(d)) {
-			return print("НеЧисло", module, builder);
+            return print("НеЧисло", llvmData);
 		} else if (isinf(d) && d > 0.0) {
-			return print("∞", module, builder);
+            return print("∞", llvmData);
 		} else if (isinf(d) && d < 0.0) {
-			return print("-∞", module, builder);
+            return print("-∞", llvmData);
 		} else if (absd >= 0.0001 && absd <= 1000.0) {
 			KarString output[50];
 			snprintf(output, 50, "%f", d);
 			KarString* tmp4 = kar_string_create_replace(output, ".", ",");
-			bool result = print(tmp4, module, builder);
+            bool result = print(tmp4, llvmData);
 			KAR_FREE(tmp4);
 			return result;
 		} else {
@@ -161,7 +186,7 @@ static bool generate_identifier(KarToken* token, LLVMModuleRef module, LLVMBuild
 			snprintf(output, 50, "%.4e", d);
 			KarString* tmp4 = kar_string_create_replace(output, ".", ",");
 			KarString* tmp5 = kar_string_create_replace(tmp4, "e", "с");
-			bool result = print(tmp5, module, builder);
+            bool result = print(tmp5, llvmData);
 			KAR_FREE(tmp4);
 			KAR_FREE(tmp5);
 			return result;
@@ -170,38 +195,38 @@ static bool generate_identifier(KarToken* token, LLVMModuleRef module, LLVMBuild
         kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Не корректное дробное число.");
         return false;
 	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_NAN)) {
-		return print("НеЧисло", module, builder);
+        return print("НеЧисло", llvmData);
 	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_INFINITY)) {
-		return print("∞", module, builder);
+        return print("∞", llvmData);
 	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_MINUS_INFINITY)) {
-		return print("-∞", module, builder);
+        return print("-∞", llvmData);
 	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_STRING)) {
-		return print(child5->str, module, builder);
+        return print(child5->str, llvmData);
 	}
 	
     kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Тип аргумента функции не соответствует ожидаемому.");
     return false;
 }
 	
-static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+static bool generate_function(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	if (token->type != KAR_TOKEN_METHOD) {
 		return false;
 	}
 	if (kar_string_equal(token->str, "Запустить")) {
 		LLVMTypeRef func_type = LLVMFunctionType(LLVMVoidType(), NULL, 0, false);
-		LLVMValueRef main_func = LLVMAddFunction(module, "main", func_type);
+        LLVMValueRef main_func = LLVMAddFunction(llvmData->module, "main", func_type);
 		LLVMBasicBlockRef entry = LLVMAppendBasicBlock(main_func, "entry");
-		LLVMPositionBuilderAtEnd(builder, entry);
+        LLVMPositionBuilderAtEnd(llvmData->builder, entry);
 
 		KarToken* body = kar_token_child_get_last(token, 0);
 	
 		for (size_t i = 0; i < kar_token_child_count(body); ++i) {
-            if (!generate_identifier(kar_token_child_get(body, i), module, builder, moduleName, vars, errors)) {
-				LLVMBuildRetVoid(builder);
+            if (!generate_identifier(kar_token_child_get(body, i), llvmData, moduleName, vars, errors)) {
+                LLVMBuildRetVoid(llvmData->builder);
 				return false;
 			}
 		}
-		LLVMBuildRetVoid(builder);
+        LLVMBuildRetVoid(llvmData->builder);
 	} else {
 		// Далее здесь необходимо дописать поддержку других методов.
         kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Методы не поддерживаются. Поддерживается только метод \"Запустить\".");
@@ -210,7 +235,7 @@ static bool generate_function(KarToken* token, LLVMModuleRef module, LLVMBuilder
 	return true;
 }
 	
-static bool generate_module(KarToken* token, LLVMModuleRef module, LLVMBuilderRef builder, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+static bool generate_module(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	if (token->type != KAR_TOKEN_MODULE) {
         kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Внутрення ошибка. Токен не является типом модуль.");
 		return false;
@@ -218,7 +243,7 @@ static bool generate_module(KarToken* token, LLVMModuleRef module, LLVMBuilderRe
 	for (size_t i = 0; i < kar_token_child_count(token); ++i) {
         KarToken* child = kar_token_child_get(token, i);
         if (child->type == KAR_TOKEN_METHOD) {
-            if (!generate_function(kar_token_child_get(token, i), module, builder, moduleName, vars, errors)) {
+            if (!generate_function(kar_token_child_get(token, i), llvmData, moduleName, vars, errors)) {
 				return false;
 			}
 		} else {
@@ -256,10 +281,12 @@ bool kar_generator_run(KarProject* project) {
 	LLVMBuilderRef builder = LLVMCreateBuilderInContext(context);
 	
     KarModule* mod = project->module;
-    if (!generate_module(mod->token, module, builder, mod->name, project->vars, project->errors)) {
+    KarLLVMData* llvmData = kar_llvm_data_create(module, builder);
+    if (!generate_module(mod->token, llvmData, mod->name, project->vars, project->errors)) {
         kar_project_error_list_create_add(project->errors, mod->name, &mod->token->cursor, 1, "Ошибка в генераторе.");
 		return false;
 	}
+    kar_llvm_data_free(llvmData);
 	
 	// generate_hello_world(module, builder);
 	
