@@ -85,14 +85,8 @@ static bool generate_module(KarToken* token, KarLLVMData* llvmData, KarString* m
 	LLVMBuildRetVoid(builder);
 }*/
 
-// TODO: Надо передавать KarProject вместо KarModule.
-extern LLVMValueRef puts_func;
-
 bool kar_generator_run(KarProject* project) {
-	puts_func = NULL;
-	// TODO: обработка ошибок. Добавить.
 	// TODO: Windows настроить кодировку консоли.
-	// TODO: Откомпилированная программа выдает лишнюю строчку в консоль.
 	LLVMContextRef context = LLVMContextCreate();
 	LLVMModuleRef module = LLVMModuleCreateWithNameInContext("asdf", context);
 	LLVMBuilderRef builder = LLVMCreateBuilderInContext(context);

@@ -11,21 +11,6 @@
 
 #include <llvm-c/Core.h>
 
-LLVMValueRef puts_func;
-
-/*static bool print(const KarString* out, KarLLVMData* llvmData) {
-	if (puts_func == NULL) {
-		LLVMTypeRef type = LLVMPointerType(LLVMInt8Type(), 0);
-		LLVMTypeRef puts_type = LLVMFunctionType(LLVMVoidType(), &type, 1, false);
-		puts_func = LLVMAddFunction(llvmData->module, "_kartarika_library_write_chars", puts_type);
-	}
-
-	LLVMValueRef out_string = LLVMBuildGlobalStringPtr(llvmData->builder, out, "helloWorld");
-	LLVMBuildCall(llvmData->builder, puts_func, &out_string, 1, "_kartarika_library_write_chars");
-
-	return true;
-}*/
-
 typedef struct {
 	KarVartree* type;
 	LLVMValueRef value;
