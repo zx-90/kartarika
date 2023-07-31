@@ -136,7 +136,8 @@ static bool fill_standard_lib(KarVars* vars) {
     kar_vartree_child_add(type_console, kar_vartree_create_function("Вывод", "_kartarika_library_write_float32", &type_float32, 1, NULL));
     kar_vartree_child_add(type_console, kar_vartree_create_function("Вывод", "_kartarika_library_write_float64", &type_float64, 1, NULL));
     kar_vartree_child_add(type_console, kar_vartree_create_function("Вывод", "_kartarika_library_write_float64", &type_float, 1, NULL));
-    kar_vartree_child_add(type_console, kar_vartree_create_function("Вывод", "_kartarika_library_write_string", &type_string, 1, NULL));
+	// TODO: Поменять функцию на "_kartarika_library_write_string"
+	kar_vartree_child_add(type_console, kar_vartree_create_function("Вывод", "_kartarika_library_write_chars", &type_string, 1, NULL));
 
     KarVartree* type_thread_error = kar_vartree_create_class("ПотокОшибок");
     kar_vartree_child_add(kar, type_thread_error);
@@ -156,7 +157,8 @@ static bool fill_standard_lib(KarVars* vars) {
     kar_vartree_child_add(type_thread_error, kar_vartree_create_function("Вывод", "_kartarika_library_write_float32", &type_float32, 1, NULL));
     kar_vartree_child_add(type_thread_error, kar_vartree_create_function("Вывод", "_kartarika_library_write_float64", &type_float64, 1, NULL));
     kar_vartree_child_add(type_thread_error, kar_vartree_create_function("Вывод", "_kartarika_library_write_float64", &type_float, 1, NULL));
-    kar_vartree_child_add(type_thread_error, kar_vartree_create_function("Вывод", "_kartarika_library_write_string", &type_string, 1, NULL));
+	// TODO: Поменять функцию на "_kartarika_library_write_string"
+	kar_vartree_child_add(type_thread_error, kar_vartree_create_function("Вывод", "_kartarika_library_write_chars", &type_string, 1, NULL));
 
     KarVartree* type_math = kar_vartree_create_class("Мат");
 	kar_vartree_child_add(kar, type_math);

@@ -21,182 +21,8 @@
 #include "core/alloc.h"
 #include "model/vartree_function_params.h"
 #include "generator/llvm_data.h"
+#include "generator/gen_expression.h"
 
-LLVMValueRef puts_func = NULL;
-
-static bool print(const KarString* out, KarLLVMData* llvmData) {
-    if (puts_func == NULL) {
-        LLVMTypeRef type = LLVMPointerType(LLVMInt8Type(), 0);
-        LLVMTypeRef puts_type = LLVMFunctionType(LLVMVoidType(), &type, 1, false);
-		puts_func = LLVMAddFunction(llvmData->module, "_kartarika_library_write_chars", puts_type);
-    }
-	
-	LLVMValueRef out_string = LLVMBuildGlobalStringPtr(llvmData->builder, out, "helloWorld");
-	LLVMBuildCall(llvmData->builder, puts_func, &out_string, 1, "_kartarika_library_write_chars");
-	
-	return true;
-}
-
-static bool generate_expression(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
-	if (token->type != KAR_TOKEN_COMMAND_EXPRESSION) {
-        kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Токен не является командой.");
-		return false;
-	}
-    KarToken* child1 = kar_token_child_get(token, 0);
-	if (!kar_token_check_type(child1, KAR_TOKEN_SIGN_GET_FIELD)) {
-        kar_project_error_list_create_add(errors, moduleName, &child1->cursor, 1, "Внутренняя ошибка. Токен команды не имеет потомков.");
-        return false;
-	}
-    KarToken* child2 = kar_token_child_get(child1, 0);
-    if (!kar_token_check_type_name(child2, KAR_TOKEN_IDENTIFIER, "Консоль")) {
-        kar_project_error_list_create_add(errors, moduleName, &child2->cursor, 1, "Поддерживается только модуль \"Консоль\".");
-        return false;
-	}
-    KarToken* child3 = kar_token_child_get(child1, 1);
-	if (!kar_token_check_type(child3, KAR_TOKEN_SIGN_CALL_METHOD)) {
-        kar_project_error_list_create_add(errors, moduleName, &child3->cursor, 1, "В модуле \"Консоль\" поддерживается только вызов метода.");
-        return false;
-	}
-    KarToken* child4a = kar_token_child_get(child3, 0);
-    if (!kar_token_check_type_name(child4a, KAR_TOKEN_IDENTIFIER, "Вывод")) {
-        kar_project_error_list_create_add(errors, moduleName, &child4a->cursor, 1, "Поддерживается только метод \"Консоль.Вывод()\".");
-        return false;
-	}
-    KarToken* child4 = kar_token_child_get(child3, 1);
-	if (!kar_token_check_type(child4, KAR_TOKEN_SIGN_ARGUMENT)) {
-        kar_project_error_list_create_add(errors, moduleName, &child4->cursor, 1, "Отсутствуют аргументы у метода \"Консоль.Вывод()\".");
-        return false;
-	}
-    KarToken* child5 = kar_token_child_get(child4, 0);
-
-	KarVartree* console = kar_vars_find(vars, child2->str);
-	if (console == NULL) {
-		kar_project_error_list_create_add(errors, moduleName, &child2->cursor, 1, "Не могу найти объект \"Консоль\".");
-		return false;
-	}
-
-	if (kar_token_check_type(child5, KAR_TOKEN_VAL_TRUE)) {
-		KarString* functionName = kar_vartree_create_full_function_name(child4a->str, &vars->standard.boolType, 1);
-		KarVartree* function = kar_vartree_find(console, functionName);
-        if (function == NULL) {
-            kar_project_error_list_create_add(errors, moduleName, &child2->cursor, 1, "Не могу найти объект \"Консоль.Вывод(Кар.Типы.Буль)\".");
-            KAR_FREE(console);
-            KAR_FREE(functionName);
-            return false;
-        }
-		KarVartreeFunctionParams* params = kar_vartree_get_function_params(function);
-		KarLLVMFunction* llvmFunc = kar_llvm_data_get_function(llvmData, params, vars);
-		if (llvmFunc == NULL) {
-			kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Внутренняя ошибка генератора. Не могу найти функцию.");
-			KAR_FREE(console);
-			KAR_FREE(functionName);
-			return false;
-		}
-
-		LLVMValueRef b = LLVMConstInt(LLVMInt1Type(), 1, 0);
-		LLVMBuildCall(llvmData->builder, kar_llvm_function_get_ref(llvmFunc), &b, 1, llvmFunc->params->issueName);
-		KAR_FREE(console);
-		KAR_FREE(functionName);
-		return true;
-	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_FALSE)) {
-		return print("Нет", llvmData);
-	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_INTEGER)) {
-		// TODO: Эту проверку необходимо перенести в анализатор.
-		// TODO: Проверку надо более тщательно организовать. Сейчас работает только проверка на длину строки.
-		if (strlen(child5->str) > 11) {
-            kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Слишком большое число.");
-            return false;
-		}
-		int32_t val;
-		if (1 != sscanf(child5->str, "%"SCNd32, &val)) {
-            kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Не корректное число.");
-            return false;
-		}
-		return print(child5->str, llvmData);
-	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_HEXADECIMAL)) {
-		// TODO: Эту проверку необходимо перенести в анализатор.
-		if (strlen(child5->str) > 7) {
-            kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Слишком большое шестнадцатеричное число.");
-            return false;
-		}
-		uint32_t val;
-		if (1 != sscanf(child5->str + 3, "%x", &val)) {
-            kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Не корректное шестнадцатеричное число.");
-            return false;
-		}
-		KarString textToWrite[16];
-		sprintf(textToWrite,"%"SCNu32, val);
-		
-		KarString* out_chars = kar_string_create(textToWrite);
-		bool result = print(out_chars, llvmData);
-		KAR_FREE(out_chars);
-		return result;
-	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_FLOAT)) {
-		double d;
-		// TODO: Доделать все особые случаи.
-		if (kar_string_equal(child5->str, "НеЧисло")) {
-			d = NAN;
-		} else {
-			KarString* tmp1 = kar_string_create_replace(child5->str, ",", ".");
-			KarString* tmp2 = kar_string_create_replace(tmp1, "с", "E");
-			KarString* tmp3 = kar_string_create_replace(tmp2, "С", "E");
-			d = strtod(tmp3, NULL);
-			KAR_FREE(tmp1);
-			KAR_FREE(tmp2);
-			KAR_FREE(tmp3);
-			if (isnan(d) || isinf(d)) {
-                kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Не корректное дробное число.");
-                return false;
-			}
-		}
-		
-		if (errno == ERANGE) {
-            kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Не корректное дробное число.");
-            return false;
-		}
-		
-		double absd = fabs(d);
-		// TODO: Доделать все особые случаи.
-		if (isnan(d)) {
-			return print("НеЧисло", llvmData);
-		} else if (isinf(d) && d > 0.0) {
-			return print("∞", llvmData);
-		} else if (isinf(d) && d < 0.0) {
-			return print("-∞", llvmData);
-		} else if (absd >= 0.0001 && absd <= 1000.0) {
-			KarString output[50];
-			snprintf(output, 50, "%f", d);
-			KarString* tmp4 = kar_string_create_replace(output, ".", ",");
-			bool result = print(tmp4, llvmData);
-			KAR_FREE(tmp4);
-			return result;
-		} else {
-			KarString output[50];
-			snprintf(output, 50, "%.4e", d);
-			KarString* tmp4 = kar_string_create_replace(output, ".", ",");
-			KarString* tmp5 = kar_string_create_replace(tmp4, "e", "с");
-			bool result = print(tmp5, llvmData);
-			KAR_FREE(tmp4);
-			KAR_FREE(tmp5);
-			return result;
-		}
-		
-        kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Не корректное дробное число.");
-        return false;
-	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_NAN)) {
-		return print("НеЧисло", llvmData);
-	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_INFINITY)) {
-		return print("∞", llvmData);
-	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_MINUS_INFINITY)) {
-		return print("-∞", llvmData);
-	} else if (kar_token_check_type(child5, KAR_TOKEN_VAL_STRING)) {
-		return print(child5->str, llvmData);
-	}
-	
-    kar_project_error_list_create_add(errors, moduleName, &child5->cursor, 1, "Тип аргумента функции не соответствует ожидаемому.");
-    return false;
-}
-	
 static bool generate_function(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	if (token->type != KAR_TOKEN_METHOD) {
 		return false;
@@ -210,7 +36,7 @@ static bool generate_function(KarToken* token, KarLLVMData* llvmData, KarString*
 		KarToken* body = kar_token_child_get_last(token, 0);
 	
 		for (size_t i = 0; i < kar_token_child_count(body); ++i) {
-			if (!generate_expression(kar_token_child_get(body, i), llvmData, moduleName, vars, errors)) {
+			if (!kar_generate_expression(kar_token_child_get(body, i), llvmData, moduleName, vars, errors)) {
 				LLVMBuildRetVoid(llvmData->builder);
 				return false;
 			}
@@ -259,9 +85,11 @@ static bool generate_module(KarToken* token, KarLLVMData* llvmData, KarString* m
 	LLVMBuildRetVoid(builder);
 }*/
 
-// TODO: Надо передавать KarProject вместо KarModule. 
+// TODO: Надо передавать KarProject вместо KarModule.
+extern LLVMValueRef puts_func;
+
 bool kar_generator_run(KarProject* project) {
-    puts_func = NULL;
+	puts_func = NULL;
 	// TODO: обработка ошибок. Добавить.
 	// TODO: Windows настроить кодировку консоли.
 	// TODO: Откомпилированная программа выдает лишнюю строчку в консоль.

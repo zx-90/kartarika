@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <math.h>
 
 // ----------------------------------------------------------------------------
 // Кар.Типы
@@ -332,7 +333,46 @@ void _kartarika_library_write_float32(float32_t value) {
 // метод Писать(Дробное64 значение)
 void _kartarika_library_write_float64(float64_t value) {
 	// TODO: Здесь печатается double, а это не всегда 64-битное плавающее.
-	printf("%lf", value);
+	double absd = fabs(value);
+	// TODO: Доделать все особые случаи.
+	if (isnan(value)) {
+		printf("НеЧисло");
+	} else if (isinf(value) && value > 0.0) {
+		printf("∞");
+	} else if (isinf(value) && value < 0.0) {
+		printf("-∞");
+	} else if (absd >= 0.0001 && absd <= 1000.0) {
+		char output[50];
+		snprintf(output, 50, "%f", value);
+		char* cur = output;
+		while (*cur != 0) {
+			if (*cur == '.') {
+				*cur = ',';
+			}
+			cur++;
+		}
+		printf("%s", output);
+	} else {
+		char output[50];
+		snprintf(output, 50, "%.4e", value);
+		char* cur = output;
+		while (*cur != 0) {
+			if (*cur == '.') {
+				*cur = ',';
+			}
+			cur++;
+		}
+		while (cur != output) {
+			cur[1] = cur[0];
+			// Меняем e на с
+			if (cur[0] == 'e') {
+				memcpy(cur, "с", 2);
+				break;
+			}
+			cur--;
+		}
+		printf("%s", output);
+	}
 }
 
 // метод Писать(Строка значение)

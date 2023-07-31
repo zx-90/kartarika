@@ -36,23 +36,6 @@ void kar_vartree_function_free(void* ptr) {
 
 KAR_ARRAY_CODE(vartree_function_params_args, KarVartreeFunctionParams, KarVartree, args, nullFree)
 
-KarString* kar_vartree_create_full_path(KarVartree* var) {
-    KarString* result = kar_string_create(var->name);
-    while (kar_vartree_child_parent(var) != NULL) {
-        var = kar_vartree_child_parent(var);
-        if (var->name == NULL) {
-            continue;
-        }
-        KarString* newResult = kar_string_create_concat(".", result);
-        KarString* newResult2 = kar_string_create_concat(var->name, newResult);
-
-        KAR_FREE(result);
-        KAR_FREE(newResult);
-        result = newResult2;
-    }
-    return result;
-}
-
 KarString* kar_vartree_create_full_function_name(const KarString* name, KarVartree** args, size_t args_count) {
     KarStringBuilder builder;
     kar_string_builder_init(&builder);

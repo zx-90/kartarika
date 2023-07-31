@@ -186,6 +186,23 @@ bool kar_vartree_equal(KarVartree* vartree1, KarVartree* vartree2) {
 	return kar_string_equal(vartree1->name, vartree2->name);
 }
 
+KarString* kar_vartree_create_full_path(KarVartree* var) {
+	KarString* result = kar_string_create(var->name);
+	while (kar_vartree_child_parent(var) != NULL) {
+		var = kar_vartree_child_parent(var);
+		if (var->name == NULL) {
+			continue;
+		}
+		KarString* newResult = kar_string_create_concat(".", result);
+		KarString* newResult2 = kar_string_create_concat(var->name, newResult);
+
+		KAR_FREE(result);
+		KAR_FREE(newResult);
+		result = newResult2;
+	}
+	return result;
+}
+
 KarVartree* kar_vartree_find(KarVartree* parent, const KarString* name) {
     for (size_t i = 0; i < kar_vartree_child_count(parent); i++) {
         KarVartree* child = kar_vartree_child_get(parent, i);
@@ -199,8 +216,8 @@ KarVartree* kar_vartree_find(KarVartree* parent, const KarString* name) {
 KAR_TREE_SET_CODE(vartree_child, KarVartree, children, kar_vartree_less, kar_vartree_equal, kar_vartree_free)
 
 KarVartreeFunctionParams* kar_vartree_get_function_params(KarVartree* vartree) {
-    if (vartree->type != KAR_VARTYPE_FUNCTION) {
-        return NULL;
-    }
-    return (KarVartreeFunctionParams*)vartree->params;
+	if (vartree->type != KAR_VARTYPE_FUNCTION) {
+		return NULL;
+	}
+	return (KarVartreeFunctionParams*)vartree->params;
 }

@@ -5,6 +5,7 @@ set(lib_generator_SRC
     src/llvm_function.c
     src/llvm_data.c
 
+	src/gen_expression.c
     src/generator.c
 
 )

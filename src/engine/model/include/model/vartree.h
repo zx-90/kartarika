@@ -85,6 +85,7 @@ void kar_vartree_free(KarVartree* vartree);
 bool kar_vartree_less(KarVartree* vartree1, KarVartree* vartree2);
 bool kar_vartree_equal(KarVartree* vartree1, KarVartree* vartree2);
 
+KarString* kar_vartree_create_full_path(KarVartree* var);
 KarVartree* kar_vartree_find(KarVartree *parent, const KarString* name);
 
 KAR_TREE_SET_HEADER(vartree_child, KarVartree)
