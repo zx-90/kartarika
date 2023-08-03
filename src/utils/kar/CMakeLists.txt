@@ -16,6 +16,7 @@ elseif(UNIX)
 target_link_libraries(${UTIL_NAME} engine)
 endif()
 
+# TODO: Копировать  dll надо только в системе Windows. Необходимо убрать это из Linux.
 add_custom_command(
 		TARGET ${UTIL_NAME} POST_BUILD 
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}

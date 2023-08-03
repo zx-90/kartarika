@@ -341,7 +341,7 @@ void _kartarika_library_write_float64(float64_t value) {
 		printf("∞");
 	} else if (isinf(value) && value < 0.0) {
 		printf("-∞");
-	} else if (absd >= 0.0001 && absd <= 1000.0) {
+	} else if (absd >= 0.0001 && absd < 10000.0) {
 		char output[50];
 		snprintf(output, 50, "%f", value);
 		char* cur = output;
@@ -354,7 +354,7 @@ void _kartarika_library_write_float64(float64_t value) {
 		printf("%s", output);
 	} else {
 		char output[50];
-		snprintf(output, 50, "%.4e", value);
+		snprintf(output, 50, "%e", value);
 		char* cur = output;
 		while (*cur != 0) {
 			if (*cur == '.') {

@@ -9,6 +9,8 @@
 #include <string.h>
 #include <errno.h>
 
+#include "core/unicode.h"
+
 #include <llvm-c/Core.h>
 
 typedef struct {
@@ -45,16 +47,21 @@ static KarExpressionResult get_val_false(KarVars* vars) {
 
 static KarExpressionResult get_val_integer(KarToken* token, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	// TODO: Эту проверку необходимо перенести в анализатор.
-	// TODO: Проверку надо более тщательно организовать. Сейчас работает только проверка на длину строки.
-	if (strlen(token->str) > 11) {
-		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Слишком большое число.");
-		return kar_expression_result_bad();
-	}
-	int32_t val;
-	if (1 != sscanf(token->str, "%"SCNd32, &val)) {
+	KarString* end;
+	long val = strtol(token->str, &end, 10);
+	if (end < token->str + strlen(token->str)) {
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Не корректное число.");
 		return kar_expression_result_bad();
 	}
+	if (val > 2147483647) {
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Слишком большое число.");
+		return kar_expression_result_bad();
+	}
+	if (val < -2147483648) {
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Слишком маленькое число.");
+		return kar_expression_result_bad();
+	}
+
 	KarExpressionResult result;
 	result.type = vars->standard.int32Type;
 	result.value = LLVMConstInt(LLVMInt32Type(), (long long unsigned int)val, 0);
@@ -63,15 +70,41 @@ static KarExpressionResult get_val_integer(KarToken* token, KarString* moduleNam
 
 static KarExpressionResult get_val_hexadecimal(KarToken* token, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	// TODO: Эту проверку необходимо перенести в анализатор.
-	if (strlen(token->str) > 7) {
-		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Слишком большое шестнадцатеричное число.");
+	size_t len = strlen(token->str);
+	if (len < 4) {
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Внутренняя ошибка. Длина идентификатора шестнадцатеричного числа менее 2 символов.");
 		return kar_expression_result_bad();
 	}
-	uint32_t val;
-	if (1 != sscanf(token->str + 3, "%x", &val)) {
-		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Не корректное шестнадцатеричное число.");
-		return kar_expression_result_bad();
+
+	long long unsigned int val = 0;
+	size_t unicodeLen = 0;
+	bool zeroLed = false;
+	uint32_t buffer = 0;
+	for (size_t count = 3; count < len;) {
+		val *= 16;
+		buffer = kar_unicode_get(&token->str[count], &count);
+		if (buffer >= 0x0030 && buffer <= 0x0039) {
+			val += (buffer - 0x0030);
+		} else if (buffer >= 0x0410 && buffer <= 0x0415) {
+			val += (buffer - 0x0410 + 10);
+		} else if (buffer >= 0x0430 && buffer <= 0x0435) {
+			val += (buffer - 0x0430 + 10);
+		} else {
+			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Некорретная запись шестандцатеричного числа.");
+			return kar_expression_result_bad();
+		}
+		if (val != 0) {
+			zeroLed = true;
+		}
+		if (zeroLed) {
+			unicodeLen++;
+			if (unicodeLen > 8) {
+				kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Слишком длинное шестнадцатеричное число.");
+				return kar_expression_result_bad();
+			}
+		}
 	}
+
 	KarExpressionResult result;
 	result.type = vars->standard.unsigned32Type;
 	result.value = LLVMConstInt(LLVMInt32Type(), (long long unsigned int)val, 0);
@@ -79,6 +112,7 @@ static KarExpressionResult get_val_hexadecimal(KarToken* token, KarString* modul
 }
 
 static KarExpressionResult get_val_float(KarToken* token, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	// TODO: Эту проверку необходимо перенести в анализатор.
 	double d;
 	// TODO: Доделать все особые случаи.
 	if (kar_string_equal(token->str, "НеЧисло")) {
