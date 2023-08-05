@@ -102,7 +102,7 @@ static bool fill_standard_lib(KarVars* vars) {
 	KarVartree* type_unclean = kar_vartree_create_unclean("Неопределённость");
 	kar_vartree_child_add(types, type_unclean);
 	
-	KarVartree* type_unclean_unsigned = kar_vartree_create_unclean_module(type_unsigned);
+	KarVartree* type_unclean_unsigned = kar_vartree_create_unclean_class(type_unsigned);
 	kar_vartree_child_add(type_unclean, type_unclean_unsigned);
 	
 	KarVartree* type_string = kar_vartree_create_string("Строка");
@@ -114,7 +114,7 @@ static bool fill_standard_lib(KarVars* vars) {
 	KarVartree* string_substring_args[] = {type_unsigned, type_unsigned};
     kar_vartree_child_add(type_string, kar_vartree_create_function("Подстрока", "_kartarika_library_string_substring", string_substring_args, 2, type_string));
 	
-	KarVartree* type_unclean_string = kar_vartree_create_unclean_module(type_string);
+	KarVartree* type_unclean_string = kar_vartree_create_unclean_class(type_string);
 	kar_vartree_child_add(type_unclean, type_unclean_string);
 
     KarVartree* type_console = kar_vartree_create_class("Консоль");
@@ -185,6 +185,7 @@ static bool fill_standard_lib(KarVars* vars) {
     vars->standard.float64Type = type_float64;
     vars->standard.floatType = type_float;
     vars->standard.stringType = type_string;
+	vars->standard.unclean = type_unclean;
 
     return true;
 }

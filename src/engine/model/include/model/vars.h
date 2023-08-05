@@ -32,6 +32,8 @@ typedef struct {
         KarVartree* floatType;
 
         KarVartree* stringType;
+
+		KarVartree* unclean;
     } standard;
 } KarVars;
 

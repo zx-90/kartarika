@@ -41,11 +41,11 @@ KarVartree* kar_vartree_create_package(const KarString* name) {
 }
 
 KarVartree* kar_vartree_create_class(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_MODULE, name);
+	return vartree_create_name(KAR_VARTYPE_CLASS, name);
 }
 
 KarVartree* kar_vartree_create_class_link(const KarString* name, KarVartree* type) {
-	KarVartree* result = vartree_create_name(KAR_VARTYPE_MODULE_LINK, name);
+	KarVartree* result = vartree_create_name(KAR_VARTYPE_CLASS_LINK, name);
     result->params = type;
 	return result;
 }
@@ -102,8 +102,8 @@ KarVartree* kar_vartree_create_unclean(const KarString* name) {
 	return vartree_create_name(KAR_VARTYPE_UNCLEAN, name);
 }
 
-KarVartree* kar_vartree_create_unclean_module(KarVartree* type) {
-    KarVartree* result = vartree_create_name(KAR_VARTYPE_UNCLEAN_MODULE, "?");
+KarVartree* kar_vartree_create_unclean_class(KarVartree* type) {
+    KarVartree* result = vartree_create_name(KAR_VARTYPE_UNCLEAN_CLASS, "?");
     result->params = type;
 	return result;
 }

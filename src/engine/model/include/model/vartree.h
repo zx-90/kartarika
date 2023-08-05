@@ -31,15 +31,15 @@ typedef enum {
 	
 	// TODO: Сделать различие между шаблоном класса и классом.
 	// TODO: Представить Неопределённость как шаблон класса.
-	KAR_VARTYPE_UNCLEAN_MODULE,
 	KAR_VARTYPE_UNCLEAN,
-	
+	KAR_VARTYPE_UNCLEAN_CLASS,
+
 	KAR_VARTYPE_CONST,
 	KAR_VARTYPE_VARIABLE,
 	KAR_VARTYPE_FUNCTION,
 	
-	KAR_VARTYPE_MODULE_LINK,
-	KAR_VARTYPE_MODULE,
+	KAR_VARTYPE_CLASS_LINK,
+	KAR_VARTYPE_CLASS,
 	
 	KAR_VARTYPE_PACKET,
 	KAR_VARTYPE_ROOT
@@ -65,7 +65,7 @@ KarVartree* kar_vartree_create_variable(const KarString* name, KarVartree* type)
 KarVartree* kar_vartree_create_const(const KarString* name, KarVartree* type, void* value);
 
 KarVartree* kar_vartree_create_unclean(const KarString* name);
-KarVartree* kar_vartree_create_unclean_module(KarVartree* type);
+KarVartree* kar_vartree_create_unclean_class(KarVartree* type);
 
 KarVartree* kar_vartree_create_string(const KarString* name);
 KarVartree* kar_vartree_create_float64(const KarString* name);
