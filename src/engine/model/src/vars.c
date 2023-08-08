@@ -39,6 +39,9 @@ void kar_vars_free(KarVars* vars) {
 }
 
 KarVartree* kar_vars_find(KarVars* vars, KarString* name) {
+	if (name == NULL) {
+		return NULL;
+	}
     for (size_t i = 0; i < kar_vars_default_list_count(vars); i++) {
         KarVartree* result = kar_vartree_find(kar_vars_default_list_get(vars, i), name);
         if (result != NULL) {

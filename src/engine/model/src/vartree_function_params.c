@@ -37,6 +37,9 @@ void kar_vartree_function_free(void* ptr) {
 KAR_ARRAY_CODE(vartree_function_params_args, KarVartreeFunctionParams, KarVartree, args, nullFree)
 
 KarString* kar_vartree_create_full_function_name(const KarString* name, KarVartree** args, size_t args_count) {
+	if (name == NULL) {
+		return NULL;
+	}
     KarStringBuilder builder;
     kar_string_builder_init(&builder);
 

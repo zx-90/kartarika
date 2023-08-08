@@ -117,7 +117,9 @@ static bool fill_standard_lib(KarVars* vars) {
 	KarVartree* type_unclean_string = kar_vartree_create_unclean_class(type_string);
 	kar_vartree_child_add(type_unclean, type_unclean_string);
 
-    KarVartree* type_console = kar_vartree_create_class("Консоль");
+	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_bool_to_bool", &type_bool, 1, type_bool));
+
+	KarVartree* type_console = kar_vartree_create_class("Консоль");
 	kar_vartree_child_add(kar, type_console);
     kar_vartree_child_add(type_console, kar_vartree_create_function("Ввод", "_kartarika_library_read_string", NULL, 0, type_unclean_string));
     kar_vartree_child_add(type_console, kar_vartree_create_function("Вывод", "_kartarika_library_write_bool", &type_bool, 1, NULL));

@@ -223,6 +223,9 @@ _kartarika_library_string* _kartarika_library_string_substring(_kartarika_librar
 // Преобразование типов
 // ----------------------------------------------------------------------------
 
+bool _kartarika_library_convert_bool_to_bool(bool b) {
+	return b;
+}
 
 
 // ----------------------------------------------------------------------------

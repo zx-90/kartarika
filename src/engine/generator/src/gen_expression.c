@@ -170,15 +170,18 @@ static KarExpressionResult get_val_string(KarToken* token, KarLLVMData* llvmData
 	return result;
 }
 
+static KarVartree* get_new_context(KarVartree* context, KarString* name, KarVars* vars) {
+	if (context == NULL) {
+		return kar_vars_find(vars, name);
+	} else {
+		return kar_vartree_find(context, name);
+	}
+}
+
 static KarExpressionResult get_field(KarVartree* context, KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarVartree* newContext;
-	if (context == NULL) {
-		newContext = kar_vars_find(vars, left->str);
-	} else {
-		newContext = kar_vartree_find(context, left->str);
-	}
+	KarVartree* newContext = get_new_context(context, left->str, vars);
 	if (newContext == NULL) {
 		KarString* error_text = kar_string_create_format("Не могу найти поле \"%s\" в объекте \"%s\".", left->str, kar_vartree_create_full_path(context));
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, error_text);
@@ -188,6 +191,14 @@ static KarExpressionResult get_field(KarVartree* context, KarToken* token, KarLL
 	return calc_expression(newContext, right, llvmData, moduleName, vars, errors);
 }
 
+// TODO: Перенсти в нужное место, возможно есть копия.
+static KarString* get_token_string(KarToken* token) {
+	if (token->type == KAR_TOKEN_VAR_BOOL) {
+		return "Буль";
+	}
+	return token->str;
+}
+
 static KarExpressionResult get_call_method(KarVartree* context, KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KAR_CREATES(argsVartree, KarVartree*, kar_token_child_count(token));
 	KAR_CREATES(argsLLVM, LLVMValueRef, kar_token_child_count(token));
@@ -195,7 +206,7 @@ static KarExpressionResult get_call_method(KarVartree* context, KarToken* token,
 	for (size_t i = 0; i < kar_token_child_count(token); i++) {
 		KarToken* child = kar_token_child_get(token , i);
 		if (child->type == KAR_TOKEN_SIGN_ARGUMENT) {
-			KarExpressionResult res = calc_expression(context, kar_token_child_get(child, 0), llvmData, moduleName, vars, errors);
+			KarExpressionResult res = calc_expression(NULL, kar_token_child_get(child, 0), llvmData, moduleName, vars, errors);
 			if (!kar_expression_result_is_good(res)) {
 				KAR_FREE(argsVartree);
 				KAR_FREE(argsLLVM);
@@ -208,10 +219,10 @@ static KarExpressionResult get_call_method(KarVartree* context, KarToken* token,
 	}
 
 	KarToken* funcName = kar_token_child_get(token, 0);
-	KarString* functionName = kar_vartree_create_full_function_name(funcName->str, argsVartree, num);
+	KarString* functionName = kar_vartree_create_full_function_name(get_token_string(funcName), argsVartree, num);
 	KAR_FREE(argsVartree);
 
-	KarVartree* function = kar_vartree_find(context, functionName);
+	KarVartree* function = get_new_context(context, functionName, vars);
 	KAR_FREE(functionName);
 	if (function == NULL) {
 		kar_project_error_list_create_add(errors, moduleName, &funcName->cursor, 1, "Не могу найти объект \"Консоль.Вывод(Кар.Типы.Буль)\".");
