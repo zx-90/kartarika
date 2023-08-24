@@ -221,3 +221,10 @@ KarVartreeFunctionParams* kar_vartree_get_function_params(KarVartree* vartree) {
 	}
 	return (KarVartreeFunctionParams*)vartree->params;
 }
+
+KarVartree* kar_vartree_get_unclean_class(KarVartree* vartree) {
+	if (vartree->type != KAR_VARTYPE_UNCLEAN_CLASS) {
+		return NULL;
+	}
+	return (KarVartree*)vartree->params;
+}

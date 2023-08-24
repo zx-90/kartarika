@@ -166,7 +166,9 @@ static KarExpressionResult get_val_minus_infinity(KarVars* vars) {
 static KarExpressionResult get_val_string(KarToken* token, KarLLVMData* llvmData, KarVars* vars) {
 	KarExpressionResult result;
 	result.type = vars->standard.stringType;
-	result.value = LLVMBuildGlobalStringPtr(llvmData->builder, token->str, "_kartarika_string");
+
+	LLVMValueRef ref = LLVMBuildGlobalStringPtr(llvmData->builder, token->str, "_kartarika_string");
+	result.value = LLVMBuildCall(llvmData->builder, llvmData->createString, &ref, 1, "_kartarika_library_string_create");
 	return result;
 }
 
@@ -195,6 +197,8 @@ static KarExpressionResult get_field(KarVartree* context, KarToken* token, KarLL
 static KarString* get_token_string(KarToken* token) {
 	if (token->type == KAR_TOKEN_VAR_BOOL) {
 		return "Буль";
+	} else if (token->type == KAR_TOKEN_VAR_INTEGER32) {
+		return "Целое32";
 	}
 	return token->str;
 }
@@ -223,12 +227,14 @@ static KarExpressionResult get_call_method(KarVartree* context, KarToken* token,
 	KAR_FREE(argsVartree);
 
 	KarVartree* function = get_new_context(context, functionName, vars);
-	KAR_FREE(functionName);
 	if (function == NULL) {
-		kar_project_error_list_create_add(errors, moduleName, &funcName->cursor, 1, "Не могу найти объект \"Консоль.Вывод(Кар.Типы.Буль)\".");
+		KarString* errorText = kar_string_create_format("Не могу найти объект \"%s\".", functionName);
+		kar_project_error_list_create_add(errors, moduleName, &funcName->cursor, 1, errorText);
+		KAR_FREE(functionName);
 		KAR_FREE(argsLLVM);
 		return kar_expression_result_bad();
 	}
+	KAR_FREE(functionName);
 	KarVartreeFunctionParams* params = kar_vartree_get_function_params(function);
 	KarLLVMFunction* llvmFunc = kar_llvm_data_get_function(llvmData, params, vars);
 	if (llvmFunc == NULL) {
@@ -241,6 +247,52 @@ static KarExpressionResult get_call_method(KarVartree* context, KarToken* token,
 	result.type = params->returnType;
 	result.value = LLVMBuildCall(llvmData->builder, kar_llvm_function_get_ref(llvmFunc), argsLLVM, (unsigned int)num, llvmFunc->params->issueName);
 	KAR_FREE(argsLLVM);
+	return result;
+}
+
+static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	KarToken* leftToken = kar_token_child_get(token, 0);
+	KarExpressionResult left = calc_expression(NULL, leftToken, llvmData, moduleName, vars, errors);
+	if (left.type->type != KAR_VARTYPE_UNCLEAN_CLASS) {
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Левая часть операции раскрытия выражения не является неопределённостью.");
+		return kar_expression_result_bad();
+	}
+
+	KarString* functionName = kar_vartree_create_full_function_name("ПустойЛи", NULL, 0);
+	KarVartree* function = get_new_context(vars->standard.unclean, functionName, vars);
+	KarVartreeFunctionParams* params = kar_vartree_get_function_params(function);
+	KarLLVMFunction* llvmFunc = kar_llvm_data_get_function(llvmData, params, vars);
+	LLVMValueRef expressionValue = LLVMBuildCall(llvmData->builder, kar_llvm_function_get_ref(llvmFunc), &left.value, 1, llvmFunc->params->issueName);
+
+	LLVMValueRef theFunction = LLVMGetBasicBlockParent(LLVMGetInsertBlock(llvmData->builder));
+	LLVMBasicBlockRef thenBlock = LLVMAppendBasicBlock(theFunction, "then");
+	LLVMBasicBlockRef elseBlock = LLVMAppendBasicBlock(theFunction, "else");
+	LLVMBasicBlockRef mergeBlock = LLVMAppendBasicBlock(theFunction, "merge");
+	LLVMBuildCondBr(llvmData->builder, expressionValue, thenBlock, elseBlock);
+
+	LLVMPositionBuilderAtEnd(llvmData->builder, thenBlock);
+	KarToken* rightToken = kar_token_child_get(token, 1);
+	KarExpressionResult right = calc_expression(NULL, rightToken, llvmData, moduleName, vars, errors);
+	if (right.type != kar_vartree_get_unclean_class(left.type)) {
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "В операции раскрытия типы левой и правой части не совпадают.");
+		return kar_expression_result_bad();
+	}
+	LLVMBuildBr(llvmData->builder, mergeBlock);
+	thenBlock = LLVMGetInsertBlock(llvmData->builder);
+
+	LLVMPositionBuilderAtEnd(llvmData->builder, elseBlock);
+	LLVMValueRef cleanLeft = LLVMBuildCall(llvmData->builder, llvmData->uncleanBool, &left.value, 1, llvmFunc->params->issueName);
+	LLVMBuildBr(llvmData->builder, mergeBlock);
+	elseBlock = LLVMGetInsertBlock(llvmData->builder);
+
+	LLVMPositionBuilderAtEnd(llvmData->builder, mergeBlock);
+	LLVMValueRef phi = LLVMBuildPhi(llvmData->builder, LLVMTypeOf(right.value), "ph");
+	LLVMAddIncoming(phi, &right.value, &thenBlock, 1);
+	LLVMAddIncoming(phi, &cleanLeft, &elseBlock, 1);
+
+	KarExpressionResult result;
+	result.type = right.type;
+	result.value = phi;
 	return result;
 }
 
@@ -258,6 +310,7 @@ static KarExpressionResult calc_expression(KarVartree* context, KarToken* token,
 
 	case(KAR_TOKEN_SIGN_GET_FIELD): return get_field(context, token, llvmData, moduleName, vars, errors);
 	case(KAR_TOKEN_SIGN_CALL_METHOD): return get_call_method(context, token, llvmData, moduleName, vars, errors);
+	case(KAR_TOKEN_SIGN_CLEAN): return get_sign_clean(token, llvmData, moduleName, vars, errors);
 	default: return kar_expression_result_bad();
 	}
 }

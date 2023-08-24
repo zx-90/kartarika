@@ -49,7 +49,7 @@ static LLVMTypeRef get_llvm_type(KarVartree* type, KarVars* vars) {
     } else if (type == vars->standard.stringType) {
         return LLVMPointerType(LLVMInt8Type(), 0);
     }
-    return NULL;
+	return LLVMPointerType(LLVMInt8Type(), 0);
 }
 
 void kar_llvm_function_init(KarLLVMFunction* func, LLVMModuleRef module, KarVars* vars) {

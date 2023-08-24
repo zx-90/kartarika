@@ -92,5 +92,6 @@ KAR_TREE_SET_HEADER(vartree_child, KarVartree)
 KAR_ARRAY_HEADER(vartree_link, KarVartree, KarVartree)
 
 KarVartreeFunctionParams* kar_vartree_get_function_params(KarVartree* vartree);
+KarVartree* kar_vartree_get_unclean_class(KarVartree* vartree);
 
 #endif // KAR_VARTREE_H

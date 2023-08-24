@@ -362,9 +362,11 @@ KarError* kar_test_run(KarTest* test, const KarString* dir) {
 			}
 		} else {
 			if (!test->compiler_error_file.is) {
+				kar_project_error_list_print(project->errors);
+				KarError* result = kar_error_register(1, "Ошибка в компиляторе. Ожидалось, что компилятор отработает нормально, но он вернул ошибку.");
 				kar_project_free(project);
 				KAR_FREE(path2);
-				return kar_error_register(1, "Ошибка в компиляторе. Ожидалось, что компилятор отработает нормально, но он вернул ошибку.");
+				return result;
 			}
 		}
 	}
@@ -372,7 +374,12 @@ KarError* kar_test_run(KarTest* test, const KarString* dir) {
 	if (test->out_file.is) {
 		// TODO: Зависит от ОС. Перетащить в соответствующий модуль.
 		#ifdef __linux__
-				system("./a.out > out.txt 2>&1");
+		if (system("./a.out > out.txt 2>&1") < 0) {
+			KarError* result = kar_error_register(1, "Ошибка при линковке программы");
+			kar_project_free(project);
+			KAR_FREE(path2);
+			return result;
+		}
 		#elif _WIN32
 				system("a.exe > out.txt 2>&1");
 		#endif

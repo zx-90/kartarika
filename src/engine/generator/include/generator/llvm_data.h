@@ -12,12 +12,20 @@
 #include "llvm_function.h"
 
 typedef struct {
-    LLVMModuleRef module;
+	LLVMContextRef context;
+	LLVMModuleRef module;
     LLVMBuilderRef builder;
     KAR_SET_STRUCT(KarLLVMFunction) functions;
+
+	LLVMValueRef createPointer;
+	LLVMValueRef addRefPointer;
+	LLVMValueRef freePointer;
+	LLVMValueRef createString;
+
+	LLVMValueRef uncleanBool;
 } KarLLVMData;
 
-KarLLVMData* kar_llvm_data_create(LLVMModuleRef module, LLVMBuilderRef builder);
+KarLLVMData* kar_llvm_data_create(LLVMContextRef context, LLVMModuleRef module, LLVMBuilderRef builder);
 void kar_llvm_data_free(KarLLVMData* data);
 
 KAR_SET_HEADER(llvm_data_functions, KarLLVMData, KarLLVMFunction)

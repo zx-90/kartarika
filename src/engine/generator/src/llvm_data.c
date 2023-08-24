@@ -6,14 +6,35 @@
 
 #include "generator/llvm_data.h"
 
-KarLLVMData* kar_llvm_data_create(LLVMModuleRef module, LLVMBuilderRef builder) {
+#include <llvm-c/Core.h>
+
+KarLLVMData* kar_llvm_data_create(LLVMContextRef context, LLVMModuleRef module, LLVMBuilderRef builder) {
     KAR_CREATE(result, KarLLVMData);
 
+	result->context = context;
     result->module = module;
     result->builder = builder;
     kar_llvm_data_functions_init(result);
 
-    return result;
+	LLVMTypeRef pointerType = LLVMPointerType(LLVMInt8Type(), 0);
+	LLVMTypeRef returnType = LLVMPointerType(LLVMInt8Type(), 0);
+
+	LLVMTypeRef createPointerFuncType = LLVMFunctionType(returnType, &pointerType, 1, false);
+	result->createPointer = LLVMAddFunction(module, "_kartarika_smart_pointer_create", createPointerFuncType);
+
+	LLVMTypeRef addRefFuncType = LLVMFunctionType(LLVMVoidType(), &pointerType, 1, false);
+	result->addRefPointer = LLVMAddFunction(module, "_kartarika_smart_pointer_add_ref", addRefFuncType);
+
+	LLVMTypeRef freeFuncType = LLVMFunctionType(LLVMVoidType(), &pointerType, 1, false);
+	result->freePointer = LLVMAddFunction(module, "_kartarika_smart_pointer_free", freeFuncType);
+
+	LLVMTypeRef createStringFuncType = LLVMFunctionType(returnType, &pointerType, 1, false);
+	result->createString = LLVMAddFunction(module, "_kartarika_library_string_create", createStringFuncType);
+
+	LLVMTypeRef uncleanBoolFuncType = LLVMFunctionType(LLVMInt1Type(), &pointerType, 1, false);
+	result->uncleanBool = LLVMAddFunction(module, "_kartarika_unclean_bool", uncleanBoolFuncType);
+
+	return result;
 }
 
 void kar_llvm_data_free(KarLLVMData* data) {

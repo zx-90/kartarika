@@ -92,7 +92,7 @@ bool kar_generator_run(KarProject* project) {
 	LLVMBuilderRef builder = LLVMCreateBuilderInContext(context);
 	
     KarModule* mod = project->module;
-	KarLLVMData* llvmData = kar_llvm_data_create(module, builder);
+	KarLLVMData* llvmData = kar_llvm_data_create(context, module, builder);
 	if (!generate_module(mod->token, llvmData, mod->name, project->vars, project->errors)) {
         kar_project_error_list_create_add(project->errors, mod->name, &mod->token->cursor, 1, "Ошибка в генераторе.");
 		return false;
@@ -164,7 +164,7 @@ bool kar_generator_run(KarProject* project) {
 	
 	// TODO: Разобраться можно ли это как-то без clang делать. Только с помощью llvm.
 #ifdef __linux__
-    bool result = system("clang-9 asdf.o library.o -o a.out") == 0;
+	bool result = system("clang-9 asdf.o library.o -o a.out") == 0;
 #elif _WIN32
     bool result = system("clang.exe asdf.o library.o -o a.exe") == 0;
 	/*system("B:\\llvmexe\\LLVM\\bin\\clang.exe link.exe /ENTRY:main asdf.o");*/

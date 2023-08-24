@@ -85,40 +85,50 @@ const float64_t _kartarika_library_float64_max = 1.79769e+308;
 const float64_t _kartarika_library_float64_epsilon = 2.22045e-16;
 
 typedef struct {
-	size_t refs;
-	char* str;
-} _kartarika_library_string;
+	size_t count;
+	// TODO: Добавить ссылку на информацию о модуле.
+	void* value;
+} _kartarika_smart_pointer;
 
-_kartarika_library_string* _kartarika_library_string_create(char* str) {
-	_kartarika_library_string* result = (_kartarika_library_string*)malloc(sizeof(_kartarika_library_string));
+_kartarika_smart_pointer* _kartarika_smart_pointer_create(void* value) {
+	_kartarika_smart_pointer* result = (_kartarika_smart_pointer*)calloc(1, sizeof(_kartarika_smart_pointer));
 
-	result->refs = 1;
-	result->str = str;
+	result->count = 1;
+	result->value = value;
+	return result;
+}
+
+void _kartarika_smart_pointer_add_ref(_kartarika_smart_pointer* pointer) {
+	pointer->count++;
+}
+
+void _kartarika_smart_pointer_free(_kartarika_smart_pointer* pointer) {
+	pointer->count--;
+	if (pointer->count == 0) {
+		// TODO: Здесь надо уничтожать значение через специальную функцию, определённую для каждого класса.
+		//       Для строк и неопределённостей пока сойдёт.
+		free(pointer->value);
+	}
+}
+
+_kartarika_smart_pointer* _kartarika_library_string_create(char* str) {
+	size_t len = strlen(str);
+	char* str1 = (char*)malloc(sizeof(char) * (len + 1));
+	strcpy(str1, str);
+	_kartarika_smart_pointer* result = _kartarika_smart_pointer_create(str1);
 
 	return result;
 }
 
-void _kartarika_library_string_add_ref(_kartarika_library_string* str) {
-	str->refs++;
-}
-
-void _kartarika_library_string_free(_kartarika_library_string* str) {
-	str->refs--;
-	if (str->refs == 0) {
-		free(str->str);
-		free(str);
-	}
-}
-
-_kartarika_library_string* _kartarika_library_string_sum(_kartarika_library_string* str1, _kartarika_library_string* str2) {
-	size_t len1 = strlen(str1->str);
-	size_t len2 = strlen(str2->str);
+_kartarika_smart_pointer* _kartarika_library_string_sum(_kartarika_smart_pointer* str1, _kartarika_smart_pointer* str2) {
+	size_t len1 = strlen((char*)str1->value);
+	size_t len2 = strlen((char*)str2->value);
 	size_t len = len1 + len2 + 1;
 	char* str = (char*)malloc(sizeof(char) * len);
-	strcpy(str, str1->str);
-	strcpy(str + len1, str2->str);
+	strcpy(str, (char*)str1->value);
+	strcpy(str + len1, (char*)str2->value);
 	str[len - 1] = 0;
-	return _kartarika_library_string_create(str);
+	return _kartarika_smart_pointer_create(str);
 }
 
 static bool is_char_begin(char c) {
@@ -128,9 +138,9 @@ static bool is_char_begin(char c) {
 			(((c ^ 0xF0) & 0xF8) == 0);
 }
 
-uint32_t _kartarika_library_string_length(_kartarika_library_string* str) {
+uint32_t _kartarika_library_string_length(_kartarika_smart_pointer* str) {
 	uint32_t len = 0;
-	char* cur = str->str;
+	char* cur = (char*)str->value;
 	while (cur) {
 		if (is_char_begin(*cur)) {
 			len++;
@@ -140,18 +150,18 @@ uint32_t _kartarika_library_string_length(_kartarika_library_string* str) {
 	return len;
 }
 
-uint32_t* _kartarika_library_string_find(_kartarika_library_string* str, _kartarika_library_string* substr) {
-	size_t len = strlen(str->str);
-	size_t sublen = strlen(substr->str);
+uint32_t* _kartarika_library_string_find(_kartarika_smart_pointer* str, _kartarika_smart_pointer* substr) {
+	size_t len = strlen((char*)str->value);
+	size_t sublen = strlen((char*)substr->value);
 	if (sublen > len) {
 		return NULL;
 	}
 	uint32_t pos = 0;
 	for (size_t i = 0; i < len - sublen; i++) {
-		if (!is_char_begin(str->str[i])) {
+		if (!is_char_begin(((char*)str->value)[i])) {
 			continue;
 		}
-		if (memcpy(str->str + i, substr->str, sublen) == 0) {
+		if (memcpy((char*)str->value + i, (char*)substr->value, sublen) == 0) {
 			uint32_t* result = (uint32_t*)malloc(sizeof(uint32_t));
 			*result = pos;
 			return result;
@@ -161,18 +171,18 @@ uint32_t* _kartarika_library_string_find(_kartarika_library_string* str, _kartar
 	return NULL;
 }
 
-uint32_t* _kartarika_library_string_find_from(_kartarika_library_string* str, uint32_t pos, _kartarika_library_string* substr) {
-	size_t len = strlen(str->str);
-	size_t sublen = strlen(substr->str);
+uint32_t* _kartarika_library_string_find_from(_kartarika_smart_pointer* str, uint32_t pos, _kartarika_smart_pointer* substr) {
+	size_t len = strlen((char*)str->value);
+	size_t sublen = strlen((char*)substr->value);
 	if (sublen > len) {
 		return NULL;
 	}
 	uint32_t curpos = 0;
 	for (size_t i = 0; i < len - sublen; i++) {
-		if (!is_char_begin(str->str[i])) {
+		if (!is_char_begin(((char*)str->value)[i])) {
 			continue;
 		}
-		if (curpos >= pos && memcpy(str->str + i, substr->str, sublen) == 0) {
+		if (curpos >= pos && memcpy((char*)str->value + i, (char*)substr->value, sublen) == 0) {
 			uint32_t* result = (uint32_t*)malloc(sizeof(uint32_t));
 			*result = curpos;
 			return result;
@@ -182,8 +192,8 @@ uint32_t* _kartarika_library_string_find_from(_kartarika_library_string* str, ui
 	return NULL;	
 }
 
-_kartarika_library_string* _kartarika_library_string_substring(_kartarika_library_string* str, uint32_t pos, uint32_t length) {
-	size_t bytelen = strlen(str->str);
+_kartarika_smart_pointer* _kartarika_library_string_substring(_kartarika_smart_pointer* str, uint32_t pos, uint32_t length) {
+	size_t bytelen = strlen((char*)str->value);
 	size_t bytebegin = 0;
 	size_t byteend = 0;
 	bool foundbegin = false;
@@ -191,7 +201,7 @@ _kartarika_library_string* _kartarika_library_string_substring(_kartarika_librar
 	
 	uint32_t charpos = 0;
 	for (size_t i = 0; i < bytelen; i++) {
-		if (!is_char_begin(str->str[i])) {
+		if (!is_char_begin(((char*)str->value)[i])) {
 			continue;
 		}
 		if (charpos == pos) {
@@ -214,19 +224,132 @@ _kartarika_library_string* _kartarika_library_string_substring(_kartarika_librar
 		byteend = bytelen;
 	}
 	char* strres = (char*)malloc(sizeof(char) * (byteend - bytebegin + 1));
-	memcpy(strres, str->str + bytebegin, byteend - bytebegin);
+	memcpy(strres, (char*)str->value + bytebegin, byteend - bytebegin);
 	strres[byteend - bytebegin] = 0;
-	return _kartarika_library_string_create(strres);
+	return _kartarika_smart_pointer_create(strres);
 }
 
+bool _kartarika_unclean_is_empty(_kartarika_smart_pointer* value) {
+	return (value->value == NULL);
+}
+
+bool _kartarika_unclean_bool(_kartarika_smart_pointer* value) {
+	return *((bool*)value->value);
+}
 // ----------------------------------------------------------------------------
 // Преобразование типов
 // ----------------------------------------------------------------------------
 
-bool _kartarika_library_convert_bool_to_bool(bool b) {
-	return b;
+bool _kartarika_library_convert_bool_to_bool(bool value) {
+	return value;
 }
 
+#define _KARTARIKA_CONVERT_INTEGER_TO_BOOL(num)\
+_kartarika_smart_pointer* _kartarika_library_convert_integer##num##_to_bool(int##num##_t value) {\
+	if (value == 0) {\
+		bool* b = (bool*)malloc(sizeof(bool));\
+		*b = false;\
+		return _kartarika_smart_pointer_create(b);\
+	} else if (value == 1) {\
+		bool* b = (bool*)malloc(sizeof(bool));\
+		*b = true;\
+		return _kartarika_smart_pointer_create(b);\
+	}\
+	return _kartarika_smart_pointer_create(NULL);\
+}
+
+_KARTARIKA_CONVERT_INTEGER_TO_BOOL(8)
+_KARTARIKA_CONVERT_INTEGER_TO_BOOL(16)
+_KARTARIKA_CONVERT_INTEGER_TO_BOOL(32)
+_KARTARIKA_CONVERT_INTEGER_TO_BOOL(64)
+
+#define _KARTARIKA_CONVERT_UNSIGNED_TO_BOOL(num)\
+_kartarika_smart_pointer* _kartarika_library_convert_unsigned##num##_to_bool(uint##num##_t value) {\
+	if (value == 0) {\
+		bool* b = (bool*)malloc(sizeof(bool));\
+		*b = false;\
+		return _kartarika_smart_pointer_create(b);\
+	} else if (value == 1) {\
+		bool* b = (bool*)malloc(sizeof(bool));\
+		*b = true;\
+		return _kartarika_smart_pointer_create(b);\
+	}\
+	return _kartarika_smart_pointer_create(NULL);\
+}
+
+_KARTARIKA_CONVERT_UNSIGNED_TO_BOOL(8)
+_KARTARIKA_CONVERT_UNSIGNED_TO_BOOL(16)
+_KARTARIKA_CONVERT_UNSIGNED_TO_BOOL(32)
+_KARTARIKA_CONVERT_UNSIGNED_TO_BOOL(64)
+
+#define _KARTARIKA_CONVERT_FLOAT_TO_BOOL(num)\
+_kartarika_smart_pointer* _kartarika_library_convert_float##num##_to_bool(float##num##_t value) {\
+	if (value == 0.0) {\
+		bool* b = (bool*)malloc(sizeof(bool));\
+		*b = false;\
+		return _kartarika_smart_pointer_create(b);\
+	} else if (value == 1.0) {\
+		bool* b = (bool*)malloc(sizeof(bool));\
+		*b = true;\
+		return _kartarika_smart_pointer_create(b);\
+	}\
+	return _kartarika_smart_pointer_create(NULL);\
+}
+
+_KARTARIKA_CONVERT_FLOAT_TO_BOOL(32)
+_KARTARIKA_CONVERT_FLOAT_TO_BOOL(64)
+
+_kartarika_smart_pointer* _kartarika_library_convert_string_to_bool(_kartarika_smart_pointer* str) {
+	char* val = (char*)str->value;
+	if (
+			!strcmp(val, "1") ||
+			!strcmp(val, "+") ||
+			!strcmp(val, "да") ||
+			!strcmp(val, "Да") ||
+			!strcmp(val, "дА") ||
+			!strcmp(val, "ДА") ||
+			!strcmp(val, "д") ||
+			!strcmp(val, "Д") ||
+			!strcmp(val, "yes") ||
+			!strcmp(val, "Yes") ||
+			!strcmp(val, "yEs") ||
+			!strcmp(val, "YEs") ||
+			!strcmp(val, "yeS") ||
+			!strcmp(val, "YeS") ||
+			!strcmp(val, "yES") ||
+			!strcmp(val, "YES") ||
+			!strcmp(val, "y") ||
+			!strcmp(val, "Y")) {
+		// true
+		bool* b = (bool*)malloc(sizeof(bool));
+		*b = false;
+		return _kartarika_smart_pointer_create(b);
+	} else if (
+			!strcmp(val, "0") ||
+			!strcmp(val, "-") ||
+			!strcmp(val, "нет") ||
+			!strcmp(val, "Нет") ||
+			!strcmp(val, "нЕт") ||
+			!strcmp(val, "НЕт") ||
+			!strcmp(val, "неТ") ||
+			!strcmp(val, "НеТ") ||
+			!strcmp(val, "нЕТ") ||
+			!strcmp(val, "НЕТ") ||
+			!strcmp(val, "н") ||
+			!strcmp(val, "Н") ||
+			!strcmp(val, "no") ||
+			!strcmp(val, "No") ||
+			!strcmp(val, "nO") ||
+			!strcmp(val, "NO") ||
+			!strcmp(val, "n") ||
+			!strcmp(val, "N")) {
+		// false
+		bool* b = (bool*)malloc(sizeof(bool));
+		*b = false;
+		return _kartarika_smart_pointer_create(b);
+	}
+	return NULL;
+}
 
 // ----------------------------------------------------------------------------
 // Кар.Консоль
@@ -270,7 +393,7 @@ static char* get_line() {
 	return linep;
 }
 
-_kartarika_library_string* _kartarika_library_read_string() {
+_kartarika_smart_pointer* _kartarika_library_read_string() {
 	char* str = get_line();
 	if (str == NULL) {
 		return NULL;
@@ -379,8 +502,8 @@ void _kartarika_library_write_float64(float64_t value) {
 }
 
 // метод Писать(Строка значение)
-void _kartarika_library_write_string(_kartarika_library_string* value) {
-	printf("%s", value->str);
+void _kartarika_library_write_string(_kartarika_smart_pointer* value) {
+	printf("%s", (char*)value->value);
 }
 
 void _kartarika_library_write_chars(char* value) {
@@ -452,8 +575,8 @@ void _kartarika_library_error_write_float64(float64_t value) {
 }
 
 // метод Писать(Строка значение)
-void _kartarika_library_error_write_string(_kartarika_library_string* value) {
-	fprintf(stderr, "%s", value->str);
+void _kartarika_library_error_write_string(_kartarika_smart_pointer* value) {
+	fprintf(stderr, "%s", (char*)value->value);
 }
 
 void _kartarika_library_error_write_chars(char* value) {

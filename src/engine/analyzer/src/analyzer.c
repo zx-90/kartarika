@@ -9,6 +9,7 @@
 #include "model/token.h"
 
 static bool fill_standard_lib(KarVars* vars) {
+	// Основные модули.
 	KarVartree* root = kar_vartree_create_root();
     vars->vartree = root;
 	
@@ -24,6 +25,7 @@ static bool fill_standard_lib(KarVars* vars) {
 	KarVartree* types = kar_vartree_create_package("Типы");
 	kar_vartree_child_add(kar, types);
 	
+	// Основные типы.
 	KarVartree* type_bool = kar_vartree_create_bool("Буль");
 	kar_vartree_child_add(types, type_bool);
 	
@@ -96,15 +98,48 @@ static bool fill_standard_lib(KarVars* vars) {
 	d = 2.22045e-16;
 	kar_vartree_child_add(type_float64, kar_vartree_create_const("Эпсилон", type_float64, (void*)((size_t)d)));
 	
-    KarVartree* type_float = kar_vartree_create_class_link("Дробное", type_float64);
+	KarVartree* type_float = kar_vartree_create_class_link("Дробное", type_float64);
 	kar_vartree_child_add(types, type_float);
 	
+	// Неопределённости.
 	KarVartree* type_unclean = kar_vartree_create_unclean("Неопределённость");
 	kar_vartree_child_add(types, type_unclean);
-	
-	KarVartree* type_unclean_unsigned = kar_vartree_create_unclean_class(type_unsigned);
+
+	kar_vartree_child_add(type_unclean, kar_vartree_create_function("ПустойЛи", "_kartarika_unclean_is_empty", NULL, 0, type_bool));
+
+	KarVartree* type_unclean_bool = kar_vartree_create_unclean_class(type_bool);
+	kar_vartree_child_add(type_unclean, type_unclean_bool);
+
+	KarVartree* type_unclean_integer8 = kar_vartree_create_unclean_class(type_integer8);
+	kar_vartree_child_add(type_unclean, type_unclean_integer8);
+	KarVartree* type_unclean_integer16 = kar_vartree_create_unclean_class(type_integer16);
+	kar_vartree_child_add(type_unclean, type_unclean_integer16);
+	KarVartree* type_unclean_integer32 = kar_vartree_create_unclean_class(type_integer32);
+	kar_vartree_child_add(type_unclean, type_unclean_integer32);
+	KarVartree* type_unclean_integer64 = kar_vartree_create_unclean_class(type_integer64);
+	kar_vartree_child_add(type_unclean, type_unclean_integer64);
+	KarVartree* type_unclean_integer = kar_vartree_create_unclean_class(type_integer32);
+	kar_vartree_child_add(type_unclean, type_unclean_integer);
+
+	KarVartree* type_unclean_unsigned8 = kar_vartree_create_unclean_class(type_unsigned8);
+	kar_vartree_child_add(type_unclean, type_unclean_unsigned8);
+	KarVartree* type_unclean_unsigned16 = kar_vartree_create_unclean_class(type_unsigned16);
+	kar_vartree_child_add(type_unclean, type_unclean_unsigned16);
+	KarVartree* type_unclean_unsigned32 = kar_vartree_create_unclean_class(type_unsigned32);
+	kar_vartree_child_add(type_unclean, type_unclean_unsigned32);
+	KarVartree* type_unclean_unsigned64 = kar_vartree_create_unclean_class(type_unsigned64);
+	kar_vartree_child_add(type_unclean, type_unclean_unsigned64);
+	KarVartree* type_unclean_unsigned = kar_vartree_create_unclean_class(type_unsigned32);
 	kar_vartree_child_add(type_unclean, type_unclean_unsigned);
-	
+
+	KarVartree* type_unclean_float32 = kar_vartree_create_unclean_class(type_float32);
+	kar_vartree_child_add(type_unclean, type_unclean_float32);
+	KarVartree* type_unclean_float64 = kar_vartree_create_unclean_class(type_float64);
+	kar_vartree_child_add(type_unclean, type_unclean_float64);
+	KarVartree* type_unclean_float = kar_vartree_create_unclean_class(type_float64);
+	kar_vartree_child_add(type_unclean, type_unclean_float);
+
+	// Строки.
 	KarVartree* type_string = kar_vartree_create_string("Строка");
 	kar_vartree_child_add(types, type_string);
     kar_vartree_child_add(type_string, kar_vartree_create_function("Длина", "_kartarika_library_string_length", NULL, 0, type_unsigned));
@@ -117,8 +152,11 @@ static bool fill_standard_lib(KarVars* vars) {
 	KarVartree* type_unclean_string = kar_vartree_create_unclean_class(type_string);
 	kar_vartree_child_add(type_unclean, type_unclean_string);
 
+	// Преобразования типов.
 	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_bool_to_bool", &type_bool, 1, type_bool));
+	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_integer32_to_bool", &type_integer32, 1, type_unclean_bool));
 
+	// Стандартная библиотека.
 	KarVartree* type_console = kar_vartree_create_class("Консоль");
 	kar_vartree_child_add(kar, type_console);
     kar_vartree_child_add(type_console, kar_vartree_create_function("Ввод", "_kartarika_library_read_string", NULL, 0, type_unclean_string));
@@ -139,7 +177,7 @@ static bool fill_standard_lib(KarVars* vars) {
     kar_vartree_child_add(type_console, kar_vartree_create_function("Вывод", "_kartarika_library_write_float64", &type_float64, 1, NULL));
     kar_vartree_child_add(type_console, kar_vartree_create_function("Вывод", "_kartarika_library_write_float64", &type_float, 1, NULL));
 	// TODO: Поменять функцию на "_kartarika_library_write_string"
-	kar_vartree_child_add(type_console, kar_vartree_create_function("Вывод", "_kartarika_library_write_chars", &type_string, 1, NULL));
+	kar_vartree_child_add(type_console, kar_vartree_create_function("Вывод", "_kartarika_library_write_string", &type_string, 1, NULL));
 
     KarVartree* type_thread_error = kar_vartree_create_class("ПотокОшибок");
     kar_vartree_child_add(kar, type_thread_error);
@@ -160,18 +198,19 @@ static bool fill_standard_lib(KarVars* vars) {
     kar_vartree_child_add(type_thread_error, kar_vartree_create_function("Вывод", "_kartarika_library_write_float64", &type_float64, 1, NULL));
     kar_vartree_child_add(type_thread_error, kar_vartree_create_function("Вывод", "_kartarika_library_write_float64", &type_float, 1, NULL));
 	// TODO: Поменять функцию на "_kartarika_library_write_string"
-	kar_vartree_child_add(type_thread_error, kar_vartree_create_function("Вывод", "_kartarika_library_write_chars", &type_string, 1, NULL));
+	kar_vartree_child_add(type_thread_error, kar_vartree_create_function("Вывод", "_kartarika_library_write_string", &type_string, 1, NULL));
 
     KarVartree* type_math = kar_vartree_create_class("Мат");
 	kar_vartree_child_add(kar, type_math);
     kar_vartree_child_add(type_math, kar_vartree_create_function("ВзятьПСЧ", "_kartarika_library_get_prn", &type_unsigned, 1, NULL));
     kar_vartree_child_add(type_math, kar_vartree_create_function("ВзятьСлучайное", "_kartarika_library_get_random", NULL, 0, type_unsigned));
 	
-
+	// Список путей поиска переменных по-умолчанию.
     kar_vars_default_list_add(vars, types);
     kar_vars_default_list_add(vars, kar);
     kar_vars_default_list_add(vars, root);
 
+	// Ссылки на стандартные типы.
     vars->standard.boolType = type_bool;
     vars->standard.int8Type = type_integer8;
     vars->standard.int16Type = type_integer16;
