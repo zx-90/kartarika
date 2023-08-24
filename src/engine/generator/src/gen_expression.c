@@ -104,7 +104,7 @@ static KarExpressionResult get_val_hexadecimal(KarToken* token, KarString* modul
 		}
 		if (zeroLed) {
 			unicodeLen++;
-			if (unicodeLen > 8) {
+			if (unicodeLen > 16) {
 				kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Слишком длинное шестнадцатеричное число.");
 				return kar_expression_result_bad();
 			}
