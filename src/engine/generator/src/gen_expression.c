@@ -8,6 +8,7 @@
 
 #include <string.h>
 #include <errno.h>
+#include <limits.h>
 
 #include "core/unicode.h"
 
@@ -48,16 +49,21 @@ static KarExpressionResult get_val_false(KarVars* vars) {
 static KarExpressionResult get_val_integer(KarToken* token, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	// TODO: Эту проверку необходимо перенести в анализатор.
 	KarString* end;
+	errno = 0;
 	long val = strtol(token->str, &end, 10);
 	if (end < token->str + strlen(token->str)) {
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Не корректное число.");
 		return kar_expression_result_bad();
 	}
-	if (val > 2147483647) {
-		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Слишком большое число.");
-		return kar_expression_result_bad();
+	if (errno == ERANGE && val == LONG_MAX) {
+		errno = 0;
+		val = (long)strtoul(token->str, &end, 10);
+		if (errno == ERANGE) {
+			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Слишком большое число.");
+			return kar_expression_result_bad();
+		}
 	}
-	if (val < -2147483648) {
+	if (errno == ERANGE && val == LONG_MIN) {
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Слишком маленькое число.");
 		return kar_expression_result_bad();
 	}
