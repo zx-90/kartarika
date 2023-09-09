@@ -210,6 +210,7 @@ static KarExpressionResult get_field(KarVartree* context, KarToken* token, KarLL
 
 // TODO: Перенсти в нужное место, возможно есть копия.
 static KarString* get_token_string(KarToken* token) {
+	// TODO: Использовать макросы из лексера.
 	if (token->type == KAR_TOKEN_VAR_BOOL) {
 		return "Буль";
 	} else if (token->type == KAR_TOKEN_VAR_INTEGER8) {
@@ -220,6 +221,14 @@ static KarString* get_token_string(KarToken* token) {
 		return "Целое32";
 	} else if (token->type == KAR_TOKEN_VAR_INTEGER64) {
 		return "Целое64";
+	} else if (token->type == KAR_TOKEN_VAR_UNSIGNED8) {
+		return "Счётное8";
+	} else if (token->type == KAR_TOKEN_VAR_UNSIGNED16) {
+		return "Счётное16";
+	} else if (token->type == KAR_TOKEN_VAR_UNSIGNED32) {
+		return "Счётное32";
+	} else if (token->type == KAR_TOKEN_VAR_UNSIGNED64) {
+		return "Счётное64";
 	}
 	return token->str;
 }

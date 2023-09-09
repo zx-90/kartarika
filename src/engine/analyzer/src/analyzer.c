@@ -163,6 +163,15 @@ static bool fill_standard_lib(KarVars* vars) {
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_bool_to_integer32", &type_bool, 1, type_integer32));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_bool_to_integer64", &type_bool, 1, type_integer64));
+
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_bool_to_unsigned8", &type_bool, 1, type_unsigned8));
+
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное16", "_kartarika_library_convert_bool_to_unsigned16", &type_bool, 1, type_unsigned16));
+
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное32", "_kartarika_library_convert_bool_to_unsigned32", &type_bool, 1, type_unsigned32));
+
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное64", "_kartarika_library_convert_bool_to_unsigned64", &type_bool, 1, type_unsigned64));
+
 	// Стандартная библиотека.
 	KarVartree* type_console = kar_vartree_create_class("Консоль");
 	kar_vartree_child_add(kar, type_console);
