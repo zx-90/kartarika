@@ -158,6 +158,11 @@ static bool fill_standard_lib(KarVars* vars) {
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_bool_to_integer8", &type_bool, 1, type_integer8));
 
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое16", "_kartarika_library_convert_bool_to_integer16", &type_bool, 1, type_integer16));
+
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_bool_to_integer32", &type_bool, 1, type_integer32));
+
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_bool_to_integer64", &type_bool, 1, type_integer64));
 	// Стандартная библиотека.
 	KarVartree* type_console = kar_vartree_create_class("Консоль");
 	kar_vartree_child_add(kar, type_console);

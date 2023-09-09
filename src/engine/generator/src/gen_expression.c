@@ -178,10 +178,6 @@ static KarExpressionResult get_val_char(KarString*str, KarLLVMData* llvmData, Ka
 	return result;
 }
 
-static KarExpressionResult get_val_string(KarToken* token, KarLLVMData* llvmData, KarVars* vars) {
-	return get_val_char(token->str, llvmData, vars);
-}
-
 static KarVartree* get_new_context(KarVartree* context, KarString* name, KarVars* vars) {
 	if (context == NULL) {
 		return kar_vars_find(vars, name);
@@ -344,7 +340,7 @@ static KarExpressionResult calc_expression(KarVartree* context, KarToken* token,
 	case (KAR_TOKEN_VAL_NAN): return get_val_nan(vars);
 	case (KAR_TOKEN_VAL_INFINITY): return get_val_infinity(vars);
 	case (KAR_TOKEN_VAL_MINUS_INFINITY): return get_val_minus_infinity(vars);
-	case (KAR_TOKEN_VAL_STRING): return get_val_string(token, llvmData, vars);
+	case (KAR_TOKEN_VAL_STRING): return get_val_char(token->str, llvmData, vars);
 
 	case(KAR_TOKEN_SIGN_GET_FIELD): return get_field(context, token, llvmData, moduleName, vars, errors);
 	case(KAR_TOKEN_SIGN_CALL_METHOD): return get_call_method(context, token, llvmData, moduleName, vars, errors);
