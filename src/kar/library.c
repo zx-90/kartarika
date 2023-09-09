@@ -244,6 +244,19 @@ bool _kartarika_library_convert_bool_to_bool(bool value) {
 	return value;
 }
 
+#define _KARTARIKA_CONVERT_BOOL_TO_INTEGER(num)\
+int##num##_t _kartarika_library_convert_bool_to_integer##num(bool value) { \
+	if (value) { \
+		return 1; \
+	} \
+	return 0; \
+}
+
+_KARTARIKA_CONVERT_BOOL_TO_INTEGER(8)
+_KARTARIKA_CONVERT_BOOL_TO_INTEGER(16)
+_KARTARIKA_CONVERT_BOOL_TO_INTEGER(32)
+_KARTARIKA_CONVERT_BOOL_TO_INTEGER(64)
+
 #define _KARTARIKA_CONVERT_INTEGER_TO_BOOL(num)\
 _kartarika_smart_pointer* _kartarika_library_convert_integer##num##_to_bool(int##num##_t value) {\
 	if (value == 0) {\

@@ -19,15 +19,15 @@ typedef struct {
 	LLVMValueRef value;
 } KarExpressionResult;
 
-KarExpressionResult kar_expression_result_bad() {
+KarExpressionResult kar_expression_result_none() {
 	KarExpressionResult result;
 	result.type = NULL;
 	result.value = NULL;
 	return result;
 }
 
-static bool kar_expression_result_is_good(KarExpressionResult result) {
-	return (result.type != NULL || result.value != NULL);
+static bool kar_expression_result_is_none(KarExpressionResult result) {
+	return (result.type == NULL && result.value == NULL);
 }
 
 static KarExpressionResult calc_expression(KarVartree *context, KarToken* token, KarLLVMData *llvmData, KarString *moduleName, KarVars *vars, KarProjectErrorList *errors);
@@ -53,19 +53,19 @@ static KarExpressionResult get_val_integer(KarToken* token, KarString* moduleNam
 	long val = strtol(token->str, &end, 10);
 	if (end < token->str + strlen(token->str)) {
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Не корректное число.");
-		return kar_expression_result_bad();
+		return kar_expression_result_none();
 	}
 	if (errno == ERANGE && val == LONG_MAX) {
 		errno = 0;
 		val = (long)strtoul(token->str, &end, 10);
 		if (errno == ERANGE) {
 			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Слишком большое число.");
-			return kar_expression_result_bad();
+			return kar_expression_result_none();
 		}
 	}
 	if (errno == ERANGE && val == LONG_MIN) {
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Слишком маленькое число.");
-		return kar_expression_result_bad();
+		return kar_expression_result_none();
 	}
 
 	KarExpressionResult result;
@@ -79,7 +79,7 @@ static KarExpressionResult get_val_hexadecimal(KarToken* token, KarString* modul
 	size_t len = strlen(token->str);
 	if (len < 4) {
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Внутренняя ошибка. Длина идентификатора шестнадцатеричного числа менее 2 символов.");
-		return kar_expression_result_bad();
+		return kar_expression_result_none();
 	}
 
 	long long unsigned int val = 0;
@@ -97,7 +97,7 @@ static KarExpressionResult get_val_hexadecimal(KarToken* token, KarString* modul
 			val += (buffer - 0x0430 + 10);
 		} else {
 			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Некорретная запись шестандцатеричного числа.");
-			return kar_expression_result_bad();
+			return kar_expression_result_none();
 		}
 		if (val != 0) {
 			zeroLed = true;
@@ -106,7 +106,7 @@ static KarExpressionResult get_val_hexadecimal(KarToken* token, KarString* modul
 			unicodeLen++;
 			if (unicodeLen > 16) {
 				kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Слишком длинное шестнадцатеричное число.");
-				return kar_expression_result_bad();
+				return kar_expression_result_none();
 			}
 		}
 	}
@@ -133,13 +133,13 @@ static KarExpressionResult get_val_float(KarToken* token, KarString* moduleName,
 		KAR_FREE(tmp3);
 		if (isnan(d) || isinf(d)) {
 			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Не корректное дробное число.");
-			return kar_expression_result_bad();
+			return kar_expression_result_none();
 		}
 	}
 
 	if (errno == ERANGE) {
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Не корректное дробное число.");
-		return kar_expression_result_bad();
+		return kar_expression_result_none();
 	}
 
 	KarExpressionResult result;
@@ -169,13 +169,17 @@ static KarExpressionResult get_val_minus_infinity(KarVars* vars) {
 	return result;
 }
 
-static KarExpressionResult get_val_string(KarToken* token, KarLLVMData* llvmData, KarVars* vars) {
+static KarExpressionResult get_val_char(KarString*str, KarLLVMData* llvmData, KarVars* vars) {
 	KarExpressionResult result;
 	result.type = vars->standard.stringType;
 
-	LLVMValueRef ref = LLVMBuildGlobalStringPtr(llvmData->builder, token->str, "_kartarika_string");
+	LLVMValueRef ref = LLVMBuildGlobalStringPtr(llvmData->builder, str, "_kartarika_string");
 	result.value = LLVMBuildCall(llvmData->builder, llvmData->createString, &ref, 1, "_kartarika_library_string_create");
 	return result;
+}
+
+static KarExpressionResult get_val_string(KarToken* token, KarLLVMData* llvmData, KarVars* vars) {
+	return get_val_char(token->str, llvmData, vars);
 }
 
 static KarVartree* get_new_context(KarVartree* context, KarString* name, KarVars* vars) {
@@ -189,12 +193,21 @@ static KarVartree* get_new_context(KarVartree* context, KarString* name, KarVars
 static KarExpressionResult get_field(KarVartree* context, KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarVartree* newContext = get_new_context(context, left->str, vars);
-	if (newContext == NULL) {
-		KarString* error_text = kar_string_create_format("Не могу найти поле \"%s\" в объекте \"%s\".", left->str, kar_vartree_create_full_path(context));
-		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, error_text);
-		KAR_FREE(error_text);
-		return kar_expression_result_bad();
+	KarVartree* newContext = NULL;
+	if (kar_token_type_is_identifier(left->type)) {
+		newContext = get_new_context(context, left->str, vars);
+		if (newContext == NULL) {
+			KarString* error_text = kar_string_create_format("Не могу найти поле \"%s\" в объекте \"%s\".", left->str, kar_vartree_create_full_path(context));
+			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, error_text);
+			KAR_FREE(error_text);
+			return kar_expression_result_none();
+		}
+	} else {
+		KarExpressionResult leftResult = calc_expression(context, left, llvmData, moduleName, vars, errors);
+		newContext = leftResult.type;
+		if (newContext == NULL) {
+			return kar_expression_result_none();
+		}
 	}
 	return calc_expression(newContext, right, llvmData, moduleName, vars, errors);
 }
@@ -203,8 +216,14 @@ static KarExpressionResult get_field(KarVartree* context, KarToken* token, KarLL
 static KarString* get_token_string(KarToken* token) {
 	if (token->type == KAR_TOKEN_VAR_BOOL) {
 		return "Буль";
+	} else if (token->type == KAR_TOKEN_VAR_INTEGER8) {
+		return "Целое8";
+	} else if (token->type == KAR_TOKEN_VAR_INTEGER16) {
+		return "Целое16";
 	} else if (token->type == KAR_TOKEN_VAR_INTEGER32) {
 		return "Целое32";
+	} else if (token->type == KAR_TOKEN_VAR_INTEGER64) {
+		return "Целое64";
 	}
 	return token->str;
 }
@@ -217,7 +236,7 @@ static KarExpressionResult get_call_method(KarVartree* context, KarToken* token,
 		KarToken* child = kar_token_child_get(token , i);
 		if (child->type == KAR_TOKEN_SIGN_ARGUMENT) {
 			KarExpressionResult res = calc_expression(NULL, kar_token_child_get(child, 0), llvmData, moduleName, vars, errors);
-			if (!kar_expression_result_is_good(res)) {
+			if (kar_expression_result_is_none(res)) {
 				KAR_FREE(argsVartree);
 				KAR_FREE(argsLLVM);
 				return res;
@@ -228,25 +247,38 @@ static KarExpressionResult get_call_method(KarVartree* context, KarToken* token,
 		}
 	}
 
-	KarToken* funcName = kar_token_child_get(token, 0);
-	KarString* functionName = kar_vartree_create_full_function_name(get_token_string(funcName), argsVartree, num);
+	KarToken* funcNameToken = kar_token_child_get(token, 0);
+	KarString* funcName = get_token_string(funcNameToken);
+	if (funcName == NULL) {
+		kar_project_error_list_create_add(errors, moduleName, &funcNameToken->cursor, 1, "Имя функции не определено.");
+		KAR_FREE(argsLLVM);
+		return kar_expression_result_none();
+	}
+	KarString* functionName = kar_vartree_create_full_function_name(funcName, argsVartree, num);
 	KAR_FREE(argsVartree);
+	// TODO: Заглушка для тестов для проверки типа получаемого выражения.
+	if (kar_string_equal(functionName, "ВзятьПуть()")) {
+		KarString* path = kar_vartree_create_full_path(context);
+		KarExpressionResult res = get_val_char(path, llvmData, vars);
+		KAR_FREE(path);
+		return res;
+	}
 
 	KarVartree* function = get_new_context(context, functionName, vars);
 	if (function == NULL) {
 		KarString* errorText = kar_string_create_format("Не могу найти объект \"%s\".", functionName);
-		kar_project_error_list_create_add(errors, moduleName, &funcName->cursor, 1, errorText);
+		kar_project_error_list_create_add(errors, moduleName, &funcNameToken->cursor, 1, errorText);
 		KAR_FREE(functionName);
 		KAR_FREE(argsLLVM);
-		return kar_expression_result_bad();
+		return kar_expression_result_none();
 	}
 	KAR_FREE(functionName);
 	KarVartreeFunctionParams* params = kar_vartree_get_function_params(function);
 	KarLLVMFunction* llvmFunc = kar_llvm_data_get_function(llvmData, params, vars);
 	if (llvmFunc == NULL) {
-		kar_project_error_list_create_add(errors, moduleName, &funcName->cursor, 1, "Внутренняя ошибка генератора. Не могу найти функцию.");
+		kar_project_error_list_create_add(errors, moduleName, &funcNameToken->cursor, 1, "Внутренняя ошибка генератора. Не могу найти функцию.");
 		KAR_FREE(argsLLVM);
-		return kar_expression_result_bad();
+		return kar_expression_result_none();
 	}
 
 	KarExpressionResult result;
@@ -261,7 +293,7 @@ static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData
 	KarExpressionResult left = calc_expression(NULL, leftToken, llvmData, moduleName, vars, errors);
 	if (left.type->type != KAR_VARTYPE_UNCLEAN_CLASS) {
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Левая часть операции раскрытия выражения не является неопределённостью.");
-		return kar_expression_result_bad();
+		return kar_expression_result_none();
 	}
 
 	KarString* functionName = kar_vartree_create_full_function_name("ПустойЛи", NULL, 0);
@@ -281,7 +313,7 @@ static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData
 	KarExpressionResult right = calc_expression(NULL, rightToken, llvmData, moduleName, vars, errors);
 	if (right.type != kar_vartree_get_unclean_class(left.type)) {
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "В операции раскрытия типы левой и правой части не совпадают.");
-		return kar_expression_result_bad();
+		return kar_expression_result_none();
 	}
 	LLVMBuildBr(llvmData->builder, mergeBlock);
 	thenBlock = LLVMGetInsertBlock(llvmData->builder);
@@ -317,7 +349,7 @@ static KarExpressionResult calc_expression(KarVartree* context, KarToken* token,
 	case(KAR_TOKEN_SIGN_GET_FIELD): return get_field(context, token, llvmData, moduleName, vars, errors);
 	case(KAR_TOKEN_SIGN_CALL_METHOD): return get_call_method(context, token, llvmData, moduleName, vars, errors);
 	case(KAR_TOKEN_SIGN_CLEAN): return get_sign_clean(token, llvmData, moduleName, vars, errors);
-	default: return kar_expression_result_bad();
+	default: return kar_expression_result_none();
 	}
 }
 
@@ -331,6 +363,6 @@ bool kar_generate_expression(KarToken* token, KarLLVMData* llvmData, KarString* 
 		return false;
 	}
 	KarToken* child = kar_token_child_get(token, 0);
-	return kar_expression_result_is_good(calc_expression(NULL, child, llvmData, moduleName, vars, errors));
+	KarExpressionResult res = calc_expression(NULL, child, llvmData, moduleName, vars, errors);
+	return !kar_expression_result_is_none(res);
 }
-

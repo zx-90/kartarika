@@ -11,6 +11,7 @@ bool kar_parser_parse_expression(KarToken* token, KarString* moduleName, KarProj
 bool kar_parser_parse_root(KarToken* token, KarString* moduleName, KarProjectErrorList* errors);
 
 bool kar_parser_run(KarModule* module, KarProjectErrorList* errors) {
+	// TODO: Проверить получившившийся токен после работы функций. (Количество потомков, типы токенов и т.п.).
 	KarToken* token = module->token;
 
 	bool b = true;

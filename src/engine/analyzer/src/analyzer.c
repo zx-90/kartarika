@@ -156,6 +156,8 @@ static bool fill_standard_lib(KarVars* vars) {
 	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_bool_to_bool", &type_bool, 1, type_bool));
 	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_integer32_to_bool", &type_integer32, 1, type_unclean_bool));
 
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_bool_to_integer8", &type_bool, 1, type_integer8));
+
 	// Стандартная библиотека.
 	KarVartree* type_console = kar_vartree_create_class("Консоль");
 	kar_vartree_child_add(kar, type_console);

@@ -17,10 +17,10 @@ bool kar_parser_concat_single_minus_number(KarToken* token);
 bool kar_parser_parse_expression(KarToken* token, KarString* moduleName, KarProjectErrorList* errors) {
 	bool b = true;
 	b = b && kar_parser_make_call_method(token);
-    b = b && kar_parser_make_path(token, moduleName, errors);
+	b = b && kar_parser_make_path(token, moduleName, errors);
 	b = b && kar_parser_remove_spaces(token);
-    b = b && kar_parser_make_arguments(token, moduleName, errors);
-    b = b && kar_parser_make_operands(token, moduleName, errors);
+	b = b && kar_parser_make_arguments(token, moduleName, errors);
+	b = b && kar_parser_make_operands(token, moduleName, errors);
 	b = b && kar_parser_concat_single_minus_number(token);
 	return b;
 }

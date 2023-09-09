@@ -186,6 +186,7 @@ static bool find_single_plus_minus(KarToken* token, KarProjectErrorList* errors)
 		if (
 			kar_token_type_is_value(prev->type) ||
 			prev->type == KAR_TOKEN_IDENTIFIER ||
+			prev->type == KAR_TOKEN_SIGN_CALL_METHOD ||
 			prev->type == KAR_TOKEN_SIGN_OPEN_BRACES ||
 			prev->type == KAR_TOKEN_SIGN_UNCLEAN ||
 			prev->type == KAR_TOKEN_SIGN_CLEAN

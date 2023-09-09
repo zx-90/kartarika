@@ -1,0 +1,10 @@
+MODULE(1, 1): --
+	FIELD_VAR(1, 1): [Кар]
+		VAR_MODIFIER(1, 1): --
+			VAR_MODIFIER_PUBLIC(1, 1): --
+			MODIFIER_STAT(1, 10): --
+		BLOCK_BODY(1, 41): --
+			SIGN_MINUS(1, 41): --
+				SIGN_CALL_METHOD(1, 26): --
+					IDENTIFIER(1, 26): [КакойТоМетод]
+				VAL_INTEGER(1, 43): [129]
