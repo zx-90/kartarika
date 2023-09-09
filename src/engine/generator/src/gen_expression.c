@@ -233,6 +233,8 @@ static KarString* get_token_string(KarToken* token) {
 		return "Дробное32";
 	} else if (token->type == KAR_TOKEN_VAR_FLOAT64) {
 		return "Дробное64";
+	} else if (token->type == KAR_TOKEN_VAR_STRING) {
+		return "Строка";
 	}
 	return token->str;
 }

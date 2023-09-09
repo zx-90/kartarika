@@ -281,6 +281,13 @@ float##num##_t _kartarika_library_convert_bool_to_float##num(bool value) { \
 _KARTARIKA_CONVERT_BOOL_TO_FLOAT(32)
 _KARTARIKA_CONVERT_BOOL_TO_FLOAT(64)
 
+_kartarika_smart_pointer* _kartarika_library_convert_bool_to_string(bool value) {
+	if (value) {
+		return _kartarika_library_string_create("1");
+	}
+	return _kartarika_library_string_create("0");
+}
+
 #define _KARTARIKA_CONVERT_INTEGER_TO_BOOL(num)\
 _kartarika_smart_pointer* _kartarika_library_convert_integer##num##_to_bool(int##num##_t value) {\
 	if (value == 0) {\
