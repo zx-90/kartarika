@@ -229,6 +229,10 @@ static KarString* get_token_string(KarToken* token) {
 		return "Счётное32";
 	} else if (token->type == KAR_TOKEN_VAR_UNSIGNED64) {
 		return "Счётное64";
+	} else if (token->type == KAR_TOKEN_VAR_FLOAT32) {
+		return "Дробное32";
+	} else if (token->type == KAR_TOKEN_VAR_FLOAT64) {
+		return "Дробное64";
 	}
 	return token->str;
 }

@@ -270,6 +270,17 @@ _KARTARIKA_CONVERT_BOOL_TO_UNSIGNED(16)
 _KARTARIKA_CONVERT_BOOL_TO_UNSIGNED(32)
 _KARTARIKA_CONVERT_BOOL_TO_UNSIGNED(64)
 
+#define _KARTARIKA_CONVERT_BOOL_TO_FLOAT(num)\
+float##num##_t _kartarika_library_convert_bool_to_float##num(bool value) { \
+	if (value) { \
+		return 1.0; \
+	} \
+	return 0.0; \
+}
+
+_KARTARIKA_CONVERT_BOOL_TO_FLOAT(32)
+_KARTARIKA_CONVERT_BOOL_TO_FLOAT(64)
+
 #define _KARTARIKA_CONVERT_INTEGER_TO_BOOL(num)\
 _kartarika_smart_pointer* _kartarika_library_convert_integer##num##_to_bool(int##num##_t value) {\
 	if (value == 0) {\
@@ -479,7 +490,46 @@ void _kartarika_library_write_uint64(uint64_t value) {
 // метод Писать(Дробное32 значение)
 void _kartarika_library_write_float32(float32_t value) {
 	// TODO: Здесь печатается float, а это не всегда 32-битное плавающее.
-	printf("%f", value);
+	float absd = fabsf(value);
+	// TODO: Доделать все особые случаи.
+	if (isnan(value)) {
+		printf("НеЧисло");
+	} else if (isinf(value) && value > 0.0) {
+		printf("∞");
+	} else if (isinf(value) && value < 0.0) {
+		printf("-∞");
+	} else if (absd >= 0.0001 && absd < 10000.0 || absd == 0.0) {
+		char output[50];
+		snprintf(output, 50, "%f", value);
+		char* cur = output;
+		while (*cur != 0) {
+			if (*cur == '.') {
+				*cur = ',';
+			}
+			cur++;
+		}
+		printf("%s", output);
+	} else {
+		char output[50];
+		snprintf(output, 50, "%e", value);
+		char* cur = output;
+		while (*cur != 0) {
+			if (*cur == '.') {
+				*cur = ',';
+			}
+			cur++;
+		}
+		while (cur != output) {
+			cur[1] = cur[0];
+			// Меняем e на с
+			if (cur[0] == 'e') {
+				memcpy(cur, "с", 2);
+				break;
+			}
+			cur--;
+		}
+		printf("%s", output);
+	}
 }
 
 // метод Писать(Дробное64 значение)
@@ -493,7 +543,7 @@ void _kartarika_library_write_float64(float64_t value) {
 		printf("∞");
 	} else if (isinf(value) && value < 0.0) {
 		printf("-∞");
-	} else if (absd >= 0.0001 && absd < 10000.0) {
+	} else if (absd >= 0.0001 && absd < 10000.0 || absd == 0.0) {
 		char output[50];
 		snprintf(output, 50, "%f", value);
 		char* cur = output;
