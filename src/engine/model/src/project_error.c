@@ -21,17 +21,27 @@ KarProjectError* kar_project_error_create(KarString *moduleName, KarCursor* curs
 }
 
 void kar_project_error_free(KarProjectError* error) {
-    /*if (error->moduleName != NULL) {
-        KAR_FREE(error->moduleName);
-    }*/
 	kar_string_free(error->description);
 	KAR_FREE(error);
 }
 
+#define KAR_PROJECT_ERROR_PRINT_STAMP ("Ошибка номер %d\n" "\tМодуль: %s\n" "\tСтрока %d, столбец %d\n" "\t%s\n")
+
 void kar_project_error_print(KarProjectError* error) {
-	fprintf(stdout, "Ошибка номер %d\n", error->code);
-    fprintf(stdout, "\tМодуль: %s\n", error->moduleName);
-	fprintf(stdout, "\tСтрока %d, столбец %d\n", error->cursor.line, error->cursor.column);
-	fprintf(stdout, "\t%s\n", error->description);
+	fprintf(stdout, KAR_PROJECT_ERROR_PRINT_STAMP,
+		error->code,
+		error->moduleName,
+		error->cursor.line, error->cursor.column,
+		error->description
+	);
 	fflush(stdout);
+}
+
+KarString* kar_project_error_create_string(KarProjectError* error) {
+	return kar_string_create_format(KAR_PROJECT_ERROR_PRINT_STAMP,
+		error->code,
+		error->moduleName,
+		error->cursor.line, error->cursor.column,
+		error->description
+	);
 }

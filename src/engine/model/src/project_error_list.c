@@ -6,6 +6,8 @@
 
 #include "model/project_error_list.h"
 
+#include "core/string_builder.h"
+
 KarProjectErrorList* kar_project_error_list_create() {
 	KAR_CREATE(project_error_list, KarProjectErrorList);
 	kar_project_error_list_init(project_error_list);
@@ -24,7 +26,17 @@ void kar_project_error_list_create_add(KarProjectErrorList* error_list, KarStrin
 
 void kar_project_error_list_print(KarProjectErrorList *errors) {
     for (size_t i = 0; i < kar_project_error_list_count(errors); ++i) {
-        // TODO: Найти замену для module->name.
         kar_project_error_print(kar_project_error_list_get(errors, i));
     }
+}
+
+KarString* kar_project_error_list_create_string(KarProjectErrorList* errors) {
+	KarStringBuilder builder;
+	kar_string_builder_init(&builder);
+	for (size_t i = 0; i < kar_project_error_list_count(errors); ++i) {
+		KarString* str = kar_project_error_create_string(kar_project_error_list_get(errors, i));
+		kar_string_builder_push_string(&builder, str);
+		KAR_FREE(str);
+	}
+	return kar_string_builder_clear_get(&builder);
 }

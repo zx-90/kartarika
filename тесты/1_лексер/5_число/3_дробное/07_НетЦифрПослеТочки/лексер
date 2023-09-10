@@ -1,0 +1,4 @@
+MODULE(1, 1): --
+	INDENT(1, 1): []
+	VAL_INTEGER(1, 1): [123]
+	SIGN_GET_FIELD(1, 4): --

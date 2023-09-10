@@ -352,10 +352,6 @@ static bool find_floats_2(KarToken* token, KarString* moduleName, KarProjectErro
             kar_project_error_list_create_add(error_list, moduleName, &first->cursor, 1, "Некорректная запись числа с плавающей точкой.");
 			return false;
 		}
-		if (first->type == KAR_TOKEN_VAL_INTEGER && second->type == KAR_TOKEN_SIGN_GET_FIELD) {
-            kar_project_error_list_create_add(error_list, moduleName, &first->cursor, 1, "Некорректная запись числа с плавающей точкой.");
-			return false;
-		}
 	}
 	return true;
 }

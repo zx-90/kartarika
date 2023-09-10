@@ -281,9 +281,14 @@ KarError* kar_test_run(KarTest* test, const KarString* dir) {
 				return kar_error_register(1, "Ошибка в лексере. Ожидалось, что лексер вернет ошибку, но он отработал нормально.");
 			}
 		} else if (!lexerResult) {
+			KarError* error = kar_error_register(
+				1,
+				"Ошибка в лексере. Ожидалось, что лексер отработает нормально и продолжится тестирование следующих модулей. Ошибки:\n%s",
+				kar_project_error_list_create_string(project->errors)
+			);
 			kar_project_free(project);
 			KAR_FREE(path2);
-			return kar_error_register(1, "Ошибка в лексере. Ожидалось, что лексер отработает нормально и продолжится тестирование следующих модулей.");
+			return error;
 		}
 	}
 	
@@ -342,9 +347,14 @@ KarError* kar_test_run(KarTest* test, const KarString* dir) {
 				return result;
 			}
 		} else if (!parserResult) {
+			KarError* error = kar_error_register(
+				1,
+				"Ошибка в парсере. Ожидалось, что парсер отработает нормально и продолжится тестирование следующих модулей. Ошибки:\n%s",
+				kar_project_error_list_create_string(project->errors)
+			);
 			kar_project_free(project);
 			KAR_FREE(path2);
-			return kar_error_register(1, "Ошибка в парсере. Ожидалось, что парсер отработает нормально и продолжится тестирование следующих модулей.");
+			return error;
 		}
 	}
 	
@@ -362,11 +372,14 @@ KarError* kar_test_run(KarTest* test, const KarString* dir) {
 			}
 		} else {
 			if (!test->compiler_error_file.is) {
-				kar_project_error_list_print(project->errors);
-				KarError* result = kar_error_register(1, "Ошибка в компиляторе. Ожидалось, что компилятор отработает нормально, но он вернул ошибку.");
+				KarError* error = kar_error_register(
+					1,
+					"Ошибка в компиляторе. Ожидалось, что компилятор отработает нормально, но он вернул ошибку. Ошибки:\n%s",
+					kar_project_error_list_create_string(project->errors)
+				);
 				kar_project_free(project);
 				KAR_FREE(path2);
-				return result;
+				return error;
 			}
 		}
 	}

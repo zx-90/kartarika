@@ -25,5 +25,6 @@ KarProjectError* kar_project_error_create(KarString* moduleName, KarCursor* curs
 void kar_project_error_free(KarProjectError* error);
 
 void kar_project_error_print(KarProjectError* error);
+KarString* kar_project_error_create_string(KarProjectError* error);
 
 #endif // KAR_PROJECT_ERROR_H
