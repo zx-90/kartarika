@@ -15,7 +15,10 @@ typedef struct {
     struct {
         KarVartree* boolType;
 
-        KarVartree* int8Type;
+		KarVartree* decimalType;
+		KarVartree* hexadecimalType;
+
+		KarVartree* int8Type;
         KarVartree* int16Type;
         KarVartree* int32Type;
         KarVartree* int64Type;

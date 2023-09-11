@@ -29,6 +29,11 @@ static bool fill_standard_lib(KarVars* vars) {
 	KarVartree* type_bool = kar_vartree_create_bool("Буль");
 	kar_vartree_child_add(types, type_bool);
 	
+	KarVartree* type_decimal = kar_vartree_create_bool("0Десятичное");
+	kar_vartree_child_add(types, type_decimal);
+	KarVartree* type_hexadecimal = kar_vartree_create_bool("0Шестнадцатеричное");
+	kar_vartree_child_add(types, type_hexadecimal);
+
 	KarVartree* type_integer8 = kar_vartree_create_integer8("Целое8");
 	kar_vartree_child_add(types, type_integer8);
 	// TODO: Посмотреть, адекватно ли константы для всех типов записываются в памяти.
@@ -157,12 +162,17 @@ static bool fill_standard_lib(KarVars* vars) {
 	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_integer32_to_bool", &type_integer32, 1, type_unclean_bool));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_bool_to_integer8", &type_bool, 1, type_integer8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_integer32_to_integer8", &type_integer32, 1, type_integer8));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое16", "_kartarika_library_convert_bool_to_integer16", &type_bool, 1, type_integer16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое16", "_kartarika_library_convert_integer32_to_integer16", &type_integer32, 1, type_integer16));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_bool_to_integer32", &type_bool, 1, type_integer32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_integer32_to_integer32", &type_integer32, 1, type_integer32));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_bool_to_integer64", &type_bool, 1, type_integer64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_integer32_to_integer64", &type_integer32, 1, type_integer64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_integer64_to_integer64", &type_integer64, 1, type_integer64));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_bool_to_unsigned8", &type_bool, 1, type_unsigned8));
 
@@ -234,7 +244,9 @@ static bool fill_standard_lib(KarVars* vars) {
 
 	// Ссылки на стандартные типы.
     vars->standard.boolType = type_bool;
-    vars->standard.int8Type = type_integer8;
+	vars->standard.decimalType = type_decimal;
+	vars->standard.hexadecimalType = type_hexadecimal;
+	vars->standard.int8Type = type_integer8;
     vars->standard.int16Type = type_integer16;
     vars->standard.int32Type = type_integer32;
     vars->standard.int64Type = type_integer64;

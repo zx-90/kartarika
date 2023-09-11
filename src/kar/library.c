@@ -288,6 +288,28 @@ _kartarika_smart_pointer* _kartarika_library_convert_bool_to_string(bool value) 
 	return _kartarika_library_string_create("0");
 }
 
+#define _KARTARIKA_CONVERT_INT_TO_INT(num_from, num_to)\
+int##num_to##_t _kartarika_library_convert_integer##num_from##_to_integer##num_to(int##num_from##_t value) { \
+	return value; \
+}
+
+_KARTARIKA_CONVERT_INT_TO_INT(8, 8)
+_KARTARIKA_CONVERT_INT_TO_INT(8, 16)
+_KARTARIKA_CONVERT_INT_TO_INT(8, 32)
+_KARTARIKA_CONVERT_INT_TO_INT(8, 64)
+_KARTARIKA_CONVERT_INT_TO_INT(16, 8)
+_KARTARIKA_CONVERT_INT_TO_INT(16, 16)
+_KARTARIKA_CONVERT_INT_TO_INT(16, 32)
+_KARTARIKA_CONVERT_INT_TO_INT(16, 64)
+_KARTARIKA_CONVERT_INT_TO_INT(32, 8)
+_KARTARIKA_CONVERT_INT_TO_INT(32, 16)
+_KARTARIKA_CONVERT_INT_TO_INT(32, 32)
+_KARTARIKA_CONVERT_INT_TO_INT(32, 64)
+_KARTARIKA_CONVERT_INT_TO_INT(64, 8)
+_KARTARIKA_CONVERT_INT_TO_INT(64, 16)
+_KARTARIKA_CONVERT_INT_TO_INT(64, 32)
+_KARTARIKA_CONVERT_INT_TO_INT(64, 64)
+
 #define _KARTARIKA_CONVERT_INTEGER_TO_BOOL(num)\
 _kartarika_smart_pointer* _kartarika_library_convert_integer##num##_to_bool(int##num##_t value) {\
 	if (value == 0) {\

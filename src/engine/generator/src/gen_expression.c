@@ -69,8 +69,8 @@ static KarExpressionResult get_val_integer(KarToken* token, KarString* moduleNam
 	}
 
 	KarExpressionResult result;
-	result.type = vars->standard.int32Type;
-	result.value = LLVMConstInt(LLVMInt32Type(), (long long unsigned int)val, 0);
+	result.type = vars->standard.decimalType;
+	result.value = LLVMConstInt(LLVMInt64Type(), (long long unsigned int)val, 0);
 	return result;
 }
 
@@ -112,8 +112,8 @@ static KarExpressionResult get_val_hexadecimal(KarToken* token, KarString* modul
 	}
 
 	KarExpressionResult result;
-	result.type = vars->standard.unsigned32Type;
-	result.value = LLVMConstInt(LLVMInt32Type(), (long long unsigned int)val, 0);
+	result.type = vars->standard.hexadecimalType;
+	result.value = LLVMConstInt(LLVMInt64Type(), (long long unsigned int)val, 0);
 	return result;
 }
 
@@ -186,6 +186,26 @@ static KarVartree* get_new_context(KarVartree* context, KarString* name, KarVars
 	}
 }
 
+static KarVartree* get_reduced_type(KarVartree* type, KarVars* vars) {
+	if (type == vars->standard.decimalType) {
+		return vars->standard.int32Type;
+	}
+	if (type == vars->standard.hexadecimalType) {
+		return vars->standard.unsigned32Type;
+	}
+	return type;
+}
+
+static KarVartree* get_reduced64_type(KarVartree* type, KarVars* vars) {
+	if (type == vars->standard.decimalType) {
+		return vars->standard.int64Type;
+	}
+	if (type == vars->standard.hexadecimalType) {
+		return vars->standard.unsigned64Type;
+	}
+	return type;
+}
+
 static KarExpressionResult get_field(KarVartree* context, KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
 	KarToken* right = kar_token_child_get(token, 1);
@@ -200,7 +220,7 @@ static KarExpressionResult get_field(KarVartree* context, KarToken* token, KarLL
 		}
 	} else {
 		KarExpressionResult leftResult = calc_expression(context, left, llvmData, moduleName, vars, errors);
-		newContext = leftResult.type;
+		newContext = get_reduced_type(leftResult.type, vars);
 		if (newContext == NULL) {
 			return kar_expression_result_none();
 		}
@@ -240,6 +260,15 @@ static KarString* get_token_string(KarToken* token) {
 }
 
 static KarExpressionResult get_call_method(KarVartree* context, KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	KarToken* funcNameToken = kar_token_child_get(token, 0);
+	KarString* funcName = get_token_string(funcNameToken);
+	if (funcName == NULL) {
+		kar_project_error_list_create_add(errors, moduleName, &funcNameToken->cursor, 1, "Имя функции не определено.");
+		return kar_expression_result_none();
+	}
+	// TODO: Возможно надо проверять полный путь, а не просто имя функции.
+	bool is64 = kar_string_equal(funcName, "Целое64");
+
 	KAR_CREATES(argsVartree, KarVartree*, kar_token_child_count(token));
 	KAR_CREATES(argsLLVM, LLVMValueRef, kar_token_child_count(token));
 	size_t num = 0;
@@ -252,19 +281,16 @@ static KarExpressionResult get_call_method(KarVartree* context, KarToken* token,
 				KAR_FREE(argsLLVM);
 				return res;
 			}
-			argsVartree[num] = res.type;
+			if (is64) {
+				argsVartree[num] = get_reduced64_type(res.type, vars);
+			} else {
+				argsVartree[num] = get_reduced_type(res.type, vars);
+			}
 			argsLLVM[num] = res.value;
 			num++;
 		}
 	}
 
-	KarToken* funcNameToken = kar_token_child_get(token, 0);
-	KarString* funcName = get_token_string(funcNameToken);
-	if (funcName == NULL) {
-		kar_project_error_list_create_add(errors, moduleName, &funcNameToken->cursor, 1, "Имя функции не определено.");
-		KAR_FREE(argsLLVM);
-		return kar_expression_result_none();
-	}
 	KarString* functionName = kar_vartree_create_full_function_name(funcName, argsVartree, num);
 	KAR_FREE(argsVartree);
 	// TODO: Заглушка для тестов для проверки типа получаемого выражения.
