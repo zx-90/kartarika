@@ -33,7 +33,7 @@ KarString* kar_string_create_format(const char* format, ...) {
 	KAR_CREATES(result, KarString, size + 1);
 	
 	va_start(args, format);
-	vsnprintf(result, size, format, args);
+	vsnprintf(result, size + 1, format, args);
 	va_end(args);
 	
 	return result;

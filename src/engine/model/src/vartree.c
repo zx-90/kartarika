@@ -103,7 +103,7 @@ KarVartree* kar_vartree_create_unclean(const KarString* name) {
 }
 
 KarVartree* kar_vartree_create_unclean_class(KarVartree* type) {
-    KarVartree* result = vartree_create_name(KAR_VARTYPE_UNCLEAN_CLASS, "?");
+	KarVartree* result = vartree_create_name(KAR_VARTYPE_UNCLEAN_CLASS, kar_vartree_create_full_function_name("Неопределённость", &type, 1));
     result->params = type;
 	return result;
 }
@@ -193,6 +193,7 @@ KarString* kar_vartree_create_full_path(KarVartree* var) {
 		if (var->name == NULL) {
 			continue;
 		}
+
 		KarString* newResult = kar_string_create_concat(".", result);
 		KarString* newResult2 = kar_string_create_concat(var->name, newResult);
 

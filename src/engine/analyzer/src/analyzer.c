@@ -108,36 +108,36 @@ static bool fill_standard_lib(KarVars* vars) {
 	kar_vartree_child_add(type_unclean, kar_vartree_create_function("ПустойЛи", "_kartarika_unclean_is_empty", NULL, 0, type_bool));
 
 	KarVartree* type_unclean_bool = kar_vartree_create_unclean_class(type_bool);
-	kar_vartree_child_add(type_unclean, type_unclean_bool);
+	kar_vartree_child_add(types, type_unclean_bool);
 
 	KarVartree* type_unclean_integer8 = kar_vartree_create_unclean_class(type_integer8);
-	kar_vartree_child_add(type_unclean, type_unclean_integer8);
+	kar_vartree_child_add(types, type_unclean_integer8);
 	KarVartree* type_unclean_integer16 = kar_vartree_create_unclean_class(type_integer16);
-	kar_vartree_child_add(type_unclean, type_unclean_integer16);
+	kar_vartree_child_add(types, type_unclean_integer16);
 	KarVartree* type_unclean_integer32 = kar_vartree_create_unclean_class(type_integer32);
-	kar_vartree_child_add(type_unclean, type_unclean_integer32);
+	kar_vartree_child_add(types, type_unclean_integer32);
 	KarVartree* type_unclean_integer64 = kar_vartree_create_unclean_class(type_integer64);
-	kar_vartree_child_add(type_unclean, type_unclean_integer64);
+	kar_vartree_child_add(types, type_unclean_integer64);
 	KarVartree* type_unclean_integer = kar_vartree_create_unclean_class(type_integer32);
-	kar_vartree_child_add(type_unclean, type_unclean_integer);
+	kar_vartree_child_add(types, type_unclean_integer);
 
 	KarVartree* type_unclean_unsigned8 = kar_vartree_create_unclean_class(type_unsigned8);
-	kar_vartree_child_add(type_unclean, type_unclean_unsigned8);
+	kar_vartree_child_add(types, type_unclean_unsigned8);
 	KarVartree* type_unclean_unsigned16 = kar_vartree_create_unclean_class(type_unsigned16);
-	kar_vartree_child_add(type_unclean, type_unclean_unsigned16);
+	kar_vartree_child_add(types, type_unclean_unsigned16);
 	KarVartree* type_unclean_unsigned32 = kar_vartree_create_unclean_class(type_unsigned32);
-	kar_vartree_child_add(type_unclean, type_unclean_unsigned32);
+	kar_vartree_child_add(types, type_unclean_unsigned32);
 	KarVartree* type_unclean_unsigned64 = kar_vartree_create_unclean_class(type_unsigned64);
-	kar_vartree_child_add(type_unclean, type_unclean_unsigned64);
+	kar_vartree_child_add(types, type_unclean_unsigned64);
 	KarVartree* type_unclean_unsigned = kar_vartree_create_unclean_class(type_unsigned32);
-	kar_vartree_child_add(type_unclean, type_unclean_unsigned);
+	kar_vartree_child_add(types, type_unclean_unsigned);
 
 	KarVartree* type_unclean_float32 = kar_vartree_create_unclean_class(type_float32);
-	kar_vartree_child_add(type_unclean, type_unclean_float32);
+	kar_vartree_child_add(types, type_unclean_float32);
 	KarVartree* type_unclean_float64 = kar_vartree_create_unclean_class(type_float64);
-	kar_vartree_child_add(type_unclean, type_unclean_float64);
+	kar_vartree_child_add(types, type_unclean_float64);
 	KarVartree* type_unclean_float = kar_vartree_create_unclean_class(type_float64);
-	kar_vartree_child_add(type_unclean, type_unclean_float);
+	kar_vartree_child_add(types, type_unclean_float);
 
 	// Строки.
 	KarVartree* type_string = kar_vartree_create_string("Строка");
@@ -150,7 +150,7 @@ static bool fill_standard_lib(KarVars* vars) {
     kar_vartree_child_add(type_string, kar_vartree_create_function("Подстрока", "_kartarika_library_string_substring", string_substring_args, 2, type_string));
 	
 	KarVartree* type_unclean_string = kar_vartree_create_unclean_class(type_string);
-	kar_vartree_child_add(type_unclean, type_unclean_string);
+	kar_vartree_child_add(types, type_unclean_string);
 
 	// Преобразования типов.
 	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_bool_to_bool", &type_bool, 1, type_bool));
