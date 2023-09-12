@@ -267,7 +267,7 @@ static KarExpressionResult get_call_method(KarVartree* context, KarToken* token,
 		return kar_expression_result_none();
 	}
 	// TODO: Возможно надо проверять полный путь, а не просто имя функции.
-	bool is64 = kar_string_equal(funcName, "Целое64");
+	bool is64 = kar_string_equal(funcName, "Целое64") || kar_string_equal(funcName, "Счётное64");
 
 	KAR_CREATES(argsVartree, KarVartree*, kar_token_child_count(token));
 	KAR_CREATES(argsLLVM, LLVMValueRef, kar_token_child_count(token));
