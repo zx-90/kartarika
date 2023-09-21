@@ -365,6 +365,18 @@ _KARTARIKA_CONVERT_INTEGER_TO_FLOAT(32, 64)
 _KARTARIKA_CONVERT_INTEGER_TO_FLOAT(64, 32)
 _KARTARIKA_CONVERT_INTEGER_TO_FLOAT(64, 64)
 
+#define _KARTARIKA_CONVERT_INTEGER_TO_STRING(num)\
+_kartarika_smart_pointer* _kartarika_library_convert_integer##num##_to_string(int##num##_t value) {\
+	char str[21];\
+	sprintf(str,"%lld", (long long int)value);\
+	return _kartarika_library_string_create(str);\
+}
+
+_KARTARIKA_CONVERT_INTEGER_TO_STRING(8)
+_KARTARIKA_CONVERT_INTEGER_TO_STRING(16)
+_KARTARIKA_CONVERT_INTEGER_TO_STRING(32)
+_KARTARIKA_CONVERT_INTEGER_TO_STRING(64)
+
 #define _KARTARIKA_CONVERT_UNSIGNED_TO_BOOL(num)\
 _kartarika_smart_pointer* _kartarika_library_convert_unsigned##num##_to_bool(uint##num##_t value) {\
 	if (value == 0) {\
