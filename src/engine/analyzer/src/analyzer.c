@@ -185,16 +185,21 @@ static bool fill_standard_lib(KarVars* vars) {
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_bool_to_integer8", &type_bool, 1, type_integer8));
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_integer32_to_integer8", &type_integer32, 1, type_integer8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_unsigned32_to_integer8", &type_unsigned32, 1, type_integer8));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое16", "_kartarika_library_convert_bool_to_integer16", &type_bool, 1, type_integer16));
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое16", "_kartarika_library_convert_integer32_to_integer16", &type_integer32, 1, type_integer16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое16", "_kartarika_library_convert_unsigned32_to_integer16", &type_unsigned32, 1, type_integer16));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_bool_to_integer32", &type_bool, 1, type_integer32));
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_integer32_to_integer32", &type_integer32, 1, type_integer32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_unsigned32_to_integer32", &type_unsigned32, 1, type_integer32));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_bool_to_integer64", &type_bool, 1, type_integer64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_integer32_to_integer64", &type_integer32, 1, type_integer64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_integer64_to_integer64", &type_integer64, 1, type_integer64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_unsigned32_to_integer64", &type_unsigned32, 1, type_integer64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_unsigned64_to_integer64", &type_unsigned64, 1, type_integer64));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_bool_to_unsigned8", &type_bool, 1, type_unsigned8));
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_integer32_to_unsigned8", &type_integer32, 1, type_unsigned8));
