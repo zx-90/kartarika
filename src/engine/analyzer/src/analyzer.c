@@ -203,16 +203,21 @@ static bool fill_standard_lib(KarVars* vars) {
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_bool_to_unsigned8", &type_bool, 1, type_unsigned8));
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_integer32_to_unsigned8", &type_integer32, 1, type_unsigned8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_unsigned32_to_unsigned8", &type_unsigned32, 1, type_unsigned8));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное16", "_kartarika_library_convert_bool_to_unsigned16", &type_bool, 1, type_unsigned16));
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное16", "_kartarika_library_convert_integer32_to_unsigned16", &type_integer32, 1, type_unsigned16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное16", "_kartarika_library_convert_unsigned32_to_unsigned16", &type_unsigned32, 1, type_unsigned16));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное32", "_kartarika_library_convert_bool_to_unsigned32", &type_bool, 1, type_unsigned32));
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное32", "_kartarika_library_convert_integer32_to_unsigned32", &type_integer32, 1, type_unsigned32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное32", "_kartarika_library_convert_unsigned32_to_unsigned32", &type_unsigned32, 1, type_unsigned32));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное64", "_kartarika_library_convert_bool_to_unsigned64", &type_bool, 1, type_unsigned64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное64", "_kartarika_library_convert_integer32_to_unsigned64", &type_integer32, 1, type_unsigned64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное64", "_kartarika_library_convert_integer64_to_unsigned64", &type_integer64, 1, type_unsigned64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное64", "_kartarika_library_convert_unsigned32_to_unsigned64", &type_unsigned32, 1, type_unsigned64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное64", "_kartarika_library_convert_unsigned64_to_unsigned64", &type_unsigned64, 1, type_unsigned64));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", "_kartarika_library_convert_bool_to_float32", &type_bool, 1, type_float32));
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", "_kartarika_library_convert_integer32_to_float32", &type_integer32, 1, type_float32));
