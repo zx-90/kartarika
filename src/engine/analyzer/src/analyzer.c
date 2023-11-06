@@ -233,6 +233,7 @@ static bool fill_standard_lib(KarVars* vars) {
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Строка", "_kartarika_library_convert_bool_to_string", &type_bool, 1, type_string));
 	kar_vartree_child_add(types, kar_vartree_create_function("Строка", "_kartarika_library_convert_integer32_to_string", &type_integer32, 1, type_string));
+	kar_vartree_child_add(types, kar_vartree_create_function("Строка", "_kartarika_library_convert_unsigned32_to_string", &type_unsigned32, 1, type_string));
 
 	// Стандартная библиотека.
 	KarVartree* type_console = kar_vartree_create_class("Консоль");

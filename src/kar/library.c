@@ -454,6 +454,18 @@ _KARTARIKA_CONVERT_UNSIGNED_TO_FLOAT(32, 64)
 _KARTARIKA_CONVERT_UNSIGNED_TO_FLOAT(64, 32)
 _KARTARIKA_CONVERT_UNSIGNED_TO_FLOAT(64, 64)
 
+#define _KARTARIKA_CONVERT_UNSIGNED_TO_STRING(num)\
+_kartarika_smart_pointer* _kartarika_library_convert_unsigned##num##_to_string(uint##num##_t value) {\
+	char str[21];\
+	sprintf(str,"%llu", (long long unsigned int)value);\
+	return _kartarika_library_string_create(str);\
+}
+
+_KARTARIKA_CONVERT_UNSIGNED_TO_STRING(8)
+_KARTARIKA_CONVERT_UNSIGNED_TO_STRING(16)
+_KARTARIKA_CONVERT_UNSIGNED_TO_STRING(32)
+_KARTARIKA_CONVERT_UNSIGNED_TO_STRING(64)
+
 #define _KARTARIKA_CONVERT_FLOAT_TO_BOOL(num)\
 _kartarika_smart_pointer* _kartarika_library_convert_float##num##_to_bool(float##num##_t value) {\
 	if (value == 0.0) {\
