@@ -23,6 +23,19 @@ typedef struct {
 	LLVMValueRef createString;
 
 	LLVMValueRef uncleanBool;
+	LLVMValueRef uncleanInteger8;
+	LLVMValueRef uncleanInteger16;
+	LLVMValueRef uncleanInteger32;
+	LLVMValueRef uncleanInteger64;
+	LLVMValueRef uncleanUnsigned8;
+	LLVMValueRef uncleanUnsigned16;
+	LLVMValueRef uncleanUnsigned32;
+	LLVMValueRef uncleanUnsigned64;
+	LLVMValueRef uncleanFloat32;
+	LLVMValueRef uncleanFloat64;
+	LLVMValueRef uncleanString;
+
+	size_t counter;
 } KarLLVMData;
 
 KarLLVMData* kar_llvm_data_create(LLVMContextRef context, LLVMModuleRef module, LLVMBuilderRef builder);

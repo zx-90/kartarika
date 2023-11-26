@@ -236,6 +236,51 @@ bool _kartarika_unclean_is_empty(_kartarika_smart_pointer* value) {
 bool _kartarika_unclean_bool(_kartarika_smart_pointer* value) {
 	return *((bool*)value->value);
 }
+
+int8_t _kartarika_unclean_integer8(_kartarika_smart_pointer* value) {
+	return *((int8_t*)value->value);
+}
+
+int16_t _kartarika_unclean_integer16(_kartarika_smart_pointer* value) {
+	return *((int16_t*)value->value);
+}
+
+int32_t _kartarika_unclean_integer32(_kartarika_smart_pointer* value) {
+	return *((int32_t*)value->value);
+}
+
+int64_t _kartarika_unclean_integer64(_kartarika_smart_pointer* value) {
+	return *((int64_t*)value->value);
+}
+
+uint8_t _kartarika_unclean_unsigned8(_kartarika_smart_pointer* value) {
+	return *((uint8_t*)value->value);
+}
+
+uint16_t _kartarika_unclean_unsigned16(_kartarika_smart_pointer* value) {
+	return *((uint16_t*)value->value);
+}
+
+uint32_t _kartarika_unclean_unsigned32(_kartarika_smart_pointer* value) {
+	return *((uint32_t*)value->value);
+}
+
+uint64_t _kartarika_unclean_unsigned64(_kartarika_smart_pointer* value) {
+	return *((uint64_t*)value->value);
+}
+
+float32_t _kartarika_unclean_float32(_kartarika_smart_pointer* value) {
+	return *((float32_t*)value->value);
+}
+
+float64_t _kartarika_unclean_float64(_kartarika_smart_pointer* value) {
+	return *((float64_t*)value->value);
+}
+
+_kartarika_smart_pointer* _kartarika_unclean_string(_kartarika_smart_pointer* value) {
+	return (_kartarika_smart_pointer*)value->value;
+}
+
 // ----------------------------------------------------------------------------
 // Преобразование типов
 // ----------------------------------------------------------------------------
@@ -486,31 +531,15 @@ _KARTARIKA_CONVERT_FLOAT_TO_BOOL(64)
 _kartarika_smart_pointer* _kartarika_library_convert_string_to_bool(_kartarika_smart_pointer* str) {
 	char* val = (char*)str->value;
 	if (
-			!strcmp(val, "1") ||
-			!strcmp(val, "+") ||
 			!strcmp(val, "да") ||
 			!strcmp(val, "Да") ||
 			!strcmp(val, "дА") ||
-			!strcmp(val, "ДА") ||
-			!strcmp(val, "д") ||
-			!strcmp(val, "Д") ||
-			!strcmp(val, "yes") ||
-			!strcmp(val, "Yes") ||
-			!strcmp(val, "yEs") ||
-			!strcmp(val, "YEs") ||
-			!strcmp(val, "yeS") ||
-			!strcmp(val, "YeS") ||
-			!strcmp(val, "yES") ||
-			!strcmp(val, "YES") ||
-			!strcmp(val, "y") ||
-			!strcmp(val, "Y")) {
+			!strcmp(val, "ДА")) {
 		// true
 		bool* b = (bool*)malloc(sizeof(bool));
-		*b = false;
+		*b = true;
 		return _kartarika_smart_pointer_create(b);
 	} else if (
-			!strcmp(val, "0") ||
-			!strcmp(val, "-") ||
 			!strcmp(val, "нет") ||
 			!strcmp(val, "Нет") ||
 			!strcmp(val, "нЕт") ||
@@ -518,21 +547,67 @@ _kartarika_smart_pointer* _kartarika_library_convert_string_to_bool(_kartarika_s
 			!strcmp(val, "неТ") ||
 			!strcmp(val, "НеТ") ||
 			!strcmp(val, "нЕТ") ||
-			!strcmp(val, "НЕТ") ||
-			!strcmp(val, "н") ||
-			!strcmp(val, "Н") ||
-			!strcmp(val, "no") ||
-			!strcmp(val, "No") ||
-			!strcmp(val, "nO") ||
-			!strcmp(val, "NO") ||
-			!strcmp(val, "n") ||
-			!strcmp(val, "N")) {
+			!strcmp(val, "НЕТ")) {
 		// false
 		bool* b = (bool*)malloc(sizeof(bool));
 		*b = false;
 		return _kartarika_smart_pointer_create(b);
 	}
-	return NULL;
+	return _kartarika_smart_pointer_create(NULL);
+}
+
+#define _KARTARIKA_CONVERT_STRING_TO_INTEGER(num)\
+_kartarika_smart_pointer* _kartarika_library_convert_string_to_integer##num(_kartarika_smart_pointer* str) {\
+	char* end;\
+	long long int conv = strtoll(str->value, &end, 10);\
+	if (*end != 0) {\
+		return _kartarika_smart_pointer_create(NULL);\
+	}\
+	if (conv > INT##num##_MAX || conv < INT##num##_MIN) {\
+		return _kartarika_smart_pointer_create(NULL);\
+	}\
+	int##num##_t* res = (int##num##_t*)malloc(sizeof(int##num##_t));\
+	*res = conv;\
+	return _kartarika_smart_pointer_create(res);\
+}
+
+_KARTARIKA_CONVERT_STRING_TO_INTEGER(8)
+_KARTARIKA_CONVERT_STRING_TO_INTEGER(16)
+_KARTARIKA_CONVERT_STRING_TO_INTEGER(32)
+_KARTARIKA_CONVERT_STRING_TO_INTEGER(64)
+
+#define _KARTARIKA_CONVERT_STRING_TO_UNSIGNED(num)\
+_kartarika_smart_pointer* _kartarika_library_convert_string_to_unsigned##num(_kartarika_smart_pointer* str) {\
+	char* end;\
+	long long unsigned conv = strtoull(str->value, &end, 10);\
+	if (*end != 0) {\
+		return _kartarika_smart_pointer_create(NULL);\
+	}\
+	if (conv > UINT##num##_MAX) {\
+		return _kartarika_smart_pointer_create(NULL);\
+	}\
+	uint##num##_t* res = (uint##num##_t*)malloc(sizeof(uint##num##_t));\
+	*res = conv;\
+	return _kartarika_smart_pointer_create(res);\
+}
+
+_KARTARIKA_CONVERT_STRING_TO_UNSIGNED(8)
+_KARTARIKA_CONVERT_STRING_TO_UNSIGNED(16)
+_KARTARIKA_CONVERT_STRING_TO_UNSIGNED(32)
+_KARTARIKA_CONVERT_STRING_TO_UNSIGNED(64)
+
+// TODO: Реализовать. Пока просто заглушка.
+#define _KARTARIKA_CONVERT_STRING_TO_FLOAT(num)\
+float##num##_t _kartarika_library_convert_string_to_float##num(_kartarika_smart_pointer* str) {\
+	return num;\
+}
+
+_KARTARIKA_CONVERT_STRING_TO_FLOAT(32)
+_KARTARIKA_CONVERT_STRING_TO_FLOAT(64)
+
+_kartarika_smart_pointer* _kartarika_library_convert_string_to_string(_kartarika_smart_pointer* str) {
+	str->count++;
+	return str;
 }
 
 // ----------------------------------------------------------------------------

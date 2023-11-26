@@ -179,61 +179,162 @@ static bool fill_standard_lib(KarVars* vars) {
 	kar_vartree_child_add(type_unclean_string, kar_vartree_create_function("ПустойЛи", "_kartarika_unclean_is_empty", NULL, 0, type_bool));
 
 	// Преобразования типов.
+	// TODO: Дописать все тесты для преобразования переменных.
 	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_bool_to_bool", &type_bool, 1, type_bool));
+	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_integer8_to_bool", &type_integer8, 1, type_unclean_bool));
+	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_integer16_to_bool", &type_integer16, 1, type_unclean_bool));
 	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_integer32_to_bool", &type_integer32, 1, type_unclean_bool));
+	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_integer64_to_bool", &type_integer64, 1, type_unclean_bool));
+	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_unsigned8_to_bool", &type_unsigned8, 1, type_unclean_bool));
+	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_unsigned16_to_bool", &type_unsigned16, 1, type_unclean_bool));
 	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_unsigned32_to_bool", &type_unsigned32, 1, type_unclean_bool));
+	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_unsigned64_to_bool", &type_unsigned64, 1, type_unclean_bool));
+	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_float32_to_bool", &type_float32, 1, type_unclean_bool));
+	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_float64_to_bool", &type_float64, 1, type_unclean_bool));
+	kar_vartree_child_add(types, kar_vartree_create_function("Буль", "_kartarika_library_convert_string_to_bool", &type_string, 1, type_unclean_bool));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_bool_to_integer8", &type_bool, 1, type_integer8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_integer8_to_integer8", &type_integer8, 1, type_integer8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_integer16_to_integer8", &type_integer16, 1, type_integer8));
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_integer32_to_integer8", &type_integer32, 1, type_integer8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_integer64_to_integer8", &type_integer64, 1, type_integer8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_unsigned8_to_integer8", &type_unsigned8, 1, type_integer8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_unsigned16_to_integer8", &type_unsigned16, 1, type_integer8));
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_unsigned32_to_integer8", &type_unsigned32, 1, type_integer8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_unsigned64_to_integer8", &type_unsigned64, 1, type_integer8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_float32_to_integer8", &type_float32, 1, type_unclean_integer8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_float64_to_integer8", &type_float64, 1, type_unclean_integer8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое8", "_kartarika_library_convert_string_to_integer8", &type_string, 1, type_unclean_integer8));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое16", "_kartarika_library_convert_bool_to_integer16", &type_bool, 1, type_integer16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое16", "_kartarika_library_convert_integer8_to_integer16", &type_integer8, 1, type_integer16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое16", "_kartarika_library_convert_integer16_to_integer16", &type_integer16, 1, type_integer16));
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое16", "_kartarika_library_convert_integer32_to_integer16", &type_integer32, 1, type_integer16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое16", "_kartarika_library_convert_integer64_to_integer16", &type_integer64, 1, type_integer16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое16", "_kartarika_library_convert_unsigned8_to_integer16", &type_unsigned8, 1, type_integer16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое16", "_kartarika_library_convert_unsigned16_to_integer16", &type_unsigned16, 1, type_integer16));
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое16", "_kartarika_library_convert_unsigned32_to_integer16", &type_unsigned32, 1, type_integer16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое16", "_kartarika_library_convert_unsigned64_to_integer16", &type_unsigned64, 1, type_integer16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое16", "_kartarika_library_convert_float32_to_integer16", &type_float32, 1, type_unclean_integer16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое16", "_kartarika_library_convert_float64_to_integer16", &type_float64, 1, type_unclean_integer16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое16", "_kartarika_library_convert_string_to_integer16", &type_string, 1, type_unclean_integer16));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_bool_to_integer32", &type_bool, 1, type_integer32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_integer8_to_integer32", &type_integer8, 1, type_integer32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_integer16_to_integer32", &type_integer16, 1, type_integer32));
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_integer32_to_integer32", &type_integer32, 1, type_integer32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_integer64_to_integer32", &type_integer64, 1, type_integer32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_unsigned8_to_integer32", &type_unsigned8, 1, type_integer32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_unsigned16_to_integer32", &type_unsigned16, 1, type_integer32));
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_unsigned32_to_integer32", &type_unsigned32, 1, type_integer32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_unsigned64_to_integer32", &type_unsigned64, 1, type_integer32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_float32_to_integer32", &type_float32, 1, type_unclean_integer32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_float64_to_integer32", &type_float64, 1, type_unclean_integer32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое32", "_kartarika_library_convert_string_to_integer32", &type_string, 1, type_unclean_integer32));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_bool_to_integer64", &type_bool, 1, type_integer64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_integer8_to_integer64", &type_integer8, 1, type_integer64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_integer16_to_integer64", &type_integer16, 1, type_integer64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_integer32_to_integer64", &type_integer32, 1, type_integer64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_integer64_to_integer64", &type_integer64, 1, type_integer64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_unsigned8_to_integer64", &type_unsigned8, 1, type_integer64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_unsigned16_to_integer64", &type_unsigned16, 1, type_integer64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_unsigned32_to_integer64", &type_unsigned32, 1, type_integer64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_unsigned64_to_integer64", &type_unsigned64, 1, type_integer64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_float32_to_integer64", &type_float32, 1, type_unclean_integer64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_float64_to_integer64", &type_float64, 1, type_unclean_integer64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Целое64", "_kartarika_library_convert_string_to_integer64", &type_string, 1, type_unclean_integer64));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_bool_to_unsigned8", &type_bool, 1, type_unsigned8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_integer8_to_unsigned8", &type_integer8, 1, type_unsigned8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_integer16_to_unsigned8", &type_integer16, 1, type_unsigned8));
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_integer32_to_unsigned8", &type_integer32, 1, type_unsigned8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_integer64_to_unsigned8", &type_integer64, 1, type_unsigned8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_unsigned8_to_unsigned8", &type_unsigned8, 1, type_unsigned8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_unsigned16_to_unsigned8", &type_unsigned16, 1, type_unsigned8));
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_unsigned32_to_unsigned8", &type_unsigned32, 1, type_unsigned8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_unsigned64_to_unsigned8", &type_unsigned64, 1, type_unsigned8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_float32_to_unsigned8", &type_float32, 1, type_unclean_unsigned8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_float64_to_unsigned8", &type_float64, 1, type_unclean_unsigned8));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное8", "_kartarika_library_convert_string_to_unsigned8", &type_string, 1, type_unclean_unsigned8));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное16", "_kartarika_library_convert_bool_to_unsigned16", &type_bool, 1, type_unsigned16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное16", "_kartarika_library_convert_integer8_to_unsigned16", &type_integer8, 1, type_unsigned16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное16", "_kartarika_library_convert_integer16_to_unsigned16", &type_integer16, 1, type_unsigned16));
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное16", "_kartarika_library_convert_integer32_to_unsigned16", &type_integer32, 1, type_unsigned16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное16", "_kartarika_library_convert_integer64_to_unsigned16", &type_integer64, 1, type_unsigned16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное16", "_kartarika_library_convert_unsigned8_to_unsigned16", &type_unsigned8, 1, type_unsigned16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное16", "_kartarika_library_convert_unsigned16_to_unsigned16", &type_unsigned16, 1, type_unsigned16));
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное16", "_kartarika_library_convert_unsigned32_to_unsigned16", &type_unsigned32, 1, type_unsigned16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное16", "_kartarika_library_convert_unsigned64_to_unsigned16", &type_unsigned64, 1, type_unsigned16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное16", "_kartarika_library_convert_float32_to_unsigned16", &type_float32, 1, type_unclean_unsigned16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное16", "_kartarika_library_convert_float64_to_unsigned16", &type_float64, 1, type_unclean_unsigned16));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное16", "_kartarika_library_convert_string_to_unsigned16", &type_string, 1, type_unclean_unsigned16));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное32", "_kartarika_library_convert_bool_to_unsigned32", &type_bool, 1, type_unsigned32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное32", "_kartarika_library_convert_integer8_to_unsigned32", &type_integer8, 1, type_unsigned32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное32", "_kartarika_library_convert_integer16_to_unsigned32", &type_integer16, 1, type_unsigned32));
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное32", "_kartarika_library_convert_integer32_to_unsigned32", &type_integer32, 1, type_unsigned32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное32", "_kartarika_library_convert_integer64_to_unsigned32", &type_integer64, 1, type_unsigned32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное32", "_kartarika_library_convert_unsigned8_to_unsigned32", &type_unsigned8, 1, type_unsigned32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное32", "_kartarika_library_convert_unsigned16_to_unsigned32", &type_unsigned16, 1, type_unsigned32));
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное32", "_kartarika_library_convert_unsigned32_to_unsigned32", &type_unsigned32, 1, type_unsigned32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное32", "_kartarika_library_convert_unsigned64_to_unsigned32", &type_unsigned64, 1, type_unsigned32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное32", "_kartarika_library_convert_float32_to_unsigned32", &type_float32, 1, type_unclean_unsigned32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное32", "_kartarika_library_convert_float64_to_unsigned32", &type_float64, 1, type_unclean_unsigned32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное32", "_kartarika_library_convert_string_to_unsigned32", &type_string, 1, type_unclean_unsigned32));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное64", "_kartarika_library_convert_bool_to_unsigned64", &type_bool, 1, type_unsigned64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное64", "_kartarika_library_convert_integer8_to_unsigned64", &type_integer8, 1, type_unsigned64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное64", "_kartarika_library_convert_integer16_to_unsigned64", &type_integer16, 1, type_unsigned64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное64", "_kartarika_library_convert_integer32_to_unsigned64", &type_integer32, 1, type_unsigned64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное64", "_kartarika_library_convert_integer64_to_unsigned64", &type_integer64, 1, type_unsigned64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное64", "_kartarika_library_convert_unsigned8_to_unsigned64", &type_unsigned8, 1, type_unsigned64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное64", "_kartarika_library_convert_unsigned16_to_unsigned64", &type_unsigned16, 1, type_unsigned64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное64", "_kartarika_library_convert_unsigned32_to_unsigned64", &type_unsigned32, 1, type_unsigned64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Счётное64", "_kartarika_library_convert_unsigned64_to_unsigned64", &type_unsigned64, 1, type_unsigned64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное64", "_kartarika_library_convert_float32_to_unsigned64", &type_float32, 1, type_unclean_unsigned64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное64", "_kartarika_library_convert_float64_to_unsigned64", &type_float64, 1, type_unclean_unsigned64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Счётное64", "_kartarika_library_convert_string_to_unsigned64", &type_string, 1, type_unclean_unsigned64));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", "_kartarika_library_convert_bool_to_float32", &type_bool, 1, type_float32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", "_kartarika_library_convert_integer8_to_float32", &type_integer8, 1, type_float32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", "_kartarika_library_convert_integer16_to_float32", &type_integer16, 1, type_float32));
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", "_kartarika_library_convert_integer32_to_float32", &type_integer32, 1, type_float32));
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", "_kartarika_library_convert_integer64_to_float32", &type_integer64, 1, type_float32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", "_kartarika_library_convert_unsigned8_to_float32", &type_unsigned8, 1, type_float32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", "_kartarika_library_convert_unsigned16_to_float32", &type_unsigned16, 1, type_float32));
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", "_kartarika_library_convert_unsigned32_to_float32", &type_unsigned32, 1, type_float32));
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", "_kartarika_library_convert_unsigned64_to_float32", &type_unsigned64, 1, type_float32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", "_kartarika_library_convert_float32_to_float32", &type_float32, 1, type_float32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", "_kartarika_library_convert_float64_to_float32", &type_float64, 1, type_float32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", "_kartarika_library_convert_string_to_float32", &type_string, 1, type_float32));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", "_kartarika_library_convert_bool_to_float64", &type_bool, 1, type_float64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", "_kartarika_library_convert_integer8_to_float64", &type_integer8, 1, type_float64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", "_kartarika_library_convert_integer16_to_float64", &type_integer16, 1, type_float64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", "_kartarika_library_convert_integer32_to_float64", &type_integer32, 1, type_float64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", "_kartarika_library_convert_integer64_to_float64", &type_integer64, 1, type_float64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", "_kartarika_library_convert_unsigned8_to_float64", &type_unsigned8, 1, type_float64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", "_kartarika_library_convert_unsigned16_to_float64", &type_unsigned16, 1, type_float64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", "_kartarika_library_convert_unsigned32_to_float64", &type_unsigned32, 1, type_float64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", "_kartarika_library_convert_unsigned64_to_float64", &type_unsigned64, 1, type_float64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", "_kartarika_library_convert_float32_to_float64", &type_float32, 1, type_float64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", "_kartarika_library_convert_float64_to_float64", &type_float64, 1, type_float64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", "_kartarika_library_convert_string_to_float64", &type_string, 1, type_float64));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Строка", "_kartarika_library_convert_bool_to_string", &type_bool, 1, type_string));
+	kar_vartree_child_add(types, kar_vartree_create_function("Строка", "_kartarika_library_convert_integer8_to_string", &type_integer8, 1, type_string));
+	kar_vartree_child_add(types, kar_vartree_create_function("Строка", "_kartarika_library_convert_integer16_to_string", &type_integer16, 1, type_string));
 	kar_vartree_child_add(types, kar_vartree_create_function("Строка", "_kartarika_library_convert_integer32_to_string", &type_integer32, 1, type_string));
+	kar_vartree_child_add(types, kar_vartree_create_function("Строка", "_kartarika_library_convert_integer64_to_string", &type_integer64, 1, type_string));
+	kar_vartree_child_add(types, kar_vartree_create_function("Строка", "_kartarika_library_convert_unsigned8_to_string", &type_unsigned8, 1, type_string));
+	kar_vartree_child_add(types, kar_vartree_create_function("Строка", "_kartarika_library_convert_unsigned16_to_string", &type_unsigned16, 1, type_string));
 	kar_vartree_child_add(types, kar_vartree_create_function("Строка", "_kartarika_library_convert_unsigned32_to_string", &type_unsigned32, 1, type_string));
+	kar_vartree_child_add(types, kar_vartree_create_function("Строка", "_kartarika_library_convert_unsigned64_to_string", &type_unsigned64, 1, type_string));
+	kar_vartree_child_add(types, kar_vartree_create_function("Строка", "_kartarika_library_convert_float32_to_string", &type_float32, 1, type_string));
+	kar_vartree_child_add(types, kar_vartree_create_function("Строка", "_kartarika_library_convert_float64_to_string", &type_float64, 1, type_string));
+	kar_vartree_child_add(types, kar_vartree_create_function("Строка", "_kartarika_library_convert_string_to_string", &type_string, 1, type_string));
 
 	// Стандартная библиотека.
 	KarVartree* type_console = kar_vartree_create_class("Консоль");

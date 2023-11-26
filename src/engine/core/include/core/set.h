@@ -148,7 +148,11 @@
 			}                                                                       \
 		}                                                                           \
 		if (num < parent->field.count &&                                            \
-			less_fn(added, parent->field.items[num])) {                             \
+			less_fn(parent->field.items[num], added)) {                             \
+			num++;                                                                  \
+		}                                                                           \
+		if (num < parent->field.count &&                                            \
+			less_fn(parent->field.items[num], added)) {                             \
 			num++;                                                                  \
 		}                                                                           \
 		if (num < parent->field.count &&                                            \

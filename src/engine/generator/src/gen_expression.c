@@ -119,8 +119,8 @@ static KarExpressionResult get_val_hexadecimal(KarToken* token, KarString* modul
 
 static KarExpressionResult get_val_float(KarToken* token, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	// TODO: Эту проверку необходимо перенести в анализатор.
+	// TODO: Нет значений +/- бесконечность. Надо добавить.
 	double d;
-	// TODO: Доделать все особые случаи.
 	if (kar_string_equal(token->str, "НеЧисло")) {
 		d = NAN;
 	} else {
@@ -174,7 +174,7 @@ static KarExpressionResult get_val_char(KarString*str, KarLLVMData* llvmData, Ka
 	result.type = vars->standard.stringType;
 
 	LLVMValueRef ref = LLVMBuildGlobalStringPtr(llvmData->builder, str, "_kartarika_string");
-	result.value = LLVMBuildCall(llvmData->builder, llvmData->createString, &ref, 1, "_kartarika_library_string_create");
+	result.value = LLVMBuildCall(llvmData->builder, llvmData->createString, &ref, 1, "var");
 	return result;
 }
 
@@ -324,12 +324,41 @@ static KarExpressionResult get_call_method(KarVartree* context, KarToken* token,
 
 	KarExpressionResult result;
 	result.type = params->returnType;
-	result.value = LLVMBuildCall(llvmData->builder, kar_llvm_function_get_ref(llvmFunc), argsLLVM, (unsigned int)num, llvmFunc->params->issueName);
+	result.value = LLVMBuildCall(
+		llvmData->builder,
+		kar_llvm_function_get_ref(llvmFunc),
+		argsLLVM,
+		(unsigned int)num,
+		params->returnType == NULL ? "" : "var"
+	);
 	KAR_FREE(argsLLVM);
 	return result;
 }
 
+static LLVMValueRef getLLVMCleanFunctionByType(KarVartypeElement type, KarLLVMData* llvmData) {
+	switch (type) {
+		case KAR_VARTYPE_BOOL: return llvmData->uncleanBool;
+		case KAR_VARTYPE_INTEGER8: return llvmData->uncleanInteger8;
+		case KAR_VARTYPE_INTEGER16: return llvmData->uncleanInteger16;
+		case KAR_VARTYPE_INTEGER32: return llvmData->uncleanInteger32;
+		case KAR_VARTYPE_INTEGER64: return llvmData->uncleanInteger64;
+		case KAR_VARTYPE_UNSIGNED8: return llvmData->uncleanUnsigned8;
+		case KAR_VARTYPE_UNSIGNED16: return llvmData->uncleanUnsigned16;
+		case KAR_VARTYPE_UNSIGNED32: return llvmData->uncleanUnsigned32;
+		case KAR_VARTYPE_UNSIGNED64: return llvmData->uncleanUnsigned64;
+		case KAR_VARTYPE_FLOAT32: return llvmData->uncleanFloat32;
+		case KAR_VARTYPE_FLOAT64: return llvmData->uncleanFloat64;
+		case KAR_VARTYPE_STRING: return llvmData->uncleanString;
+		default: return NULL;
+	}
+	return NULL;
+}
+
 static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	// TODO: Надо правильно обрабатывать взаимодействие типов и числовых литералов.
+	//       Например, выражение Целое8?(0) ! 0 не будет работать, так как справа
+	//       тип Целое8!, а слева число 0 приводится к типу Целое32, но это число
+	//       должно приводиться к типу Целое 8 в данном случае.
 	KarToken* leftToken = kar_token_child_get(token, 0);
 	KarExpressionResult left = calc_expression(NULL, leftToken, llvmData, moduleName, vars, errors);
 	if (left.type->type != KAR_VARTYPE_UNCLEAN_CLASS) {
@@ -341,12 +370,19 @@ static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData
 	KarVartree* function = get_new_context(vars->standard.unclean, functionName, vars);
 	KarVartreeFunctionParams* params = kar_vartree_get_function_params(function);
 	KarLLVMFunction* llvmFunc = kar_llvm_data_get_function(llvmData, params, vars);
-	LLVMValueRef expressionValue = LLVMBuildCall(llvmData->builder, kar_llvm_function_get_ref(llvmFunc), &left.value, 1, llvmFunc->params->issueName);
+	LLVMValueRef expressionValue = LLVMBuildCall(llvmData->builder, kar_llvm_function_get_ref(llvmFunc), &left.value, 1, "var");
 
 	LLVMValueRef theFunction = LLVMGetBasicBlockParent(LLVMGetInsertBlock(llvmData->builder));
-	LLVMBasicBlockRef thenBlock = LLVMAppendBasicBlock(theFunction, "then");
-	LLVMBasicBlockRef elseBlock = LLVMAppendBasicBlock(theFunction, "else");
-	LLVMBasicBlockRef mergeBlock = LLVMAppendBasicBlock(theFunction, "merge");
+	KarString* thenString = kar_string_create_format("then%lu", llvmData->counter);
+	LLVMBasicBlockRef thenBlock = LLVMAppendBasicBlock(theFunction, thenString);
+	KAR_FREE(thenString);
+	KarString* elseString = kar_string_create_format("else%lu", llvmData->counter);
+	LLVMBasicBlockRef elseBlock = LLVMAppendBasicBlock(theFunction, elseString);
+	KAR_FREE(elseString);
+	KarString* mergeString = kar_string_create_format("merge%lu", llvmData->counter);
+	LLVMBasicBlockRef mergeBlock = LLVMAppendBasicBlock(theFunction, mergeString);
+	KAR_FREE(mergeString);
+	llvmData->counter++;
 	LLVMBuildCondBr(llvmData->builder, expressionValue, thenBlock, elseBlock);
 
 	LLVMPositionBuilderAtEnd(llvmData->builder, thenBlock);
@@ -360,7 +396,7 @@ static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData
 	thenBlock = LLVMGetInsertBlock(llvmData->builder);
 
 	LLVMPositionBuilderAtEnd(llvmData->builder, elseBlock);
-	LLVMValueRef cleanLeft = LLVMBuildCall(llvmData->builder, llvmData->uncleanBool, &left.value, 1, llvmFunc->params->issueName);
+	LLVMValueRef cleanLeft = LLVMBuildCall(llvmData->builder, getLLVMCleanFunctionByType(right.type->type, llvmData), &left.value, 1, llvmFunc->params->issueName);
 	LLVMBuildBr(llvmData->builder, mergeBlock);
 	elseBlock = LLVMGetInsertBlock(llvmData->builder);
 

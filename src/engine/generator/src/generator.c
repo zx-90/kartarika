@@ -134,6 +134,17 @@ bool kar_generator_run(KarProject* project) {
 	LLVMTargetDataRef target_data = LLVMCreateTargetDataLayout(the_target_machine);
 	LLVMSetModuleDataLayout(module, target_data);
 
+	/*if (LLVMPrintModuleToFile(module, "b.out", &error)) {
+		printf("%s\n", error);
+		LLVMDisposeMessage(error);
+		LLVMDisposeTargetData(target_data);
+		LLVMDisposeTargetMachine(the_target_machine);
+		LLVMDisposeMessage(target_triple);
+		LLVMDisposeModule(module);
+		LLVMContextDispose(context);
+		return false;
+	}*/
+
 	if (LLVMTargetMachineEmitToFile(the_target_machine, module, "asdf.o", LLVMObjectFile, &error)) {
 		printf("%s\n", error);
 		LLVMDisposeMessage(error);
@@ -145,17 +156,6 @@ bool kar_generator_run(KarProject* project) {
 		return false;
 	}
 
-	/*if (LLVMPrintModuleToFile(module, "b.out", &error)) {
-		printf("%s\n", error);
-		LLVMDisposeMessage(error);
-		LLVMDisposeTargetData(target_data);
-		LLVMDisposeTargetMachine(the_target_machine);
-		LLVMDisposeMessage(target_triple);
-		LLVMDisposeModule(module);
-		LLVMContextDispose(context);
-		return false;
-	}*/
-	
 	LLVMDisposeTargetData(target_data);
 	LLVMDisposeTargetMachine(the_target_machine);
 	LLVMDisposeMessage(target_triple);
