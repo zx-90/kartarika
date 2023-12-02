@@ -528,6 +528,16 @@ _kartarika_smart_pointer* _kartarika_library_convert_float##num##_to_bool(float#
 _KARTARIKA_CONVERT_FLOAT_TO_BOOL(32)
 _KARTARIKA_CONVERT_FLOAT_TO_BOOL(64)
 
+#define _KARTARIKA_CONVERT_FLOAT_TO_FLOAT(num1, num2)\
+float##num2##_t _kartarika_library_convert_float##num1##_to_float##num2(float##num1##_t value) {\
+	return (float##num2##_t)value;\
+}
+
+_KARTARIKA_CONVERT_FLOAT_TO_FLOAT(32, 32)
+_KARTARIKA_CONVERT_FLOAT_TO_FLOAT(32, 64)
+_KARTARIKA_CONVERT_FLOAT_TO_FLOAT(64, 32)
+_KARTARIKA_CONVERT_FLOAT_TO_FLOAT(64, 64)
+
 _kartarika_smart_pointer* _kartarika_library_convert_string_to_bool(_kartarika_smart_pointer* str) {
 	char* val = (char*)str->value;
 	if (
