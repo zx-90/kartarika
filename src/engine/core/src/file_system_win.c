@@ -17,7 +17,6 @@
 
 #include "core/alloc.h"
 #include "core/string.h"
-#include "core/error.h"
 
 const KarString* KAR_FILE_SYSTEM_DELIMETER = "\\";
 
@@ -134,7 +133,6 @@ KarStringList* kar_file_create_absolute_directory_list(const KarString* path) {
 	
 	LPWSTR wPath = create_utf16_path(path);
 	if (wPath == NULL) {
-		kar_error_register(1, "Ошибка выделения памяти.");
 		return NULL;
 	}
 
@@ -144,7 +142,6 @@ KarStringList* kar_file_create_absolute_directory_list(const KarString* path) {
 	KAR_FREE(wPath);
 	if (file == INVALID_HANDLE_VALUE) {
 		kar_string_list_free(result);
-		kar_error_register(1, "Ошибка. Невозможно найти файлы в каталоге %s.", path);
 		FindClose(file);
 		return NULL;
 	}
@@ -153,7 +150,6 @@ KarStringList* kar_file_create_absolute_directory_list(const KarString* path) {
 	KarString* path2 = kar_string_create_concat(path, KAR_FILE_SYSTEM_DELIMETER);
 	if (!path2) {
 		kar_string_list_free(result);
-		kar_error_register(1, "Ошибка. Невозможно найти файлы в каталоге %s.", path);
 		FindClose(file);
 		return NULL;
 	}
@@ -184,7 +180,6 @@ KarStringList* kar_file_create_absolute_directory_list(const KarString* path) {
 FILE* kar_file_system_create_handle(KarString* path) {
 	LPWSTR wPath = create_utf16_by_utf8(path);
 	if (wPath == NULL) {
-		kar_error_register(1, "Ошибка выделения памяти.");
 		return NULL;
 	}
 	HANDLE result = CreateFileW(wPath, GENERIC_READ, FILE_SHARE_READ,NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -195,7 +190,6 @@ FILE* kar_file_system_create_handle(KarString* path) {
 KarString* kar_file_load(const KarString* path) {
 	LPWSTR wPath = create_utf16_by_utf8(path);
 	if (wPath == NULL) {
-		kar_error_register(1, "Ошибка выделения памяти.");
 		return NULL;
 	}
 	FILE* f = _wfopen(wPath, L"rb+");

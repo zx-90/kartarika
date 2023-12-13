@@ -14,6 +14,10 @@
 
 #include <llvm-c/Core.h>
 
+#ifndef NAN
+#define NAN (0.0 / 0.0)
+#endif
+
 typedef struct {
 	KarVartree* type;
 	LLVMValueRef value;
@@ -151,7 +155,7 @@ static KarExpressionResult get_val_float(KarToken* token, KarString* moduleName,
 static KarExpressionResult get_val_nan(KarVars* vars) {
 	KarExpressionResult result;
 	result.type = vars->standard.float64Type;
-	result.value = LLVMConstReal(LLVMDoubleType(), 0.0 / 0.0);
+	result.value = LLVMConstReal(LLVMDoubleType(), NAN);
 	return result;
 }
 
