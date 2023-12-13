@@ -99,14 +99,17 @@ static LPWSTR create_utf16_path(const KarString* path) {
 	if (wPath == NULL) {
 		return NULL;
 	}
-	int wSize = wcslen(wPath);
-	wPath = realloc(wPath, (wSize + 4) * sizeof(LPWSTR));
-	wPath[wSize] = L'\\';
-	wPath[wSize + 1] = L'*';
-	wPath[wSize + 2] = L'.';
-	wPath[wSize + 3] = L'*';
-	wPath[wSize + 4] = 0;
-	return wPath;
+	size_t wSize = wcslen(wPath);
+	LPWSTR wPath2 = realloc(wPath, (wSize + 4) * sizeof(LPWSTR));
+	if (wPath2 == NULL) {
+		return NULL;
+	}
+	wPath2[wSize] = L'\\';
+	wPath2[wSize + 1] = L'*';
+	wPath2[wSize + 2] = L'.';
+	wPath2[wSize + 3] = L'*';
+	wPath2[wSize + 4] = 0;
+	return wPath2;
 }
 
 static size_t get_file_count(LPWSTR wPath) {
