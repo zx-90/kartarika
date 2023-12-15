@@ -17,4 +17,9 @@ target_link_libraries(engine generator)
 
 target_include_directories(engine PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
 
-add_custom_command(TARGET engine POST_BUILD COMMAND ${CMAKE_C_COMPILER} -c ${CMAKE_SOURCE_DIR}/src/kar/library.c -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/library.o)
+if(MSVC)
+add_custom_command(TARGET engine POST_BUILD COMMAND ${CMAKE_C_COMPILER} /c ${CMAKE_SOURCE_DIR}/src/kar/library.c)
+add_custom_command(TARGET engine POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy library.obj ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/library.o)
+else()
+	add_custom_command(TARGET engine POST_BUILD COMMAND ${CMAKE_C_COMPILER} -c ${CMAKE_SOURCE_DIR}/src/kar/library.c -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/library.o)
+endif()
