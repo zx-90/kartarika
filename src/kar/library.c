@@ -230,7 +230,7 @@ _kartarika_smart_pointer* _kartarika_library_string_substring(_kartarika_smart_p
 }
 
 bool _kartarika_unclean_is_empty(_kartarika_smart_pointer* value) {
-	return (value->value == NULL);
+	return (value == NULL || value->value == NULL);
 }
 
 bool _kartarika_unclean_bool(_kartarika_smart_pointer* value) {

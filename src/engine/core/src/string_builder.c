@@ -47,7 +47,7 @@ bool kar_string_builder_push(KarStringBuilder* builder, const KarString c) {
 
 bool kar_string_builder_push_string(KarStringBuilder* builder, const KarString* str) {
     size_t len = strlen(str);
-    while (builder->length + len > builder->capacity) {
+    while (builder->length + len + 1 > builder->capacity) {
         builder->capacity *= 2;
         KAR_REALLOC(builder->str, KarString, builder->capacity);
     }
