@@ -14,6 +14,7 @@
 #include <windows.h>
 #include <fileapi.h>
 #include <shlwapi.h>
+#include <direct.h>
 
 #include "core/alloc.h"
 #include "core/string.h"
@@ -34,7 +35,7 @@ static LPWSTR create_utf16_by_utf8(const KarString* utf8) {
 	return utf16;
 }
 
-static KarString* create_utf8_by_utf16(LPWSTR utf16) {
+static KarString* create_utf8_by_utf16(LPCWSTR utf16) {
 	int size = WideCharToMultiByte(CP_UTF8, 0, utf16, -1, NULL, 0, NULL, NULL);
 	KAR_CREATES(utf8, CHAR, size);
 	if (!utf8) {
@@ -180,7 +181,7 @@ KarStringList* kar_file_create_absolute_directory_list(const KarString* path) {
 	return result;
 }
 
-FILE* kar_file_system_create_handle(KarString* path) {
+FILE* kar_file_system_create_handle(const KarString* path) {
 	LPWSTR wPath = create_utf16_by_utf8(path);
 	if (wPath == NULL) {
 		return NULL;

@@ -23,7 +23,7 @@ KarString* kar_file_system_get_basename(KarString* path);
 
 KarStringList* kar_file_create_absolute_directory_list(const KarString* path);
 
-FILE* kar_file_system_create_handle(KarString* path);
+FILE* kar_file_system_create_handle(const KarString* path);
 
 KarString* kar_file_load(const KarString* path);
 

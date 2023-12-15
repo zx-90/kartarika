@@ -15,9 +15,8 @@
 
 #include <llvm-c/Core.h>
 
-#ifndef NAN
-#define NAN (0.0 / 0.0)
-#endif
+// TODO: Перенести в core. Создать отдельный файл для математики.
+#define DNAN (INFINITY * 0.0)
 
 typedef struct {
 	KarVartree* type;
@@ -96,9 +95,9 @@ static KarExpressionResult get_val_hexadecimal(KarToken* token, KarString* modul
 		if (buffer >= 0x0030 && buffer <= 0x0039) {
 			val += (buffer - 0x0030);
 		} else if (buffer >= 0x0410 && buffer <= 0x0415) {
-			val += (buffer - 0x0410 + 10);
+			val += ((long long unsigned int)buffer - 0x0410 + 10);
 		} else if (buffer >= 0x0430 && buffer <= 0x0435) {
-			val += (buffer - 0x0430 + 10);
+			val += ((long long unsigned int)buffer - 0x0430 + 10);
 		} else {
 			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Некорретная запись шестандцатеричного числа.");
 			return kar_expression_result_none();
@@ -127,7 +126,7 @@ static KarExpressionResult get_val_float(KarToken* token, KarString* moduleName,
 	double d;
 	errno = 0;
 	if (kar_string_equal(token->str, "НеЧисло")) {
-		d = NAN;
+		d = DNAN;
 	} else {
 		KarString* tmp1 = kar_string_create_replace(token->str, ",", ".");
 		KarString* tmp2 = kar_string_create_replace(tmp1, "с", "E");
@@ -156,7 +155,7 @@ static KarExpressionResult get_val_float(KarToken* token, KarString* moduleName,
 static KarExpressionResult get_val_nan(KarVars* vars) {
 	KarExpressionResult result;
 	result.type = vars->standard.float64Type;
-	result.value = LLVMConstReal(LLVMDoubleType(), NAN);
+	result.value = LLVMConstReal(LLVMDoubleType(), DNAN);
 	return result;
 }
 

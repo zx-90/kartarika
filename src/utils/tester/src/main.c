@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
 	printf("Запуск каталога с тестами: %s\n", test_path);
 	KarError* error = kar_test_suite_run(test_path);
 	if (error) {
-		printf("Ошибка %ld: %s\n", error->number, error->description);
+		printf("Ошибка %zu: %s\n", error->number, error->description);
 		return 1;
 	}
 	

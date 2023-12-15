@@ -68,7 +68,7 @@ KarStringList* kar_file_create_absolute_directory_list(const KarString* path) {
 	return result;
 }
 
-FILE* kar_file_system_create_handle(KarString* path) {
+FILE* kar_file_system_create_handle(const KarString* path) {
 	return fopen(path, "r");
 }
 

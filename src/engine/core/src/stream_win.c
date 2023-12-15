@@ -12,6 +12,7 @@
 #include <windows.h>
 
 #include "core/alloc.h"
+#include "core/file_system.h"
 
 // TODO: Добавить логирование сообщений об ошибках.
 
