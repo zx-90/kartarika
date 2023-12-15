@@ -9,6 +9,7 @@
 #include <string.h>
 #include <errno.h>
 #include <limits.h>
+#include <math.h>
 
 #include "core/unicode.h"
 
@@ -54,27 +55,26 @@ static KarExpressionResult get_val_integer(KarToken* token, KarString* moduleNam
 	// TODO: Эту проверку необходимо перенести в анализатор.
 	KarString* end;
 	errno = 0;
-	long val = strtol(token->str, &end, 10);
+	long long unsigned int val = (long long unsigned int)strtoll(token->str, &end, 10);
 	if (end < token->str + strlen(token->str)) {
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Не корректное число.");
 		return kar_expression_result_none();
 	}
-	if (errno == ERANGE && val == LONG_MAX) {
+	if ((errno == ERANGE && val == LLONG_MAX) || val > UINT64_MAX) {
 		errno = 0;
-		val = (long)strtoul(token->str, &end, 10);
-		if (errno == ERANGE) {
+		val = strtoull(token->str, &end, 10);
+		if (errno == ERANGE || val > UINT64_MAX) {
 			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Слишком большое число.");
 			return kar_expression_result_none();
 		}
-	}
-	if (errno == ERANGE && val == LONG_MIN) {
+	} else if ((errno == ERANGE && (long long int)val == LLONG_MIN) || (long long int)val < (long long int)INT64_MIN) {
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Слишком маленькое число.");
 		return kar_expression_result_none();
 	}
 
 	KarExpressionResult result;
 	result.type = vars->standard.decimalType;
-	result.value = LLVMConstInt(LLVMInt64Type(), (long long unsigned int)val, 0);
+	result.value = LLVMConstInt(LLVMInt64Type(), val, 0);
 	return result;
 }
 
@@ -125,6 +125,7 @@ static KarExpressionResult get_val_float(KarToken* token, KarString* moduleName,
 	// TODO: Эту проверку необходимо перенести в анализатор.
 	// TODO: Нет значений +/- бесконечность. Надо добавить.
 	double d;
+	errno = 0;
 	if (kar_string_equal(token->str, "НеЧисло")) {
 		d = NAN;
 	} else {
