@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <math.h>
+#include <errno.h>
 
 // ----------------------------------------------------------------------------
 // Кар.Типы
@@ -328,9 +329,9 @@ _KARTARIKA_CONVERT_BOOL_TO_FLOAT(64)
 
 _kartarika_smart_pointer* _kartarika_library_convert_bool_to_string(bool value) {
 	if (value) {
-		return _kartarika_library_string_create("1");
+		return _kartarika_library_string_create("Да");
 	}
-	return _kartarika_library_string_create("0");
+	return _kartarika_library_string_create("Нет");
 }
 
 #define _KARTARIKA_CONVERT_INTEGER_TO_BOOL(num)\
@@ -528,6 +529,29 @@ _kartarika_smart_pointer* _kartarika_library_convert_float##num##_to_bool(float#
 _KARTARIKA_CONVERT_FLOAT_TO_BOOL(32)
 _KARTARIKA_CONVERT_FLOAT_TO_BOOL(64)
 
+// TODO: Приведение к long double для сравнения не кажется хорошей идеей. Подумать.
+#define _KARTARIKA_CONVERT_FLOAT_TO_INTEGER(num1, num2)\
+_kartarika_smart_pointer*  _kartarika_library_convert_float##num1##_to_integer##num2(float##num1##_t value) {\
+	if (value != value) {\
+		return _kartarika_smart_pointer_create(NULL);\
+	}\
+	if ((long double)value > (long double)INT##num2##_MAX || (long double)value < (long double)INT##num2##_MIN) {\
+		return _kartarika_smart_pointer_create(NULL);\
+	}\
+	int##num2##_t* b = (int##num2##_t*)malloc(sizeof(int##num2##_t));\
+	*b = value;\
+	return _kartarika_smart_pointer_create(b);\
+}
+
+_KARTARIKA_CONVERT_FLOAT_TO_INTEGER(32, 8)
+_KARTARIKA_CONVERT_FLOAT_TO_INTEGER(32, 16)
+_KARTARIKA_CONVERT_FLOAT_TO_INTEGER(32, 32)
+_KARTARIKA_CONVERT_FLOAT_TO_INTEGER(32, 64)
+_KARTARIKA_CONVERT_FLOAT_TO_INTEGER(64, 8)
+_KARTARIKA_CONVERT_FLOAT_TO_INTEGER(64, 16)
+_KARTARIKA_CONVERT_FLOAT_TO_INTEGER(64, 32)
+_KARTARIKA_CONVERT_FLOAT_TO_INTEGER(64, 64)
+
 #define _KARTARIKA_CONVERT_FLOAT_TO_FLOAT(num1, num2)\
 float##num2##_t _kartarika_library_convert_float##num1##_to_float##num2(float##num1##_t value) {\
 	return (float##num2##_t)value;\
@@ -570,6 +594,9 @@ _kartarika_smart_pointer* _kartarika_library_convert_string_to_bool(_kartarika_s
 _kartarika_smart_pointer* _kartarika_library_convert_string_to_integer##num(_kartarika_smart_pointer* str) {\
 	char* end;\
 	long long int conv = strtoll(str->value, &end, 10);\
+	if (errno == ERANGE) {\
+		return _kartarika_smart_pointer_create(NULL);\
+	}\
 	if (*end != 0) {\
 		return _kartarika_smart_pointer_create(NULL);\
 	}\

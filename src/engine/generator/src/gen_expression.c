@@ -416,6 +416,7 @@ static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData
 }
 
 static KarExpressionResult calc_expression(KarVartree* context, KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	// TODO: Проверить на компиляторе большое количество открывающихся и закрывающихся скобок.
 	switch (token->type) {
 	case (KAR_TOKEN_VAL_TRUE): return get_val_true(vars);
 	case (KAR_TOKEN_VAL_FALSE): return get_val_false(vars);
