@@ -32,7 +32,8 @@ void kar_stream_free(KarStream* stream) {
 	}
 	// TODO: Почему-то программа рушится при попытке закрыть файл. Скорее всего где-то идет работа за границей памяти.
 	// TODO: проверять возвращаемое значение функции fclose.
-	//fclose(stream->data);
+	//       PS. В Ubuntu уже всё работает нормально. Проверить на Windows.
+	fclose(stream->data);
 	KAR_FREE(stream);
 }
 

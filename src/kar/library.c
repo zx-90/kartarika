@@ -552,6 +552,29 @@ _KARTARIKA_CONVERT_FLOAT_TO_INTEGER(64, 16)
 _KARTARIKA_CONVERT_FLOAT_TO_INTEGER(64, 32)
 _KARTARIKA_CONVERT_FLOAT_TO_INTEGER(64, 64)
 
+// TODO: Приведение к long double для сравнения не кажется хорошей идеей. Подумать.
+#define _KARTARIKA_CONVERT_FLOAT_TO_UNSIGNED(num1, num2)\
+_kartarika_smart_pointer*  _kartarika_library_convert_float##num1##_to_unsigned##num2(float##num1##_t value) {\
+	if (value != value) {\
+		return _kartarika_smart_pointer_create(NULL);\
+	}\
+	if ((long double)value > (long double)UINT##num2##_MAX || (long double)value <= (long double)-1.0) {\
+		return _kartarika_smart_pointer_create(NULL);\
+	}\
+	uint##num2##_t* b = (uint##num2##_t*)malloc(sizeof(uint##num2##_t));\
+	*b = value;\
+	return _kartarika_smart_pointer_create(b);\
+}
+
+_KARTARIKA_CONVERT_FLOAT_TO_UNSIGNED(32, 8)
+_KARTARIKA_CONVERT_FLOAT_TO_UNSIGNED(32, 16)
+_KARTARIKA_CONVERT_FLOAT_TO_UNSIGNED(32, 32)
+_KARTARIKA_CONVERT_FLOAT_TO_UNSIGNED(32, 64)
+_KARTARIKA_CONVERT_FLOAT_TO_UNSIGNED(64, 8)
+_KARTARIKA_CONVERT_FLOAT_TO_UNSIGNED(64, 16)
+_KARTARIKA_CONVERT_FLOAT_TO_UNSIGNED(64, 32)
+_KARTARIKA_CONVERT_FLOAT_TO_UNSIGNED(64, 64)
+
 #define _KARTARIKA_CONVERT_FLOAT_TO_FLOAT(num1, num2)\
 float##num2##_t _kartarika_library_convert_float##num1##_to_float##num2(float##num1##_t value) {\
 	return (float##num2##_t)value;\
