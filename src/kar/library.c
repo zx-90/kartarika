@@ -585,6 +585,111 @@ _KARTARIKA_CONVERT_FLOAT_TO_FLOAT(32, 64)
 _KARTARIKA_CONVERT_FLOAT_TO_FLOAT(64, 32)
 _KARTARIKA_CONVERT_FLOAT_TO_FLOAT(64, 64)
 
+
+char* _kartarika_library_convert_float32_to_char(float32_t value) {
+#define OUTPUT_SIZE 50
+	char output[OUTPUT_SIZE];
+	// TODO: Здесь печатается float, а это не всегда 32-битное плавающее.
+	float absd = fabsf(value);
+	// TODO: Доделать все особые случаи.
+	if (isnan(value)) {
+		snprintf(output, OUTPUT_SIZE, "НеЧисло");
+	} else if (isinf(value) && value > 0.0) {
+		snprintf(output, OUTPUT_SIZE, "∞");
+	} else if (isinf(value) && value < 0.0) {
+		snprintf(output, OUTPUT_SIZE, "-∞");
+	} else if (absd >= 0.0001 && absd < 10000.0 || absd == 0.0) {
+		snprintf(output, OUTPUT_SIZE, "%f", value);
+		char* cur = output;
+		while (*cur != 0) {
+			if (*cur == '.') {
+				*cur = ',';
+			}
+			cur++;
+		}
+	} else {
+		snprintf(output, OUTPUT_SIZE, "%e", value);
+		char* cur = output;
+		while (*cur != 0) {
+			if (*cur == '.') {
+				*cur = ',';
+			}
+			cur++;
+		}
+		while (cur != output) {
+			cur[1] = cur[0];
+			// Меняем e на с
+			if (cur[0] == 'e') {
+				memcpy(cur, "с", 2);
+				break;
+			}
+			cur--;
+		}
+	}
+	size_t len = strlen(output);
+	char* result = malloc(sizeof(char) * (len + 1));
+	strcpy(result, output);
+	return result;
+#undef OUTPUT_SIZE
+}
+
+char* _kartarika_library_convert_float64_to_char(float64_t value) {
+#define OUTPUT_SIZE 50
+	char output[OUTPUT_SIZE];
+	// TODO: Здесь печатается float, а это не всегда 32-битное плавающее.
+	double absd = fabs(value);
+	// TODO: Доделать все особые случаи.
+	if (isnan(value)) {
+		snprintf(output, OUTPUT_SIZE, "НеЧисло");
+	} else if (isinf(value) && value > 0.0) {
+		snprintf(output, OUTPUT_SIZE, "∞");
+	} else if (isinf(value) && value < 0.0) {
+		snprintf(output, OUTPUT_SIZE, "-∞");
+	} else if (absd >= 0.0001 && absd < 10000.0 || absd == 0.0) {
+		snprintf(output, OUTPUT_SIZE, "%f", value);
+		char* cur = output;
+		while (*cur != 0) {
+			if (*cur == '.') {
+				*cur = ',';
+			}
+			cur++;
+		}
+	} else {
+		snprintf(output, OUTPUT_SIZE, "%e", value);
+		char* cur = output;
+		while (*cur != 0) {
+			if (*cur == '.') {
+				*cur = ',';
+			}
+			cur++;
+		}
+		while (cur != output) {
+			cur[1] = cur[0];
+			// Меняем e на с
+			if (cur[0] == 'e') {
+				memcpy(cur, "с", 2);
+				break;
+			}
+			cur--;
+		}
+	}
+	size_t len = strlen(output);
+	char* result = malloc(sizeof(char) * (len + 1));
+	strcpy(result, output);
+	return result;
+#undef OUTPUT_SIZE
+}
+
+_kartarika_smart_pointer* _kartarika_library_convert_float32_to_string(float32_t value) {
+	char* res = _kartarika_library_convert_float32_to_char(value);
+	return _kartarika_smart_pointer_create(res);
+}
+
+_kartarika_smart_pointer* _kartarika_library_convert_float64_to_string(float64_t value) {
+	char* res = _kartarika_library_convert_float64_to_char(value);
+	return _kartarika_smart_pointer_create(res);
+}
+
 _kartarika_smart_pointer* _kartarika_library_convert_string_to_bool(_kartarika_smart_pointer* str) {
 	char* val = (char*)str->value;
 	if (
@@ -771,92 +876,16 @@ void _kartarika_library_write_uint64(uint64_t value) {
 
 // метод Писать(Дробное32 значение)
 void _kartarika_library_write_float32(float32_t value) {
-	// TODO: Здесь печатается float, а это не всегда 32-битное плавающее.
-	float absd = fabsf(value);
-	// TODO: Доделать все особые случаи.
-	if (isnan(value)) {
-		printf("НеЧисло");
-	} else if (isinf(value) && value > 0.0) {
-		printf("∞");
-	} else if (isinf(value) && value < 0.0) {
-		printf("-∞");
-	} else if (absd >= 0.0001 && absd < 10000.0 || absd == 0.0) {
-		char output[50];
-		snprintf(output, 50, "%f", value);
-		char* cur = output;
-		while (*cur != 0) {
-			if (*cur == '.') {
-				*cur = ',';
-			}
-			cur++;
-		}
-		printf("%s", output);
-	} else {
-		char output[50];
-		snprintf(output, 50, "%e", value);
-		char* cur = output;
-		while (*cur != 0) {
-			if (*cur == '.') {
-				*cur = ',';
-			}
-			cur++;
-		}
-		while (cur != output) {
-			cur[1] = cur[0];
-			// Меняем e на с
-			if (cur[0] == 'e') {
-				memcpy(cur, "с", 2);
-				break;
-			}
-			cur--;
-		}
-		printf("%s", output);
-	}
+	char* str = _kartarika_library_convert_float32_to_char(value);
+	printf("%s", str);
+	free(str);
 }
 
 // метод Писать(Дробное64 значение)
 void _kartarika_library_write_float64(float64_t value) {
-	// TODO: Здесь печатается double, а это не всегда 64-битное плавающее.
-	double absd = fabs(value);
-	// TODO: Доделать все особые случаи.
-	if (isnan(value)) {
-		printf("НеЧисло");
-	} else if (isinf(value) && value > 0.0) {
-		printf("∞");
-	} else if (isinf(value) && value < 0.0) {
-		printf("-∞");
-	} else if (absd >= 0.0001 && absd < 10000.0 || absd == 0.0) {
-		char output[50];
-		snprintf(output, 50, "%f", value);
-		char* cur = output;
-		while (*cur != 0) {
-			if (*cur == '.') {
-				*cur = ',';
-			}
-			cur++;
-		}
-		printf("%s", output);
-	} else {
-		char output[50];
-		snprintf(output, 50, "%e", value);
-		char* cur = output;
-		while (*cur != 0) {
-			if (*cur == '.') {
-				*cur = ',';
-			}
-			cur++;
-		}
-		while (cur != output) {
-			cur[1] = cur[0];
-			// Меняем e на с
-			if (cur[0] == 'e') {
-				memcpy(cur, "с", 2);
-				break;
-			}
-			cur--;
-		}
-		printf("%s", output);
-	}
+	char* str = _kartarika_library_convert_float64_to_char(value);
+	printf("%s", str);
+	free(str);
 }
 
 // метод Писать(Строка значение)
