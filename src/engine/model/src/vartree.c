@@ -50,9 +50,9 @@ KarVartree* kar_vartree_create_class_link(const KarString* name, KarVartree* typ
 	return result;
 }
 
-KarVartree* kar_vartree_create_function(const KarString* name, const KarString* issueName, KarVartree** args, size_t args_count, KarVartree* return_type) {
+KarVartree* kar_vartree_create_function(const KarString* name, uint8_t modificators,const KarString* issueName, KarVartree** args, size_t args_count, KarVartree* return_type) {
     KarVartree* result = vartree_create_name(KAR_VARTYPE_FUNCTION, kar_vartree_create_full_function_name(name, args, args_count));
-    result->params = kar_vartree_function_create(issueName, args, args_count, return_type);
+	result->params = kar_vartree_function_create(modificators, issueName, args, args_count, return_type);
     result->freeParams = &kar_vartree_function_free;
 	return result;
 }

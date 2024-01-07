@@ -142,7 +142,7 @@ static bool is_char_begin(char c) {
 uint32_t _kartarika_library_string_length(_kartarika_smart_pointer* str) {
 	uint32_t len = 0;
 	char* cur = (char*)str->value;
-	while (cur) {
+	while (*cur) {
 		if (is_char_begin(*cur)) {
 			len++;
 		}

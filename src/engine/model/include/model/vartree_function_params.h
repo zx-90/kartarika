@@ -13,17 +13,42 @@
 struct KarVartreeStruct;
 typedef struct KarVartreeStruct KarVartree;
 
+typedef enum {
+	STATIC = 0,
+	DYNAMIC = 1,
+
+	PRIVATE = 0 << 1,
+	PROTECTED = 1 << 1,
+	PUBLIC = 2 << 1,
+
+	FINALIZED = 0 << 3,
+	HERITABLE = 1 << 3,
+
+	OVERLOADED = 1 << 4
+} KarFunctionModificator;
+
 typedef struct {
+	uint8_t modificators;
     KarString* issueName;
 	KAR_ARRAY_STRUCT(KarVartree) args;
 	KarVartree* returnType;
 } KarVartreeFunctionParams;
 
-KarVartreeFunctionParams* kar_vartree_function_create(const KarString* issueName, KarVartree** args, size_t args_count, KarVartree* return_type);
+KarVartreeFunctionParams* kar_vartree_function_create(uint8_t modificators, const KarString* issueName, KarVartree** args, size_t args_count, KarVartree* return_type);
 void kar_vartree_function_free(void* ptr);
 
 KAR_ARRAY_HEADER(vartree_function_params_args, KarVartreeFunctionParams, KarVartree)
 
 KarString* kar_vartree_create_full_function_name(const KarString* name, KarVartree** args, size_t args_count);
+
+bool kar_vartree_function_is_static(uint8_t modificators);
+bool kar_vartree_function_is_dynamic(uint8_t modificators);
+bool kar_vartree_function_is_private(uint8_t modificators);
+bool kar_vartree_function_is_protected(uint8_t modificators);
+bool kar_vartree_function_is_public(uint8_t modificators);
+bool kar_vartree_function_is_finalized(uint8_t modificators);
+bool kar_vartree_function_is_heritable(uint8_t modificators);
+bool kar_vartree_function_is_overloaded(uint8_t modificators);
+
 
 #endif // KAR_VARTREE_FUNCTION_PARAMS_H
