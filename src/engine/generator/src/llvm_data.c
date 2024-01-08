@@ -58,10 +58,10 @@ KarLLVMData* kar_llvm_data_create(LLVMContextRef context, LLVMModuleRef module, 
 	LLVMTypeRef uncleanUnsigned64FuncType = LLVMFunctionType(LLVMInt64Type(), &pointerType, 1, false);
 	result->uncleanUnsigned64 = LLVMAddFunction(module, "_kartarika_unclean_unsigned64", uncleanUnsigned64FuncType);
 
-	LLVMTypeRef uncleanFloat32FuncType = LLVMFunctionType(LLVMInt32Type(), &pointerType, 1, false);
+	LLVMTypeRef uncleanFloat32FuncType = LLVMFunctionType(LLVMFloatType(), &pointerType, 1, false);
 	result->uncleanFloat32 = LLVMAddFunction(module, "_kartarika_unclean_float32", uncleanFloat32FuncType);
 
-	LLVMTypeRef uncleanFloat64FuncType = LLVMFunctionType(LLVMInt64Type(), &pointerType, 1, false);
+	LLVMTypeRef uncleanFloat64FuncType = LLVMFunctionType(LLVMDoubleType(), &pointerType, 1, false);
 	result->uncleanFloat64 = LLVMAddFunction(module, "_kartarika_unclean_float64", uncleanFloat64FuncType);
 
 	LLVMTypeRef uncleanStringFuncType = LLVMFunctionType(pointerType, &pointerType, 1, false);

@@ -308,7 +308,7 @@ static bool fill_standard_lib(KarVars* vars) {
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", STATIC | PUBLIC, "_kartarika_library_convert_unsigned64_to_float32", &type_unsigned64, 1, type_float32));
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", STATIC | PUBLIC, "_kartarika_library_convert_float32_to_float32", &type_float32, 1, type_float32));
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", STATIC | PUBLIC, "_kartarika_library_convert_float64_to_float32", &type_float64, 1, type_float32));
-	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", STATIC | PUBLIC, "_kartarika_library_convert_string_to_float32", &type_string, 1, type_float32));
+	kar_vartree_child_add(types, kar_vartree_create_function("Дробное32", STATIC | PUBLIC, "_kartarika_library_convert_string_to_float32", &type_string, 1, type_unclean_float32));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", STATIC | PUBLIC, "_kartarika_library_convert_bool_to_float64", &type_bool, 1, type_float64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", STATIC | PUBLIC, "_kartarika_library_convert_integer8_to_float64", &type_integer8, 1, type_float64));
@@ -321,7 +321,7 @@ static bool fill_standard_lib(KarVars* vars) {
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", STATIC | PUBLIC, "_kartarika_library_convert_unsigned64_to_float64", &type_unsigned64, 1, type_float64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", STATIC | PUBLIC, "_kartarika_library_convert_float32_to_float64", &type_float32, 1, type_float64));
 	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", STATIC | PUBLIC, "_kartarika_library_convert_float64_to_float64", &type_float64, 1, type_float64));
-	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", STATIC | PUBLIC, "_kartarika_library_convert_string_to_float64", &type_string, 1, type_float64));
+	kar_vartree_child_add(types, kar_vartree_create_function("Дробное64", STATIC | PUBLIC, "_kartarika_library_convert_string_to_float64", &type_string, 1, type_unclean_float64));
 
 	kar_vartree_child_add(types, kar_vartree_create_function("Строка", STATIC | PUBLIC, "_kartarika_library_convert_bool_to_string", &type_bool, 1, type_string));
 	kar_vartree_child_add(types, kar_vartree_create_function("Строка", STATIC | PUBLIC, "_kartarika_library_convert_integer8_to_string", &type_integer8, 1, type_string));

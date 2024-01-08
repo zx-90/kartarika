@@ -763,8 +763,10 @@ _KARTARIKA_CONVERT_STRING_TO_UNSIGNED(64)
 
 // TODO: Реализовать. Пока просто заглушка.
 #define _KARTARIKA_CONVERT_STRING_TO_FLOAT(num)\
-float##num##_t _kartarika_library_convert_string_to_float##num(_kartarika_smart_pointer* str) {\
-	return num;\
+_kartarika_smart_pointer* _kartarika_library_convert_string_to_float##num(_kartarika_smart_pointer* str) {\
+	float##num##_t* res = (float##num##_t*)malloc(sizeof(float##num##_t));\
+	*res = (float##num##_t)num;\
+	return _kartarika_smart_pointer_create(res);\
 }
 
 _KARTARIKA_CONVERT_STRING_TO_FLOAT(32)
