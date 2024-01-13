@@ -748,7 +748,11 @@ _kartarika_smart_pointer* _kartarika_library_convert_string_to_unsigned##num(_ka
 	if (*end != 0) {\
 		return _kartarika_smart_pointer_create(NULL);\
 	}\
-	if (conv > UINT##num##_MAX) {\
+	if (conv > UINT##num##_MAX || errno == ERANGE) {\
+		return _kartarika_smart_pointer_create(NULL);\
+	}\
+	long long conv2 = strtoll(str->value, &end, 10);\
+	if (conv2 < 0) {\
 		return _kartarika_smart_pointer_create(NULL);\
 	}\
 	uint##num##_t* res = (uint##num##_t*)malloc(sizeof(uint##num##_t));\
