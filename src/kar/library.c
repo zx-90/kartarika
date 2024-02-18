@@ -832,6 +832,7 @@ _kartarika_smart_pointer* _kartarika_library_convert_string_to_float##num(_karta
 	char* err;\
 	float f = strtof(copy, &err);\
 	if (*err != '\0') {\
+		free(copy);\
 		return _kartarika_smart_pointer_create(NULL);\
 	}\
 	free(copy);\
