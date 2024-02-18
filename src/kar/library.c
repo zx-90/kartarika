@@ -768,8 +768,75 @@ _KARTARIKA_CONVERT_STRING_TO_UNSIGNED(64)
 // TODO: Реализовать. Пока просто заглушка.
 #define _KARTARIKA_CONVERT_STRING_TO_FLOAT(num)\
 _kartarika_smart_pointer* _kartarika_library_convert_string_to_float##num(_kartarika_smart_pointer* str) {\
+	if (strcmp((char*)str->value, "∞") == 0 ||\
+		strcmp((char*)str->value, "+∞") == 0 ||\
+		strcmp((char*)str->value, "Бесконечность") == 0 ||\
+		strcmp((char*)str->value, "ПлюсБесконечность") == 0\
+	){\
+		float##num##_t* res = (float##num##_t*)malloc(sizeof(float##num##_t));\
+		*res = INFINITY;\
+		return _kartarika_smart_pointer_create(res);\
+	}\
+	if (strcmp((char*)str->value, "-∞") == -0 ||\
+		strcmp((char*)str->value, "МинусБесконечность") == 0\
+	){\
+		float##num##_t* res = (float##num##_t*)malloc(sizeof(float##num##_t));\
+		*res = -INFINITY;\
+		return _kartarika_smart_pointer_create(res);\
+	}\
+	if (strcmp((char*)str->value, "НеЧисло") == -0) {\
+		float##num##_t* res = (float##num##_t*)malloc(sizeof(float##num##_t));\
+		*res = NAN;\
+		return _kartarika_smart_pointer_create(res);\
+	}\
+	size_t len = strlen((char*)str->value);\
+	char* copy = (char*)malloc((len + 1) * sizeof(char));\
+	strcpy(copy, str->value);\
+	size_t shift = 0;\
+	for (char* c = copy; *c != 0; c++) {\
+		char* cur = c + shift;\
+		if (*cur == ',') {\
+			*cur = '.';\
+		} else if ((memcmp(cur, "ш", 2) == 0) || (memcmp(cur, "Ш", 2) == 0)) {\
+			cur[1] = 'x';\
+			shift++;\
+		} else if ((memcmp(cur, "а", 2) == 0) || (memcmp(cur, "А", 2) == 0)) {\
+			cur[1] = 'A';\
+			shift++;\
+		} else if ((memcmp(cur, "б", 2) == 0) || (memcmp(cur, "Б", 2) == 0)) {\
+			cur[1] = 'B';\
+			shift++;\
+		} else if ((memcmp(cur, "в", 2) == 0) || (memcmp(cur, "В", 2) == 0)) {\
+			cur[1] = 'C';\
+			shift++;\
+		} else if ((memcmp(cur, "г", 2) == 0) || (memcmp(cur, "Г", 2) == 0)) {\
+			cur[1] = 'D';\
+			shift++;\
+		} else if ((memcmp(cur, "д", 2) == 0) || (memcmp(cur, "Д", 2) == 0)) {\
+			cur[1] = 'E';\
+			shift++;\
+		} else if ((memcmp(cur, "е", 2) == 0) || (memcmp(cur, "Е", 2) == 0)) {\
+			cur[1] = 'F';\
+			shift++;\
+		} else if ((memcmp(cur, "е", 2) == 0) || (memcmp(cur, "Е", 2) == 0)) {\
+			cur[1] = 'F';\
+			shift++;\
+		} else if ((memcmp(cur, "с", 2) == 0) || (memcmp(cur, "С", 2) == 0)) {\
+			cur[1] = 'e';\
+			shift++;\
+		}\
+		if (shift > 0) {\
+			*c = c[shift];\
+		}\
+	}\
+	char* err;\
+	float f = strtof(copy, &err);\
+	if (*err != '\0') {\
+		return _kartarika_smart_pointer_create(NULL);\
+	}\
+	free(copy);\
 	float##num##_t* res = (float##num##_t*)malloc(sizeof(float##num##_t));\
-	*res = (float##num##_t)num;\
+	*res = (float##num##_t)f;\
 	return _kartarika_smart_pointer_create(res);\
 }
 
