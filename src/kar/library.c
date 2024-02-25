@@ -765,8 +765,7 @@ _KARTARIKA_CONVERT_STRING_TO_UNSIGNED(16)
 _KARTARIKA_CONVERT_STRING_TO_UNSIGNED(32)
 _KARTARIKA_CONVERT_STRING_TO_UNSIGNED(64)
 
-// TODO: Реализовать. Пока просто заглушка.
-#define _KARTARIKA_CONVERT_STRING_TO_FLOAT(num)\
+#define _KARTARIKA_CONVERT_STRING_TO_FLOAT(num, func)\
 _kartarika_smart_pointer* _kartarika_library_convert_string_to_float##num(_kartarika_smart_pointer* str) {\
 	if (strcmp((char*)str->value, "∞") == 0 ||\
 		strcmp((char*)str->value, "+∞") == 0 ||\
@@ -830,7 +829,7 @@ _kartarika_smart_pointer* _kartarika_library_convert_string_to_float##num(_karta
 		}\
 	}\
 	char* err;\
-	float f = strtof(copy, &err);\
+	float##num##_t f = func(copy, &err);\
 	if (*err != '\0') {\
 		free(copy);\
 		return _kartarika_smart_pointer_create(NULL);\
@@ -841,8 +840,8 @@ _kartarika_smart_pointer* _kartarika_library_convert_string_to_float##num(_karta
 	return _kartarika_smart_pointer_create(res);\
 }
 
-_KARTARIKA_CONVERT_STRING_TO_FLOAT(32)
-_KARTARIKA_CONVERT_STRING_TO_FLOAT(64)
+_KARTARIKA_CONVERT_STRING_TO_FLOAT(32, strtof)
+_KARTARIKA_CONVERT_STRING_TO_FLOAT(64, strtod)
 
 _kartarika_smart_pointer* _kartarika_library_convert_string_to_string(_kartarika_smart_pointer* str) {
 	str->count++;
