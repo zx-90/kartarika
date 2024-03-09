@@ -16,10 +16,21 @@ KarLLVMData* kar_llvm_data_create(LLVMContextRef context, LLVMModuleRef module, 
     result->builder = builder;
     kar_llvm_data_functions_init(result);
 
+	LLVMTypeRef boolType = LLVMInt1Type();
+	LLVMTypeRef integer8Type = LLVMInt8Type();
+	LLVMTypeRef integer16Type = LLVMInt16Type();
+	LLVMTypeRef integer32Type = LLVMInt32Type();
+	LLVMTypeRef integer64Type = LLVMInt64Type();
+	LLVMTypeRef unsigned8Type = LLVMInt8Type();
+	LLVMTypeRef unsigned16Type = LLVMInt16Type();
+	LLVMTypeRef unsigned32Type = LLVMInt32Type();
+	LLVMTypeRef unsigned64Type = LLVMInt64Type();
+	LLVMTypeRef float32Type = LLVMFloatType();
+	LLVMTypeRef float64Type = LLVMDoubleType();
 	LLVMTypeRef pointerType = LLVMPointerType(LLVMInt8Type(), 0);
-	LLVMTypeRef returnType = LLVMPointerType(LLVMInt8Type(), 0);
 
-	LLVMTypeRef createPointerFuncType = LLVMFunctionType(returnType, &pointerType, 1, false);
+
+	LLVMTypeRef createPointerFuncType = LLVMFunctionType(pointerType, &pointerType, 1, false);
 	result->createPointer = LLVMAddFunction(module, "_kartarika_smart_pointer_create", createPointerFuncType);
 
 	LLVMTypeRef addRefFuncType = LLVMFunctionType(LLVMVoidType(), &pointerType, 1, false);
@@ -28,40 +39,76 @@ KarLLVMData* kar_llvm_data_create(LLVMContextRef context, LLVMModuleRef module, 
 	LLVMTypeRef freeFuncType = LLVMFunctionType(LLVMVoidType(), &pointerType, 1, false);
 	result->freePointer = LLVMAddFunction(module, "_kartarika_smart_pointer_free", freeFuncType);
 
-	LLVMTypeRef createStringFuncType = LLVMFunctionType(returnType, &pointerType, 1, false);
+	LLVMTypeRef createStringFuncType = LLVMFunctionType(pointerType, &pointerType, 1, false);
 	result->createString = LLVMAddFunction(module, "_kartarika_library_string_create", createStringFuncType);
 
-	LLVMTypeRef uncleanBoolFuncType = LLVMFunctionType(LLVMInt1Type(), &pointerType, 1, false);
+	LLVMTypeRef cleanBoolFuncType = LLVMFunctionType(pointerType, &boolType, 1, false);
+	result->cleanBool = LLVMAddFunction(module, "_kartarika_library_clean_bool", cleanBoolFuncType);
+
+	LLVMTypeRef cleanInteger8FuncType = LLVMFunctionType(pointerType, &integer8Type, 1, false);
+	result->cleanInteger8 = LLVMAddFunction(module, "_kartarika_library_clean_integer8", cleanInteger8FuncType);
+
+	LLVMTypeRef cleanInteger16FuncType = LLVMFunctionType(pointerType, &integer16Type, 1, false);
+	result->cleanInteger16 = LLVMAddFunction(module, "_kartarika_library_clean_integer16", cleanInteger16FuncType);
+
+	LLVMTypeRef cleanInteger32FuncType = LLVMFunctionType(pointerType, &integer32Type, 1, false);
+	result->cleanInteger32 = LLVMAddFunction(module, "_kartarika_library_clean_integer32", cleanInteger32FuncType);
+
+	LLVMTypeRef cleanInteger64FuncType = LLVMFunctionType(pointerType, &integer64Type, 1, false);
+	result->cleanInteger64 = LLVMAddFunction(module, "_kartarika_library_clean_integer64", cleanInteger64FuncType);
+
+	LLVMTypeRef cleanUnsigned8FuncType = LLVMFunctionType(pointerType, &unsigned8Type, 1, false);
+	result->cleanUnsigned8 = LLVMAddFunction(module, "_kartarika_library_clean_unsigned8", cleanUnsigned8FuncType);
+
+	LLVMTypeRef cleanUnsigned16FuncType = LLVMFunctionType(pointerType, &unsigned16Type, 1, false);
+	result->cleanUnsigned16 = LLVMAddFunction(module, "_kartarika_library_clean_unsigned16", cleanUnsigned16FuncType);
+
+	LLVMTypeRef cleanUnsigned32FuncType = LLVMFunctionType(pointerType, &unsigned32Type, 1, false);
+	result->cleanUnsigned32 = LLVMAddFunction(module, "_kartarika_library_clean_unsigned32", cleanUnsigned32FuncType);
+
+	LLVMTypeRef cleanUnsigned64FuncType = LLVMFunctionType(pointerType, &unsigned64Type, 1, false);
+	result->cleanUnsigned64 = LLVMAddFunction(module, "_kartarika_library_clean_unsigned64", cleanUnsigned64FuncType);
+
+	LLVMTypeRef cleanFloat32FuncType = LLVMFunctionType(pointerType, &float32Type, 1, false);
+	result->cleanFloat32 = LLVMAddFunction(module, "_kartarika_library_clean_float32", cleanFloat32FuncType);
+
+	LLVMTypeRef cleanFloat64FuncType = LLVMFunctionType(pointerType, &float64Type, 1, false);
+	result->cleanFloat64 = LLVMAddFunction(module, "_kartarika_library_clean_float64", cleanFloat64FuncType);
+
+	LLVMTypeRef cleanStringFuncType = LLVMFunctionType(pointerType, &pointerType, 1, false);
+	result->cleanString = LLVMAddFunction(module, "_kartarika_library_clean_string", cleanStringFuncType);
+
+	LLVMTypeRef uncleanBoolFuncType = LLVMFunctionType(boolType, &pointerType, 1, false);
 	result->uncleanBool = LLVMAddFunction(module, "_kartarika_unclean_bool", uncleanBoolFuncType);
 
-	LLVMTypeRef uncleanInteger8FuncType = LLVMFunctionType(LLVMInt8Type(), &pointerType, 1, false);
+	LLVMTypeRef uncleanInteger8FuncType = LLVMFunctionType(integer8Type, &pointerType, 1, false);
 	result->uncleanInteger8 = LLVMAddFunction(module, "_kartarika_unclean_integer8", uncleanInteger8FuncType);
 
-	LLVMTypeRef uncleanInteger16FuncType = LLVMFunctionType(LLVMInt16Type(), &pointerType, 1, false);
+	LLVMTypeRef uncleanInteger16FuncType = LLVMFunctionType(integer16Type, &pointerType, 1, false);
 	result->uncleanInteger16 = LLVMAddFunction(module, "_kartarika_unclean_integer16", uncleanInteger16FuncType);
 
-	LLVMTypeRef uncleanInteger32FuncType = LLVMFunctionType(LLVMInt32Type(), &pointerType, 1, false);
+	LLVMTypeRef uncleanInteger32FuncType = LLVMFunctionType(integer32Type, &pointerType, 1, false);
 	result->uncleanInteger32 = LLVMAddFunction(module, "_kartarika_unclean_integer32", uncleanInteger32FuncType);
 
-	LLVMTypeRef uncleanInteger64FuncType = LLVMFunctionType(LLVMInt64Type(), &pointerType, 1, false);
+	LLVMTypeRef uncleanInteger64FuncType = LLVMFunctionType(integer64Type, &pointerType, 1, false);
 	result->uncleanInteger64 = LLVMAddFunction(module, "_kartarika_unclean_integer64", uncleanInteger64FuncType);
 
-	LLVMTypeRef uncleanUnsigned8FuncType = LLVMFunctionType(LLVMInt8Type(), &pointerType, 1, false);
+	LLVMTypeRef uncleanUnsigned8FuncType = LLVMFunctionType(unsigned8Type, &pointerType, 1, false);
 	result->uncleanUnsigned8 = LLVMAddFunction(module, "_kartarika_unclean_unsigned8", uncleanUnsigned8FuncType);
 
-	LLVMTypeRef uncleanUnsigned16FuncType = LLVMFunctionType(LLVMInt16Type(), &pointerType, 1, false);
+	LLVMTypeRef uncleanUnsigned16FuncType = LLVMFunctionType(unsigned16Type, &pointerType, 1, false);
 	result->uncleanUnsigned16 = LLVMAddFunction(module, "_kartarika_unclean_unsigned16", uncleanUnsigned16FuncType);
 
-	LLVMTypeRef uncleanUnsigned32FuncType = LLVMFunctionType(LLVMInt32Type(), &pointerType, 1, false);
+	LLVMTypeRef uncleanUnsigned32FuncType = LLVMFunctionType(unsigned32Type, &pointerType, 1, false);
 	result->uncleanUnsigned32 = LLVMAddFunction(module, "_kartarika_unclean_unsigned32", uncleanUnsigned32FuncType);
 
-	LLVMTypeRef uncleanUnsigned64FuncType = LLVMFunctionType(LLVMInt64Type(), &pointerType, 1, false);
+	LLVMTypeRef uncleanUnsigned64FuncType = LLVMFunctionType(unsigned64Type, &pointerType, 1, false);
 	result->uncleanUnsigned64 = LLVMAddFunction(module, "_kartarika_unclean_unsigned64", uncleanUnsigned64FuncType);
 
-	LLVMTypeRef uncleanFloat32FuncType = LLVMFunctionType(LLVMFloatType(), &pointerType, 1, false);
+	LLVMTypeRef uncleanFloat32FuncType = LLVMFunctionType(float32Type, &pointerType, 1, false);
 	result->uncleanFloat32 = LLVMAddFunction(module, "_kartarika_unclean_float32", uncleanFloat32FuncType);
 
-	LLVMTypeRef uncleanFloat64FuncType = LLVMFunctionType(LLVMDoubleType(), &pointerType, 1, false);
+	LLVMTypeRef uncleanFloat64FuncType = LLVMFunctionType(float64Type, &pointerType, 1, false);
 	result->uncleanFloat64 = LLVMAddFunction(module, "_kartarika_unclean_float64", uncleanFloat64FuncType);
 
 	LLVMTypeRef uncleanStringFuncType = LLVMFunctionType(pointerType, &pointerType, 1, false);

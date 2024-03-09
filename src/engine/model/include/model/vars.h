@@ -13,7 +13,9 @@ typedef struct {
     KarVartree* vartree;
     KAR_ARRAY_STRUCT(KarVartree) default_list;
     struct {
-        KarVartree* boolType;
+		KarVartree* nullType;
+
+		KarVartree* boolType;
 
 		KarVartree* decimalType;
 		KarVartree* hexadecimalType;
@@ -37,7 +39,28 @@ typedef struct {
         KarVartree* stringType;
 
 		KarVartree* unclean;
-    } standard;
+
+		KarVartree* uncleanBool;
+
+		KarVartree* uncleanInt8;
+		KarVartree* uncleanInt16;
+		KarVartree* uncleanInt32;
+		KarVartree* uncleanInt64;
+		KarVartree* uncleanInt;
+
+		KarVartree* uncleanUnsigned8;
+		KarVartree* uncleanUnsigned16;
+		KarVartree* uncleanUnsigned32;
+		KarVartree* uncleanUnsigned64;
+		KarVartree* uncleanUnsigned;
+
+		KarVartree* uncleanFloat32;
+		KarVartree* uncleanFloat64;
+		KarVartree* uncleanFloat;
+
+		KarVartree* uncleanString;
+
+	} standard;
 } KarVars;
 
 KarVars* kar_vars_create();

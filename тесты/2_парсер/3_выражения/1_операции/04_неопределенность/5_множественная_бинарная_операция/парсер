@@ -1,0 +1,13 @@
+MODULE(1, 1): --
+	FIELD_VAR(1, 1): [Кар]
+		VAR_MODIFIER(1, 1): --
+			VAR_MODIFIER_PUBLIC(1, 1): --
+			MODIFIER_STAT(1, 10): --
+		BLOCK_BODY(1, 37): --
+			SIGN_UNCLEAN(1, 37): --
+				SIGN_UNCLEAN(1, 36): --
+					SIGN_GET_FIELD(1, 29): --
+						IDENTIFIER(1, 26): [Кар]
+						IDENTIFIER(1, 30): [Чётное]
+				SIGN_OPEN_BRACES(1, 38): --
+					VAL_NULL(1, 39): --

@@ -25,10 +25,15 @@ static bool fill_standard_lib(KarVars* vars) {
 	KarVartree* types = kar_vartree_create_package("Типы");
 	kar_vartree_child_add(kar, types);
 	
+	// Тип пусто.
+	KarVartree* type_null = kar_vartree_create_class("Пусто");
+	kar_vartree_child_add(types, type_null);
+
 	// Основные типы.
 	KarVartree* type_bool = kar_vartree_create_bool("Буль");
 	kar_vartree_child_add(types, type_bool);
 	
+	// TODO: Здесь не create_bool, здесь для них специальные функции надо написать.
 	KarVartree* type_decimal = kar_vartree_create_bool("0Десятичное");
 	kar_vartree_child_add(types, type_decimal);
 	KarVartree* type_hexadecimal = kar_vartree_create_bool("0Шестнадцатеричное");
@@ -391,7 +396,9 @@ static bool fill_standard_lib(KarVars* vars) {
     kar_vars_default_list_add(vars, root);
 
 	// Ссылки на стандартные типы.
-    vars->standard.boolType = type_bool;
+	vars->standard.nullType = type_null;
+
+	vars->standard.boolType = type_bool;
 	vars->standard.decimalType = type_decimal;
 	vars->standard.hexadecimalType = type_hexadecimal;
 	vars->standard.int8Type = type_integer8;
@@ -409,6 +416,22 @@ static bool fill_standard_lib(KarVars* vars) {
     vars->standard.floatType = type_float;
     vars->standard.stringType = type_string;
 	vars->standard.unclean = type_unclean;
+
+	vars->standard.uncleanBool = type_unclean_bool;
+	vars->standard.uncleanInt8 = type_unclean_integer8;
+	vars->standard.uncleanInt16 = type_unclean_integer16;
+	vars->standard.uncleanInt32 = type_unclean_integer32;
+	vars->standard.uncleanInt64 = type_unclean_integer64;
+	vars->standard.uncleanInt = type_unclean_integer;
+	vars->standard.uncleanUnsigned8 = type_unclean_unsigned8;
+	vars->standard.uncleanUnsigned16 = type_unclean_unsigned16;
+	vars->standard.uncleanUnsigned32 = type_unclean_unsigned32;
+	vars->standard.uncleanUnsigned64 = type_unclean_unsigned64;
+	vars->standard.uncleanUnsigned = type_unclean_unsigned;
+	vars->standard.uncleanFloat32 = type_unclean_float32;
+	vars->standard.uncleanFloat64 = type_unclean_float64;
+	vars->standard.uncleanFloat = type_unclean_float;
+	vars->standard.uncleanString = type_unclean_string;
 
     return true;
 }

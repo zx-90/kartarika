@@ -30,11 +30,73 @@ KarExpressionResult kar_expression_result_none() {
 	return result;
 }
 
+static bool is_int_type_family(KarVartree* var, KarVars* vars) {
+	return
+		var == vars->standard.int8Type ||
+		var == vars->standard.int16Type ||
+		var == vars->standard.int32Type ||
+		var == vars->standard.int64Type ||
+		var == vars->standard.unsigned8Type ||
+		var == vars->standard.unsigned16Type ||
+		var == vars->standard.unsigned32Type ||
+		var == vars->standard.unsigned64Type;
+}
+
+static bool is_float_type_family(KarVartree* var, KarVars* vars) {
+	return
+		var == vars->standard.float32Type ||
+		var == vars->standard.float64Type;
+}
+
+static bool get_convinient_type(KarExpressionResult* var1, KarExpressionResult* var2, KarLLVMData *llvmData, KarVars *vars) {
+	if (var1->type == var2->type) {
+		return true;
+	}
+	if (
+		var1->type == vars->standard.decimalType ||
+		var1->type == vars->standard.hexadecimalType
+	) {
+		if (is_int_type_family(var2->type, vars) || is_float_type_family(var2->type, vars)) {
+			return true;
+		}
+		// TODO: Вместо float64 надо использовать float до определения типа.
+	} else if (var1->type == vars->standard.float64Type) {
+		if (var2->type == vars->standard.float32Type) {
+			var1->type = vars->standard.float32Type;
+			var1->value = LLVMBuildCast(llvmData->builder, LLVMFPTrunc, var1->value, LLVMFloatType(), "double_to_float");
+			return true;
+		}
+	} else if (
+		var2->type == vars->standard.decimalType ||
+		var2->type == vars->standard.hexadecimalType
+	) {
+		if (is_int_type_family(var1->type, vars) || is_float_type_family(var1->type, vars)) {
+			return true;
+		}
+		// TODO: Вместо float64 надо использовать float до определения типа.
+	} else if (var2->type == vars->standard.float64Type) {
+		if (var1->type == vars->standard.float32Type) {
+			var2->type = vars->standard.float32Type;
+			var2->value = LLVMBuildCast(llvmData->builder, LLVMFPTrunc, var2->value, LLVMFloatType(), "double_to_float");
+			return true;
+		}
+	}
+	return false;
+}
+
 static bool kar_expression_result_is_none(KarExpressionResult result) {
 	return (result.type == NULL && result.value == NULL);
 }
 
 static KarExpressionResult calc_expression(KarExpressionResult context, KarToken* token, KarLLVMData *llvmData, KarString *moduleName, KarVars *vars, KarProjectErrorList *errors);
+
+static KarExpressionResult  get_val_null(KarVars* vars) {
+	KarExpressionResult result;
+	// TODO: Необходимо добавить в анализатор тип для Пусто.
+	result.type = vars->standard.nullType;
+	result.value = LLVMConstNull(LLVMInt8Type());
+	return result;
+}
 
 static KarExpressionResult get_val_true(KarVars* vars) {
 	KarExpressionResult result;
@@ -210,6 +272,10 @@ static KarVartree* get_reduced64_type(KarVartree* type, KarVars* vars) {
 	return type;
 }
 
+static KarExpressionResult get_open_braces(KarExpressionResult context, KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	return calc_expression(context, kar_token_child_get(token, 0), llvmData, moduleName, vars, errors);
+}
+
 static KarExpressionResult get_field(KarExpressionResult context, KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
 	KarToken* right = kar_token_child_get(token, 1);
@@ -227,6 +293,7 @@ static KarExpressionResult get_field(KarExpressionResult context, KarToken* toke
 		newContext.type = get_reduced_type(leftResult.type, vars);
 		newContext.value = leftResult.value;
 		if (kar_expression_result_is_none(newContext)) {
+			// TODO: Сообщение об ошибке + тест.
 			return kar_expression_result_none();
 		}
 	}
@@ -351,6 +418,25 @@ static KarExpressionResult get_call_method(KarExpressionResult context, KarToken
 	return result;
 }
 
+static KarVartree* getUncleanVarByType(KarVartypeElement type, KarVars* vars) {
+	switch (type) {
+		case KAR_VARTYPE_BOOL: return vars->standard.uncleanBool;
+		case KAR_VARTYPE_INTEGER8: return vars->standard.uncleanInt8;
+		case KAR_VARTYPE_INTEGER16: return vars->standard.uncleanInt16;
+		case KAR_VARTYPE_INTEGER32: return vars->standard.uncleanInt32;
+		case KAR_VARTYPE_INTEGER64: return vars->standard.uncleanInt64;
+		case KAR_VARTYPE_UNSIGNED8: return vars->standard.uncleanUnsigned8;
+		case KAR_VARTYPE_UNSIGNED16: return vars->standard.uncleanUnsigned16;
+		case KAR_VARTYPE_UNSIGNED32: return vars->standard.uncleanUnsigned32;
+		case KAR_VARTYPE_UNSIGNED64: return vars->standard.uncleanUnsigned64;
+		case KAR_VARTYPE_FLOAT32: return vars->standard.uncleanFloat32;
+		case KAR_VARTYPE_FLOAT64: return vars->standard.uncleanFloat64;
+		case KAR_VARTYPE_STRING: return vars->standard.uncleanString;
+		default: return NULL;
+	}
+	return NULL;
+}
+
 static LLVMValueRef getLLVMCleanFunctionByType(KarVartypeElement type, KarLLVMData* llvmData) {
 	switch (type) {
 		case KAR_VARTYPE_BOOL: return llvmData->uncleanBool;
@@ -370,6 +456,78 @@ static LLVMValueRef getLLVMCleanFunctionByType(KarVartypeElement type, KarLLVMDa
 	return NULL;
 }
 
+static KarExpressionResult get_sign_unclean(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	KarToken* leftToken = kar_token_child_get(token, 0);
+	KarVartree* varType = get_new_context(NULL, get_token_string(leftToken), vars);
+	if (varType == NULL) {
+		kar_project_error_list_create_add(errors, moduleName, &leftToken->cursor, 1, "Невозможно определить левую часть неопределённости.");
+		return kar_expression_result_none();
+	}
+	LLVMValueRef func = getLLVMCleanFunctionByType(varType->type, llvmData);
+	if (func == NULL) {
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Левая часть операции неопределённости не является классом.");
+		return kar_expression_result_none();
+	}
+
+	KarExpressionResult right;
+	if (kar_token_child_count(token) == 1) {
+		right = get_val_null(vars);
+	} else {
+		right = calc_expression(kar_expression_result_none(), kar_token_child_get(token, 1), llvmData, moduleName, vars, errors);
+	}
+	if (kar_expression_result_is_none(right)) {
+		return kar_expression_result_none();
+	}
+
+	LLVMValueRef value;
+	if (right.type == vars->standard.nullType) {
+		value = LLVMBuildCall(llvmData->builder, llvmData->createPointer, &right.value, 1, "asdf");
+	} else {
+		// TODO: Здесь это добавлено, так как не правильно работает оператор обращения к элементу.
+		KarExpressionResult left;
+		left.type = varType;
+		left.value = NULL;
+		bool b = get_convinient_type(&left, &right, llvmData, vars);
+		if (!b) {
+			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Типы левой и правой части неопределённости не совпадают.");
+			return kar_expression_result_none();
+		}
+		if (left.type == vars->standard.boolType) {
+			value = LLVMBuildCall(llvmData->builder, llvmData->cleanBool, &right.value, 1, "asdf");
+		} else if (left.type == vars->standard.int8Type) {
+			value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger8, &right.value, 1, "asdf");
+		} else if (left.type == vars->standard.int16Type) {
+			value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger16, &right.value, 1, "asdf");
+		} else if (left.type == vars->standard.int32Type) {
+			value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger32, &right.value, 1, "asdf");
+		} else if (left.type == vars->standard.int64Type) {
+			value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger64, &right.value, 1, "asdf");
+		} else if (left.type == vars->standard.unsigned8Type) {
+			value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned8, &right.value, 1, "asdf");
+		} else if (left.type == vars->standard.unsigned16Type) {
+			value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned16, &right.value, 1, "asdf");
+		} else if (left.type == vars->standard.unsigned32Type) {
+			value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned32, &right.value, 1, "asdf");
+		} else if (left.type == vars->standard.unsigned64Type) {
+			value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned64, &right.value, 1, "asdf");
+		} else if (left.type == vars->standard.float32Type) {
+			value = LLVMBuildCall(llvmData->builder, llvmData->cleanFloat32, &right.value, 1, "asdf");
+		} else if (left.type == vars->standard.float64Type) {
+			value = LLVMBuildCall(llvmData->builder, llvmData->cleanFloat64, &right.value, 1, "asdf");
+		} else if (left.type == vars->standard.stringType) {
+			value = LLVMBuildCall(llvmData->builder, llvmData->cleanString, &right.value, 1, "asdf");
+		} else {
+			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Операция неопределённости для данного типа не поддерживается.");
+			return kar_expression_result_none();
+		}
+	}
+	//LLVMValueRef value = LLVMBuildCall(llvmData->builder, llvmData->createPointer, &initValue, 1, "asdf");
+	KarExpressionResult result;
+	result.type = getUncleanVarByType(varType->type, vars);
+	result.value = value;
+	return result;
+}
+
 static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	// TODO: Надо правильно обрабатывать взаимодействие типов и числовых литералов.
 	//       Например, выражение Целое8?(0) ! 0 не будет работать, так как справа
@@ -377,7 +535,7 @@ static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData
 	//       должно приводиться к типу Целое 8 в данном случае.
 	KarToken* leftToken = kar_token_child_get(token, 0);
 	KarExpressionResult left = calc_expression(kar_expression_result_none(), leftToken, llvmData, moduleName, vars, errors);
-	if (left.type->type != KAR_VARTYPE_UNCLEAN_CLASS) {
+	if (!left.type || left.type->type != KAR_VARTYPE_UNCLEAN_CLASS) {
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Левая часть операции раскрытия выражения не является неопределённостью.");
 		return kar_expression_result_none();
 	}
@@ -430,6 +588,7 @@ static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData
 static KarExpressionResult calc_expression(KarExpressionResult context, KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	// TODO: Проверить на компиляторе большое количество открывающихся и закрывающихся скобок.
 	switch (token->type) {
+	case (KAR_TOKEN_VAL_NULL): return get_val_null(vars);
 	case (KAR_TOKEN_VAL_TRUE): return get_val_true(vars);
 	case (KAR_TOKEN_VAL_FALSE): return get_val_false(vars);
 	case (KAR_TOKEN_VAL_INTEGER): return get_val_integer(token, moduleName, vars, errors);
@@ -440,8 +599,10 @@ static KarExpressionResult calc_expression(KarExpressionResult context, KarToken
 	case (KAR_TOKEN_VAL_MINUS_INFINITY): return get_val_minus_infinity(vars);
 	case (KAR_TOKEN_VAL_STRING): return get_val_char(token->str, llvmData, vars);
 
+	case(KAR_TOKEN_SIGN_OPEN_BRACES): return get_open_braces(context, token, llvmData, moduleName, vars, errors);
 	case(KAR_TOKEN_SIGN_GET_FIELD): return get_field(context, token, llvmData, moduleName, vars, errors);
 	case(KAR_TOKEN_SIGN_CALL_METHOD): return get_call_method(context, token, llvmData, moduleName, vars, errors);
+	case(KAR_TOKEN_SIGN_UNCLEAN): return get_sign_unclean(token, llvmData, moduleName, vars, errors);
 	case(KAR_TOKEN_SIGN_CLEAN): return get_sign_clean(token, llvmData, moduleName, vars, errors);
 	default: return kar_expression_result_none();
 	}

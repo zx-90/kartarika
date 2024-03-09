@@ -6,28 +6,50 @@
 
 #include "model/vars.h"
 
+static void clean_standard(KarVars* vars) {
+	vars->standard.nullType = NULL;
+
+	vars->standard.boolType = NULL;
+	vars->standard.int8Type = NULL;
+	vars->standard.int16Type = NULL;
+	vars->standard.int32Type = NULL;
+	vars->standard.int64Type = NULL;
+	vars->standard.intType = NULL;
+	vars->standard.unsigned8Type = NULL;
+	vars->standard.unsigned16Type = NULL;
+	vars->standard.unsigned32Type = NULL;
+	vars->standard.unsigned64Type = NULL;
+	vars->standard.unsignedType = NULL;
+	vars->standard.float32Type = NULL;
+	vars->standard.float64Type = NULL;
+	vars->standard.floatType = NULL;
+	vars->standard.stringType = NULL;
+
+	vars->standard.uncleanBool = NULL;
+	vars->standard.uncleanInt8 = NULL;
+	vars->standard.uncleanInt16 = NULL;
+	vars->standard.uncleanInt32 = NULL;
+	vars->standard.uncleanInt64 = NULL;
+	vars->standard.uncleanInt = NULL;
+	vars->standard.uncleanUnsigned8 = NULL;
+	vars->standard.uncleanUnsigned16 = NULL;
+	vars->standard.uncleanUnsigned32 = NULL;
+	vars->standard.uncleanUnsigned64 = NULL;
+	vars->standard.uncleanUnsigned = NULL;
+	vars->standard.uncleanFloat32 = NULL;
+	vars->standard.uncleanFloat64 = NULL;
+	vars->standard.uncleanFloat = NULL;
+	vars->standard.uncleanString = NULL;
+}
+
 KarVars* kar_vars_create() {
     KAR_CREATE(vars, KarVars);
 
     vars->vartree = NULL;
     kar_vars_default_list_init(vars);
-    vars->standard.boolType = NULL;
-    vars->standard.int8Type = NULL;
-    vars->standard.int16Type = NULL;
-    vars->standard.int32Type = NULL;
-    vars->standard.int64Type = NULL;
-    vars->standard.intType = NULL;
-    vars->standard.unsigned8Type = NULL;
-    vars->standard.unsigned16Type = NULL;
-    vars->standard.unsigned32Type = NULL;
-    vars->standard.unsigned64Type = NULL;
-    vars->standard.unsignedType = NULL;
-    vars->standard.float32Type = NULL;
-    vars->standard.float64Type = NULL;
-    vars->standard.floatType = NULL;
-    vars->standard.stringType = NULL;
+	clean_standard(vars);
 
-    return vars;
+	return vars;
 }
 
 void kar_vars_free(KarVars* vars) {
@@ -35,6 +57,7 @@ void kar_vars_free(KarVars* vars) {
         kar_vartree_free(vars->vartree);
     }
     kar_vars_default_list_tear_all(vars);
+	clean_standard(vars);
     KAR_FREE(vars)
 }
 

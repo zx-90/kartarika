@@ -78,13 +78,13 @@ static bool foreach_two_operators(KarToken* token, size_t num, const KarTokenTyp
 }
 
 // ----------------------------------------------------------------------------
-// Операторы с операндом перед оператором (А оп).
+// Оператор неопределённость.
 // ----------------------------------------------------------------------------
 
-static bool make_operator_before(KarToken* token, KarTokenType operator, KarString* moduleName, KarProjectErrorList* errors) {
+static bool make_operator_unclean(KarToken* token, KarString* moduleName, KarProjectErrorList* errors) {
 	for (size_t i = 0; i < kar_token_child_count(token); ++i) {
 		KarToken* child = kar_token_child_get(token, i);
-		if (child->type != operator) {
+		if (child->type != KAR_TOKEN_SIGN_UNCLEAN) {
 			continue;
 		}
 		if (i == 0) {
@@ -94,27 +94,39 @@ static bool make_operator_before(KarToken* token, KarTokenType operator, KarStri
 			return false;
 		}
 		
-		KarToken* operator = kar_token_child_get(token, i - 1);
-		if (!kar_parser_is_expression(operator->type)) {
+		KarToken* first = kar_token_child_get(token, i - 1);
+		if (!kar_parser_is_expression(first->type)) {
             kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Оператор не корректен.");
 			return false;
 		}
 		
 		kar_token_child_tear(token, i - 1);
-		kar_token_child_add(child, operator);
+		kar_token_child_add(child, first);
 		i--;
+
+		if (i >= kar_token_child_count(token) - 1) {
+			continue;
+		}
+
+		KarToken* second = kar_token_child_get(token, i + 1);
+		if (second->type != KAR_TOKEN_SIGN_OPEN_BRACES) {
+			continue;
+		}
+
+		kar_token_child_tear(token, i + 1);
+		kar_token_child_add(child, second);
 	}
 	return true;
 }
 
-static bool foreach_operator_before(KarToken* token, KarTokenType operator, KarString* moduleName, KarProjectErrorList* errors)
+static bool foreach_operator_unclean(KarToken* token, KarString* moduleName, KarProjectErrorList* errors)
 {
 	for (size_t i = 0; i < kar_token_child_count(token); i++) {
-        if (!foreach_operator_before(kar_token_child_get(token, i), operator, moduleName, errors)) {
+		if (!foreach_operator_unclean(kar_token_child_get(token, i), moduleName, errors)) {
 			return false;
 		}
 	}
-    return make_operator_before(token, operator, moduleName, errors);
+	return make_operator_unclean(token, moduleName, errors);
 }
 
 // ----------------------------------------------------------------------------
@@ -289,7 +301,7 @@ bool kar_parser_make_operands(KarToken* token, KarString* moduleName, KarProject
 {
 	bool b = true;
 	
-    b = b && foreach_operator_before(token, KAR_TOKEN_SIGN_UNCLEAN, moduleName, errors);
+	b = b && foreach_operator_unclean(token, moduleName, errors);
     b = b && foreach_two_operators(token, OPERAND_LIST_CLEAN_SIZE, OPERAND_LIST_CLEAN, moduleName, errors);
 	
 	b = b && foreach_find_single(token, errors);

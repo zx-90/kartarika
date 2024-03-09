@@ -22,6 +22,19 @@ typedef struct {
 	LLVMValueRef freePointer;
 	LLVMValueRef createString;
 
+	LLVMValueRef cleanBool;
+	LLVMValueRef cleanInteger8;
+	LLVMValueRef cleanInteger16;
+	LLVMValueRef cleanInteger32;
+	LLVMValueRef cleanInteger64;
+	LLVMValueRef cleanUnsigned8;
+	LLVMValueRef cleanUnsigned16;
+	LLVMValueRef cleanUnsigned32;
+	LLVMValueRef cleanUnsigned64;
+	LLVMValueRef cleanFloat32;
+	LLVMValueRef cleanFloat64;
+	LLVMValueRef cleanString;
+
 	LLVMValueRef uncleanBool;
 	LLVMValueRef uncleanInteger8;
 	LLVMValueRef uncleanInteger16;

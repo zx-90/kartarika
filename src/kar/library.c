@@ -234,6 +234,26 @@ bool _kartarika_unclean_is_empty(_kartarika_smart_pointer* value) {
 	return (value == NULL || value->value == NULL);
 }
 
+#define _KARTARIKA_LIBRARY_CLEAN(name, type)\
+_kartarika_smart_pointer*  _kartarika_library_clean_##name(type value) { \
+	type* b = (type*)malloc(sizeof(type));\
+	*b = value;\
+	return _kartarika_smart_pointer_create(b);\
+}
+
+_KARTARIKA_LIBRARY_CLEAN(bool, bool)
+_KARTARIKA_LIBRARY_CLEAN(integer8, int8_t)
+_KARTARIKA_LIBRARY_CLEAN(integer16, int16_t)
+_KARTARIKA_LIBRARY_CLEAN(integer32, int32_t)
+_KARTARIKA_LIBRARY_CLEAN(integer64, int64_t)
+_KARTARIKA_LIBRARY_CLEAN(unsigned8, uint8_t)
+_KARTARIKA_LIBRARY_CLEAN(unsigned16, uint16_t)
+_KARTARIKA_LIBRARY_CLEAN(unsigned32, uint32_t)
+_KARTARIKA_LIBRARY_CLEAN(unsigned64, uint64_t)
+_KARTARIKA_LIBRARY_CLEAN(float32, float32_t)
+_KARTARIKA_LIBRARY_CLEAN(float64, float64_t)
+_KARTARIKA_LIBRARY_CLEAN(string, _kartarika_smart_pointer*)
+
 bool _kartarika_unclean_bool(_kartarika_smart_pointer* value) {
 	return *((bool*)value->value);
 }
@@ -279,7 +299,7 @@ float64_t _kartarika_unclean_float64(_kartarika_smart_pointer* value) {
 }
 
 _kartarika_smart_pointer* _kartarika_unclean_string(_kartarika_smart_pointer* value) {
-	return (_kartarika_smart_pointer*)value->value;
+	return *((_kartarika_smart_pointer**)value->value);
 }
 
 // ----------------------------------------------------------------------------
