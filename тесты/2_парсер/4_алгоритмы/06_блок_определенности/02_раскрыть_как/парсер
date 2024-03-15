@@ -12,9 +12,9 @@ MODULE(1, 1): --
 				IDENTIFIER(2, 27): [Меч]
 				BLOCK_BODY(3, 1): --
 					COMMAND_EXPRESSION(3, 3): --
-						SIGN_GET_FIELD(3, 6): --
-							IDENTIFIER(3, 3): [Меч]
-							SIGN_CALL_METHOD(3, 7): --
+						SIGN_CALL_METHOD(3, 6): --
+							SIGN_GET_FIELD(3, 6): --
+								IDENTIFIER(3, 3): [Меч]
 								IDENTIFIER(3, 7): [УвеличитьСилу]
-								SIGN_ARGUMENT(3, 21): --
-									VAL_INTEGER(3, 21): [2]
+							SIGN_ARGUMENT(3, 21): --
+								VAL_INTEGER(3, 21): [2]

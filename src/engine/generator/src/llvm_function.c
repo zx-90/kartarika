@@ -8,10 +8,10 @@
 
 #include <llvm-c/Core.h>
 
-KarLLVMFunction* kar_llvm_function_create(KarVartreeFunctionParams* params) {
+KarLLVMFunction* kar_llvm_function_create(KarVartree* var) {
     KAR_CREATE(result, KarLLVMFunction);
 
-    result->params = params;
+	result->var = var;
     result->value = NULL;
 
     return result;
@@ -56,25 +56,26 @@ void kar_llvm_function_init(KarLLVMFunction* func, LLVMModuleRef module, KarVars
     if (func->value != NULL) {
         return;
     }
-    LLVMTypeRef returnType = get_llvm_type(func->params->returnType, vars);
-    size_t arg_count = kar_vartree_function_params_args_count(func->params);
+	KarVartreeFunctionParams* params = kar_vartree_get_function_params(func->var);
+	LLVMTypeRef returnType = get_llvm_type(params->returnType, vars);
+	size_t arg_count = kar_vartree_args_count(func->var);
     KAR_CREATES(args, LLVMTypeRef, arg_count);
     for (size_t i = 0; i < arg_count; i++) {
-        args[i] = get_llvm_type(kar_vartree_function_params_args_get(func->params, i), vars);
+		args[i] = get_llvm_type(kar_vartree_args_get(func->var, i), vars);
     }
     LLVMTypeRef puts_type = LLVMFunctionType(returnType, args, (unsigned int)arg_count, false);
-    func->value = LLVMAddFunction(module, func->params->issueName, puts_type);
+	func->value = LLVMAddFunction(module, params->issueName, puts_type);
     KAR_FREE(args);
 }
 
 LLVMValueRef kar_llvm_function_get_ref(KarLLVMFunction* func) {
-    return func->value;
+	return func->value;
 }
 
 bool kar_llvm_function_less(KarLLVMFunction* func1, KarLLVMFunction* func2) {
-    return kar_string_less(func1->params->issueName, func2->params->issueName);
+	return kar_vartree_less(func1->var, func2->var);
 }
 
 bool kar_llvm_function_equal(KarLLVMFunction* func1, KarLLVMFunction* func2) {
-    return kar_string_equal(func1->params->issueName, func2->params->issueName);
+	return kar_vartree_equal(func1->var, func2->var);
 }

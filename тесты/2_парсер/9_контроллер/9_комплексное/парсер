@@ -7,12 +7,12 @@ MODULE(1, 1): --
 			VAR_INTEGER64(2, 24): --
 		BLOCK_BODY(3, 1): --
 			COMMAND_EXPRESSION(3, 2): --
-				SIGN_GET_FIELD(3, 5): --
-					IDENTIFIER(3, 2): [Кар]
-					SIGN_CALL_METHOD(3, 6): --
+				SIGN_CALL_METHOD(3, 5): --
+					SIGN_GET_FIELD(3, 5): --
+						IDENTIFIER(3, 2): [Кар]
 						IDENTIFIER(3, 6): [Печатать]
-						SIGN_ARGUMENT(3, 15): --
-							VAL_STRING(3, 15): [Привет, мир!
+					SIGN_ARGUMENT(3, 15): --
+						VAL_STRING(3, 15): [Привет, мир!
 ]
 			COMMAND_RETURN(4, 2): --
 				VAL_INTEGER(4, 10): [0]

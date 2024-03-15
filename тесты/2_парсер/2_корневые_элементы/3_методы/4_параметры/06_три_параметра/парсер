@@ -5,12 +5,12 @@ MODULE(1, 1): --
 			METHOD_PARAMETER_CONST(1, 15): --
 				VAR_INTEGER64(1, 15): --
 				IDENTIFIER(1, 21): [параметр1]
-			METHOD_PARAMETER_CONST(1, 36): --
-				SIGN_GET_FIELD(1, 36): --
-					IDENTIFIER(1, 32): [Кар1]
-					SIGN_GET_FIELD(1, 41): --
+			METHOD_PARAMETER_CONST(1, 41): --
+				SIGN_GET_FIELD(1, 41): --
+					SIGN_GET_FIELD(1, 36): --
+						IDENTIFIER(1, 32): [Кар1]
 						IDENTIFIER(1, 37): [Кар2]
-						IDENTIFIER(1, 42): [Кар3]
+					IDENTIFIER(1, 42): [Кар3]
 				IDENTIFIER(1, 47): [параметр2]
 			METHOD_PARAMETER_CONST(1, 58): --
 				VAR_STRING(1, 58): --

@@ -16,6 +16,8 @@
 // Кар.Типы
 // ----------------------------------------------------------------------------
 
+// TODO: Проверить все переменные и функции. Они должны начинаться на _kartarika_library.
+
 const int8_t _kartarika_library_int8_min = -128;
 const int8_t _kartarika_library_int8_max = 127;
 

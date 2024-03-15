@@ -12,19 +12,19 @@ MODULE(1, 1): --
 				VAL_NULL(2, 22): --
 				BLOCK_BODY(3, 1): --
 					COMMAND_EXPRESSION(3, 3): --
-						SIGN_GET_FIELD(3, 7): --
-							IDENTIFIER(3, 3): [Воин]
+						SIGN_CALL_METHOD(3, 14): --
 							SIGN_GET_FIELD(3, 14): --
-								IDENTIFIER(3, 8): [Оружие]
-								SIGN_CALL_METHOD(3, 15): --
-									IDENTIFIER(3, 15): [УвеличитьСилу]
-									SIGN_ARGUMENT(3, 29): --
-										VAL_INTEGER(3, 29): [2]
+								SIGN_GET_FIELD(3, 7): --
+									IDENTIFIER(3, 3): [Воин]
+									IDENTIFIER(3, 8): [Оружие]
+								IDENTIFIER(3, 15): [УвеличитьСилу]
+							SIGN_ARGUMENT(3, 29): --
+								VAL_INTEGER(3, 29): [2]
 				BLOCK_BODY(5, 1): --
 					COMMAND_EXPRESSION(5, 3): --
-						SIGN_GET_FIELD(5, 6): --
-							IDENTIFIER(5, 3): [Кар]
-							SIGN_CALL_METHOD(5, 7): --
+						SIGN_CALL_METHOD(5, 6): --
+							SIGN_GET_FIELD(5, 6): --
+								IDENTIFIER(5, 3): [Кар]
 								IDENTIFIER(5, 7): [Печатать]
-								SIGN_ARGUMENT(5, 16): --
-									VAL_STRING(5, 16): [У воина нет оружия!]
+							SIGN_ARGUMENT(5, 16): --
+								VAL_STRING(5, 16): [У воина нет оружия!]

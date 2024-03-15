@@ -14,11 +14,14 @@
 
 #include "model/vartree_function_params.h"
 
+static void(*nullFree)(KarVartree* item) = NULL;
+
 static KarVartree* vartree_create(KarVartypeElement element) {
 	KAR_CREATE(vartree, KarVartree);
 	
 	vartree->name = NULL;
     vartree->type = element;
+	kar_vartree_args_init(vartree);
     kar_vartree_child_init(vartree);
     vartree->params = NULL;
     vartree->freeParams = NULL;
@@ -50,9 +53,12 @@ KarVartree* kar_vartree_create_class_link(const KarString* name, KarVartree* typ
 	return result;
 }
 
-KarVartree* kar_vartree_create_function(const KarString* name, uint8_t modificators,const KarString* issueName, KarVartree** args, size_t args_count, KarVartree* return_type) {
-    KarVartree* result = vartree_create_name(KAR_VARTYPE_FUNCTION, kar_vartree_create_full_function_name(name, args, args_count));
-	result->params = kar_vartree_function_create(modificators, issueName, args, args_count, return_type);
+KarVartree* kar_vartree_create_function(const KarString* name, uint8_t modificators, const KarString* issueName, KarVartree** args, size_t args_count, KarVartree* return_type) {
+	KarVartree* result = vartree_create_name(KAR_VARTYPE_FUNCTION, name);
+	for (size_t i = 0; i < args_count; i++) {
+		kar_vartree_args_add(result, args[i]);
+	}
+	result->params = kar_vartree_function_create(modificators, issueName, return_type);
     result->freeParams = &kar_vartree_function_free;
 	return result;
 }
@@ -103,8 +109,8 @@ KarVartree* kar_vartree_create_unclean(const KarString* name) {
 }
 
 KarVartree* kar_vartree_create_unclean_class(KarVartree* type) {
-	KarVartree* result = vartree_create_name(KAR_VARTYPE_UNCLEAN_CLASS, kar_vartree_create_full_function_name("Неопределённость", &type, 1));
-    result->params = type;
+	KarVartree* result = vartree_create_name(KAR_VARTYPE_UNCLEAN_CLASS, "Неопределённость");
+	kar_vartree_args_add(result, type);
 	return result;
 }
 
@@ -160,10 +166,63 @@ void kar_vartree_free(KarVartree* vartree) {
 	if (vartree->name != NULL) {
 		kar_string_free(vartree->name);
 	}
+	kar_vartree_args_clear(vartree);
 	kar_vartree_child_clear(vartree);
     if (vartree->freeParams != NULL) {
         vartree->freeParams(vartree->params);
     }
+}
+
+KarString* kar_vartree_create_full_name_args(const KarString* name, KarVartree** args, size_t args_count) {
+	if (name == NULL) {
+		return NULL;
+	}
+	KarStringBuilder builder;
+	kar_string_builder_init(&builder);
+
+	kar_string_builder_push_string(&builder, name);
+	kar_string_builder_push_string(&builder, "(");
+	for (size_t i = 0; i < args_count; i++) {
+		if (i != 0) {
+			kar_string_builder_push_string(&builder, ",");
+		}
+		KarString* argName = kar_vartree_create_full_path(args[i]);
+		kar_string_builder_push_string(&builder, argName);
+		KAR_FREE(argName);
+	}
+	kar_string_builder_push_string(&builder, ")");
+
+	return kar_string_builder_clear_get(&builder);
+}
+
+static KarString* create_full_name(KarVartree* var) {
+	if (var->name == NULL) {
+		return NULL;
+	}
+	if (var->type == KAR_VARTYPE_FUNCTION || var->type == KAR_VARTYPE_UNCLEAN_CLASS) {
+		return kar_vartree_create_full_name_args(var->name, var->args.items, var->args.count);
+	}
+	return kar_string_create(var->name);
+}
+
+KarString* kar_vartree_create_full_path(KarVartree* var) {
+	KarString* result = create_full_name(var);
+	while (kar_vartree_child_parent(var) != NULL) {
+		var = kar_vartree_child_parent(var);
+		if (var->name == NULL) {
+			continue;
+		}
+
+		KarString* newResult = kar_string_create_concat(".", result);
+		KarString* added = create_full_name(var);
+		KarString* newResult2 = kar_string_create_concat(added, newResult);
+
+		KAR_FREE(added);
+		KAR_FREE(result);
+		KAR_FREE(newResult);
+		result = newResult2;
+	}
+	return result;
 }
 
 bool kar_vartree_less(KarVartree* vartree1, KarVartree* vartree2) {
@@ -173,7 +232,34 @@ bool kar_vartree_less(KarVartree* vartree1, KarVartree* vartree2) {
 	if (vartree1->name == NULL) {
 		return true;
 	}
-	return kar_string_less(vartree1->name, vartree2->name);
+	if (kar_string_less(vartree1->name, vartree2->name)) {
+		return true;
+	}
+	if (kar_string_less(vartree2->name, vartree1->name)) {
+		return false;
+	}
+	for (size_t i = 0; i < kar_vartree_args_count(vartree1); i++) {
+		if (kar_vartree_args_count(vartree2) <= i) {
+			return false;
+		}
+		KarVartree* arg1 = kar_vartree_args_get(vartree1, i);
+		KarVartree* arg2 = kar_vartree_args_get(vartree2, i);
+		KarString* path1 = kar_vartree_create_full_path(arg1);
+		KarString* path2 = kar_vartree_create_full_path(arg2);
+		int cmpRes = strcmp(path1, path2);
+		KAR_FREE(path1);
+		KAR_FREE(path2);
+		if (cmpRes < 0) {
+			return true;
+		}
+		if (cmpRes > 0) {
+			return false;
+		}
+	}
+	if (kar_vartree_args_count(vartree1) < kar_vartree_args_count(vartree2)) {
+		return true;
+	}
+	return false;
 }
 
 bool kar_vartree_equal(KarVartree* vartree1, KarVartree* vartree2) {
@@ -183,36 +269,54 @@ bool kar_vartree_equal(KarVartree* vartree1, KarVartree* vartree2) {
 	if (vartree1->name == NULL || vartree2->name == NULL) {
 		return false;
 	}
-	return kar_string_equal(vartree1->name, vartree2->name);
-}
-
-KarString* kar_vartree_create_full_path(KarVartree* var) {
-	KarString* result = kar_string_create(var->name);
-	while (kar_vartree_child_parent(var) != NULL) {
-		var = kar_vartree_child_parent(var);
-		if (var->name == NULL) {
-			continue;
-		}
-
-		KarString* newResult = kar_string_create_concat(".", result);
-		KarString* newResult2 = kar_string_create_concat(var->name, newResult);
-
-		KAR_FREE(result);
-		KAR_FREE(newResult);
-		result = newResult2;
+	if (!kar_string_equal(vartree1->name, vartree2->name)) {
+		return false;
 	}
-	return result;
+	if (kar_vartree_args_count(vartree1) != kar_vartree_args_count(vartree2)) {
+		return false;
+	}
+	for (size_t i = 0; i < kar_vartree_args_count(vartree1); i++) {
+		if (kar_vartree_args_get(vartree1, i) != kar_vartree_args_get(vartree2, i)) {
+			return false;
+		}
+	}
+	return true;
 }
 
 KarVartree* kar_vartree_find(KarVartree* parent, const KarString* name) {
     for (size_t i = 0; i < kar_vartree_child_count(parent); i++) {
         KarVartree* child = kar_vartree_child_get(parent, i);
-        if (kar_string_equal(child->name, name)) {
+		if (kar_string_equal(child->name, name) && kar_vartree_args_count(child) == 0) {
             return child;
         }
     }
     return NULL;
 }
+
+KarVartree* kar_vartree_find_args(KarVartree *parent, const KarString* name, KarVartree** args, size_t args_count) {
+	for (size_t i = 0; i < kar_vartree_child_count(parent); i++) {
+		KarVartree* child = kar_vartree_child_get(parent, i);
+		if (!kar_string_equal(child->name, name)) {
+			continue;
+		}
+		if (kar_vartree_args_count(child) != args_count) {
+			continue;
+		}
+		bool match = true;
+		for (size_t i = 0; i < args_count; i++) {
+			if (kar_vartree_args_get(child, i) != args[i]) {
+				match = false;
+				break;
+			}
+		}
+		if (!match) {
+			continue;
+		}
+		return child;
+	}
+	return NULL;
+}
+KAR_ARRAY_CODE(vartree_args, KarVartree, KarVartree, args, nullFree)
 
 KAR_TREE_SET_CODE(vartree_child, KarVartree, children, kar_vartree_less, kar_vartree_equal, kar_vartree_free)
 
@@ -227,5 +331,5 @@ KarVartree* kar_vartree_get_unclean_class(KarVartree* vartree) {
 	if (vartree->type != KAR_VARTYPE_UNCLEAN_CLASS) {
 		return NULL;
 	}
-	return (KarVartree*)vartree->params;
+	return kar_vartree_args_get(vartree, 0);
 }

@@ -48,7 +48,8 @@ typedef enum {
 typedef struct KarVartreeStruct {
     KarString* name;
     KarVartypeElement type;
-    KAR_TREE_SET_STRUCT(struct KarVartreeStruct) children;
+	KAR_ARRAY_STRUCT(struct KarVartreeStruct) args;
+	KAR_TREE_SET_STRUCT(struct KarVartreeStruct) children;
     void* params;
     void (*freeParams)(void*);
 } KarVartree;
@@ -82,14 +83,18 @@ KarVartree* kar_vartree_create_bool(const KarString* name);
 
 void kar_vartree_free(KarVartree* vartree);
 
+KarString* kar_vartree_create_full_name_args(const KarString* name, KarVartree** args, size_t args_count);
+KarString* kar_vartree_create_full_path(KarVartree* var);
+
 bool kar_vartree_less(KarVartree* vartree1, KarVartree* vartree2);
 bool kar_vartree_equal(KarVartree* vartree1, KarVartree* vartree2);
 
-KarString* kar_vartree_create_full_path(KarVartree* var);
 KarVartree* kar_vartree_find(KarVartree *parent, const KarString* name);
+KarVartree* kar_vartree_find_args(KarVartree *parent, const KarString* name, KarVartree** args, size_t args_count);
+
+KAR_ARRAY_HEADER(vartree_args, KarVartree, KarVartree)
 
 KAR_TREE_SET_HEADER(vartree_child, KarVartree)
-KAR_ARRAY_HEADER(vartree_link, KarVartree, KarVartree)
 
 KarVartreeFunctionParams* kar_vartree_get_function_params(KarVartree* vartree);
 KarVartree* kar_vartree_get_unclean_class(KarVartree* vartree);

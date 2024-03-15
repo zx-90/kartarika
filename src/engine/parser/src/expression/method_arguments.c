@@ -9,58 +9,11 @@
 #include "model/token.h"
 #include "model/project_error_list.h"
 
-static bool is_method_operator(KarTokenType type) {
-	return
-		kar_token_type_is_identifier(type) ||
-		kar_token_type_is_variable(type);
-}
-
-static bool make_call_method(KarToken* token) {
-	if (kar_token_child_empty(token)) {
-		return true;
-	}
-
-	for (size_t i = kar_token_child_count(token) - 1; i >= 1; --i) {
-		KarToken* child = kar_token_child_get(token, i);
-		if (child->type != KAR_TOKEN_SIGN_OPEN_BRACES) {
-			continue;
-		}
-		
-		KarToken* prev = kar_token_child_get(token, i - 1);
-		if (!is_method_operator(prev->type)) {
-			continue;
-		}
-		
-		child->type = KAR_TOKEN_SIGN_CALL_METHOD;
-		child->cursor = prev->cursor;
-		kar_token_child_tear(token, i - 1);
-		kar_token_child_insert(child, prev, 0);
-		
-	}
-	return true;
-}
-
-static bool foreach(KarToken* token) 
-{
-	for (size_t i = 0; i < kar_token_child_count(token); i++) {
-		if (!foreach(kar_token_child_get(token, i))) {
-			return false;
-		}
-	}
-	return make_call_method(token);
-}
-
-bool kar_parser_make_call_method(KarToken* token)
-{
-	return foreach(token);
-}
-
-
 // ----------------------------------------------------------------------------
 // Обработка вызова функции.
 // ----------------------------------------------------------------------------
 
-static bool make_arguments(KarToken* token, KarString* moduleName, KarProjectErrorList* errors) {
+static bool make_method_arguments(KarToken* token, KarString* moduleName, KarProjectErrorList* errors) {
 	if (token->type != KAR_TOKEN_SIGN_CALL_METHOD) {
 		return true;
 	}
@@ -100,12 +53,12 @@ static bool make_arguments(KarToken* token, KarString* moduleName, KarProjectErr
 	return true;
 }
 
-bool kar_parser_make_arguments(KarToken* token, KarString* moduleName, KarProjectErrorList* errors)
+bool kar_parser_make_method_arguments(KarToken* token, KarString* moduleName, KarProjectErrorList* errors)
 {
 	for (size_t i = 0; i < kar_token_child_count(token); i++) {
-        if (!kar_parser_make_arguments(kar_token_child_get(token, i), moduleName, errors)) {
+		if (!kar_parser_make_method_arguments(kar_token_child_get(token, i), moduleName, errors)) {
 			return false;
 		}
 	}
-    return make_arguments(token, moduleName, errors);
+	return make_method_arguments(token, moduleName, errors);
 }

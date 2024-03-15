@@ -34,6 +34,7 @@ static bool fill_standard_lib(KarVars* vars) {
 	kar_vartree_child_add(types, type_bool);
 	
 	// TODO: Здесь не create_bool, здесь для них специальные функции надо написать.
+	// TODO: Добавить 0Дробное.
 	KarVartree* type_decimal = kar_vartree_create_bool("0Десятичное");
 	kar_vartree_child_add(types, type_decimal);
 	KarVartree* type_hexadecimal = kar_vartree_create_bool("0Шестнадцатеричное");
@@ -184,7 +185,6 @@ static bool fill_standard_lib(KarVars* vars) {
 	kar_vartree_child_add(type_unclean_string, kar_vartree_create_function("ПустойЛи", DYNAMIC | PUBLIC, "_kartarika_unclean_is_empty", NULL, 0, type_bool));
 
 	// Преобразования типов.
-	// TODO: Дописать все тесты для преобразования переменных.
 	kar_vartree_child_add(types, kar_vartree_create_function("Буль", STATIC | PUBLIC, "_kartarika_library_convert_bool_to_bool", &type_bool, 1, type_bool));
 	kar_vartree_child_add(types, kar_vartree_create_function("Буль", STATIC | PUBLIC, "_kartarika_library_convert_integer8_to_bool", &type_integer8, 1, type_unclean_bool));
 	kar_vartree_child_add(types, kar_vartree_create_function("Буль", STATIC | PUBLIC, "_kartarika_library_convert_integer16_to_bool", &type_integer16, 1, type_unclean_bool));
@@ -382,7 +382,6 @@ static bool fill_standard_lib(KarVars* vars) {
 	kar_vartree_child_add(type_thread_error, kar_vartree_create_function("Вывод", STATIC | PUBLIC, "_kartarika_library_write_float32", &type_float32, 1, NULL));
 	kar_vartree_child_add(type_thread_error, kar_vartree_create_function("Вывод", STATIC | PUBLIC, "_kartarika_library_write_float64", &type_float64, 1, NULL));
 	kar_vartree_child_add(type_thread_error, kar_vartree_create_function("Вывод", STATIC | PUBLIC, "_kartarika_library_write_float64", &type_float, 1, NULL));
-	// TODO: Поменять функцию на "_kartarika_library_write_string"
 	kar_vartree_child_add(type_thread_error, kar_vartree_create_function("Вывод", STATIC | PUBLIC, "_kartarika_library_write_string", &type_string, 1, NULL));
 
     KarVartree* type_math = kar_vartree_create_class("Мат");

@@ -141,12 +141,13 @@ static bool parse_method_parameters(KarToken* token, KarString* moduleName, KarP
 		KarToken* parameter = kar_token_child_get(parameters, i);
 		if (kar_token_child_count(parameter) == 1) {
 			KarToken* mul = kar_token_child_get(parameter, 0);
+			// TODO: Убрать вариант с * (KAR_TOKEN_SIGN_MUL). Так как для изменяемого параметра используется неопределённость.
 			if (mul->type != KAR_TOKEN_SIGN_MUL) {
-                kar_project_error_list_create_add(errors, moduleName, &parameter->cursor, 1, "Некорректный параметр метода.");
+				kar_project_error_list_create_add(errors, moduleName, &parameter->cursor, 1, "Некорректный параметр метода.");
 				return false;
 			}
 			if (kar_token_child_count(mul) != 2) {
-                kar_project_error_list_create_add(errors, moduleName, &parameter->cursor, 1, "Некорректный параметр метода.");
+				kar_project_error_list_create_add(errors, moduleName, &parameter->cursor, 1, "Некорректный параметр метода.");
 				return false;
 			}
 			parameter->type = KAR_TOKEN_METHOD_PARAMETER_VAR;
@@ -160,12 +161,12 @@ static bool parse_method_parameters(KarToken* token, KarString* moduleName, KarP
 		} else if (kar_token_child_count(parameter) == 2) {
 			parameter->type = KAR_TOKEN_METHOD_PARAMETER_CONST;
 		} else {
-            kar_project_error_list_create_add(errors, moduleName, &parameter->cursor, 1, "Некорректный параметр метода.");
+			kar_project_error_list_create_add(errors, moduleName, &parameter->cursor, 1, "Некорректный параметр метода.");
 			return false;
 		}
 		
 		if (kar_token_child_count(parameter) != 2) {
-            kar_project_error_list_create_add(errors, moduleName, &parameter->cursor, 1, "Некорректный параметр метода.");
+			kar_project_error_list_create_add(errors, moduleName, &parameter->cursor, 1, "Некорректный параметр метода.");
 			return false;
 		}
 		KarToken* type = kar_token_child_get(parameter, 0);

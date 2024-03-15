@@ -30,6 +30,17 @@ KarExpressionResult kar_expression_result_none() {
 	return result;
 }
 
+KarExpressionResult kar_expression_result_var(KarVartree* var) {
+	KarExpressionResult result;
+	result.type = var;
+	result.value = NULL;
+	return result;
+}
+
+static bool kar_expression_result_is_none(KarExpressionResult result) {
+	return (result.type == NULL && result.value == NULL);
+}
+
 static bool is_int_type_family(KarVartree* var, KarVars* vars) {
 	return
 		var == vars->standard.int8Type ||
@@ -59,7 +70,7 @@ static bool get_convinient_type(KarExpressionResult* var1, KarExpressionResult* 
 		if (is_int_type_family(var2->type, vars) || is_float_type_family(var2->type, vars)) {
 			return true;
 		}
-		// TODO: Вместо float64 надо использовать float до определения типа.
+		// TODO: Вместо float64 надо использовать 0float до определения типа.
 	} else if (var1->type == vars->standard.float64Type) {
 		if (var2->type == vars->standard.float32Type) {
 			var1->type = vars->standard.float32Type;
@@ -73,7 +84,7 @@ static bool get_convinient_type(KarExpressionResult* var1, KarExpressionResult* 
 		if (is_int_type_family(var1->type, vars) || is_float_type_family(var1->type, vars)) {
 			return true;
 		}
-		// TODO: Вместо float64 надо использовать float до определения типа.
+		// TODO: Вместо float64 надо использовать 0float до определения типа.
 	} else if (var2->type == vars->standard.float64Type) {
 		if (var1->type == vars->standard.float32Type) {
 			var2->type = vars->standard.float32Type;
@@ -82,10 +93,6 @@ static bool get_convinient_type(KarExpressionResult* var1, KarExpressionResult* 
 		}
 	}
 	return false;
-}
-
-static bool kar_expression_result_is_none(KarExpressionResult result) {
-	return (result.type == NULL && result.value == NULL);
 }
 
 static KarExpressionResult calc_expression(KarExpressionResult context, KarToken* token, KarLLVMData *llvmData, KarString *moduleName, KarVars *vars, KarProjectErrorList *errors);
@@ -244,12 +251,24 @@ static KarExpressionResult get_val_char(KarString*str, KarLLVMData* llvmData, Ka
 	return result;
 }
 
-static KarVartree* get_new_context(KarVartree* context, KarString* name, KarVars* vars) {
+static KarVartree* get_new_context(KarVartree* context, KarString* name, KarVartree** args, size_t args_count, KarVars* vars) {
 	if (context == NULL) {
-		return kar_vars_find(vars, name);
+		return kar_vars_find_args(vars, name, args, args_count);
 	} else {
-		return kar_vartree_find(context, name);
+		return kar_vartree_find_args(context, name, args, args_count);
 	}
+}
+
+static KarExpressionResult get_identifier(KarToken* token, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	KarExpressionResult res = kar_expression_result_none();
+	res.type = kar_vars_find(vars, token->str);
+	if (kar_expression_result_is_none(res)) {
+		KarString* error_text = kar_string_create_format("Не могу найти поле \"%s\".", token->str);
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, error_text);
+		KAR_FREE(error_text);
+		return kar_expression_result_none();
+	}
+	return res;
 }
 
 static KarVartree* get_reduced_type(KarVartree* type, KarVars* vars) {
@@ -279,25 +298,27 @@ static KarExpressionResult get_open_braces(KarExpressionResult context, KarToken
 static KarExpressionResult get_field(KarExpressionResult context, KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult newContext = kar_expression_result_none();
-	if (kar_token_type_is_identifier(left->type)) {
-		newContext.type = get_new_context(context.type, left->str, vars);
-		if (kar_expression_result_is_none(newContext)) {
-			KarString* error_text = kar_string_create_format("Не могу найти поле \"%s\" в объекте \"%s\".", left->str, kar_vartree_create_full_path(context.type));
-			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, error_text);
-			KAR_FREE(error_text);
-			return kar_expression_result_none();
-		}
-	} else {
-		KarExpressionResult leftResult = calc_expression(context, left, llvmData, moduleName, vars, errors);
-		newContext.type = get_reduced_type(leftResult.type, vars);
-		newContext.value = leftResult.value;
-		if (kar_expression_result_is_none(newContext)) {
-			// TODO: Сообщение об ошибке + тест.
-			return kar_expression_result_none();
-		}
+
+	KarExpressionResult leftRes = calc_expression(context, left, llvmData, moduleName, vars, errors);
+	// TODO: Надо ещё правильно вычислять значения, если левый операнд имеет не пустое поле value.
+	if (leftRes.value != NULL) {
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Левый операнд должен быть классом, а не экземпляром класса.");
+		return kar_expression_result_none();
 	}
-	return calc_expression(newContext, right, llvmData, moduleName, vars, errors);
+	if (kar_expression_result_is_none(leftRes)) {
+		return kar_expression_result_none();
+	}
+
+	KarExpressionResult res = kar_expression_result_none();
+	res.type = kar_vartree_find(leftRes.type, right->str);
+	if (kar_expression_result_is_none(leftRes)) {
+		KarString* error_text = kar_string_create_format("Не могу найти поле \"%s\" в объекте \"%s\".", right->str, kar_vartree_create_full_path(leftRes.type));
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, error_text);
+		KAR_FREE(error_text);
+		return kar_expression_result_none();
+	}
+
+	return res;
 }
 
 // TODO: Перенсти в нужное место, возможно есть копия.
@@ -332,12 +353,32 @@ static KarString* get_token_string(KarToken* token) {
 }
 
 static KarExpressionResult get_call_method(KarExpressionResult context, KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
-	KarToken* funcNameToken = kar_token_child_get(token, 0);
-	KarString* funcName = get_token_string(funcNameToken);
-	if (funcName == NULL) {
-		kar_project_error_list_create_add(errors, moduleName, &funcNameToken->cursor, 1, "Имя функции не определено.");
+	KarExpressionResult cont = kar_expression_result_none();
+	KarString* funcName;
+
+	KarToken* left = kar_token_child_get(token, 0);
+	if (left->type == KAR_TOKEN_IDENTIFIER) {
+		funcName = left->str;
+	} else if (left->type == KAR_TOKEN_SIGN_GET_FIELD) {
+		KarToken* contToken = kar_token_child_get(left, 0);
+		KarToken* nameToken = kar_token_child_get(left, 1);
+		if (nameToken->type != KAR_TOKEN_IDENTIFIER) {
+			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Левая часть вызова функции не определена.");
+			return kar_expression_result_none();
+		}
+		funcName = nameToken->str;
+		cont = calc_expression(context, contToken, llvmData, moduleName, vars, errors);
+	} else if (left->str == NULL) {
+		funcName = get_token_string(left);
+		if (funcName == NULL) {
+			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Левая часть вызова функции не определена.");
+			return kar_expression_result_none();
+		}
+	} else {
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Левая часть вызова функции не определена.");
 		return kar_expression_result_none();
 	}
+
 	// TODO: Возможно надо проверять полный путь, а не просто имя функции.
 	bool is64 =
 		kar_string_equal(funcName, "Целое64") ||
@@ -367,41 +408,43 @@ static KarExpressionResult get_call_method(KarExpressionResult context, KarToken
 		}
 	}
 
-	KarString* functionName = kar_vartree_create_full_function_name(funcName, argsVartree, num);
-	KAR_FREE(argsVartree);
+	KarString* functionName = kar_vartree_create_full_name_args(funcName, argsVartree, num);
 	// TODO: Заглушка для тестов для проверки типа получаемого выражения.
 	if (kar_string_equal(functionName, "ВзятьПуть()")) {
-		KarString* path = kar_vartree_create_full_path(context.type);
+		KarString* path = kar_vartree_create_full_path(get_reduced_type(cont.type, vars));
 		KarExpressionResult res = get_val_char(path, llvmData, vars);
+		KAR_FREE(argsVartree);
 		KAR_FREE(path);
 		return res;
 	}
 
-	KarVartree* function = get_new_context(context.type, functionName, vars);
+	KarVartree* function = get_new_context(cont.type, funcName, argsVartree, num, vars);
 	if (function == NULL) {
-		KarString* errorText = kar_string_create_format("Не могу найти объект \"%s\".", functionName);
-		kar_project_error_list_create_add(errors, moduleName, &funcNameToken->cursor, 1, errorText);
-		KAR_FREE(functionName);
+		KarString* errorText = kar_string_create_format("Не могу найти объект \"%s\".", kar_vartree_create_full_name_args(funcName, argsVartree, num));
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
+		KAR_FREE(argsVartree);
 		KAR_FREE(argsLLVM);
 		return kar_expression_result_none();
 	}
-	KAR_FREE(functionName);
-	KarVartreeFunctionParams* params = kar_vartree_get_function_params(function);
-	KarLLVMFunction* llvmFunc = kar_llvm_data_get_function(llvmData, params, vars);
+	KAR_FREE(argsVartree);
+
+	KarLLVMFunction* llvmFunc = kar_llvm_data_get_function(llvmData, function, vars);
 	if (llvmFunc == NULL) {
-		kar_project_error_list_create_add(errors, moduleName, &funcNameToken->cursor, 1, "Внутренняя ошибка генератора. Не могу найти функцию.");
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Внутренняя ошибка генератора. Не могу найти функцию.");
 		KAR_FREE(argsLLVM);
 		return kar_expression_result_none();
 	}
+	KarVartreeFunctionParams* params = kar_vartree_get_function_params(function);
 	if (kar_vartree_function_is_dynamic(params->modificators)) {
-		if (context.value == NULL) {
-			kar_project_error_list_create_add(errors, moduleName, &funcNameToken->cursor, 1, "Не могу найти класс-источник для динамической функции.");
+		if (cont.value == NULL) {
+			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Не могу найти класс-источник для динамической функции.");
 			KAR_FREE(argsLLVM);
+			return kar_expression_result_none();
 		}
 		for (size_t i = num; i > 0; i--) {
 			argsLLVM[i] = argsLLVM[i-1];
 		}
-		argsLLVM[0] = context.value;
+		argsLLVM[0] = cont.value;
 		num++;
 	}
 
@@ -458,7 +501,8 @@ static LLVMValueRef getLLVMCleanFunctionByType(KarVartypeElement type, KarLLVMDa
 
 static KarExpressionResult get_sign_unclean(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* leftToken = kar_token_child_get(token, 0);
-	KarVartree* varType = get_new_context(NULL, get_token_string(leftToken), vars);
+	KarExpressionResult leftResult = calc_expression(kar_expression_result_none(), leftToken, llvmData, moduleName, vars, errors);
+	KarVartree* varType = leftResult.type;
 	if (varType == NULL) {
 		kar_project_error_list_create_add(errors, moduleName, &leftToken->cursor, 1, "Невозможно определить левую часть неопределённости.");
 		return kar_expression_result_none();
@@ -483,7 +527,6 @@ static KarExpressionResult get_sign_unclean(KarToken* token, KarLLVMData* llvmDa
 	if (right.type == vars->standard.nullType) {
 		value = LLVMBuildCall(llvmData->builder, llvmData->createPointer, &right.value, 1, "asdf");
 	} else {
-		// TODO: Здесь это добавлено, так как не правильно работает оператор обращения к элементу.
 		KarExpressionResult left;
 		left.type = varType;
 		left.value = NULL;
@@ -521,7 +564,6 @@ static KarExpressionResult get_sign_unclean(KarToken* token, KarLLVMData* llvmDa
 			return kar_expression_result_none();
 		}
 	}
-	//LLVMValueRef value = LLVMBuildCall(llvmData->builder, llvmData->createPointer, &initValue, 1, "asdf");
 	KarExpressionResult result;
 	result.type = getUncleanVarByType(varType->type, vars);
 	result.value = value;
@@ -540,10 +582,8 @@ static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData
 		return kar_expression_result_none();
 	}
 
-	KarString* functionName = kar_vartree_create_full_function_name("ПустойЛи", NULL, 0);
-	KarVartree* function = get_new_context(vars->standard.unclean, functionName, vars);
-	KarVartreeFunctionParams* params = kar_vartree_get_function_params(function);
-	KarLLVMFunction* llvmFunc = kar_llvm_data_get_function(llvmData, params, vars);
+	KarVartree* function = get_new_context(vars->standard.unclean, "ПустойЛи", NULL, 0, vars);
+	KarLLVMFunction* llvmFunc = kar_llvm_data_get_function(llvmData, function, vars);
 	LLVMValueRef expressionValue = LLVMBuildCall(llvmData->builder, kar_llvm_function_get_ref(llvmFunc), &left.value, 1, "var");
 
 	LLVMValueRef theFunction = LLVMGetBasicBlockParent(LLVMGetInsertBlock(llvmData->builder));
@@ -570,7 +610,8 @@ static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData
 	thenBlock = LLVMGetInsertBlock(llvmData->builder);
 
 	LLVMPositionBuilderAtEnd(llvmData->builder, elseBlock);
-	LLVMValueRef cleanLeft = LLVMBuildCall(llvmData->builder, getLLVMCleanFunctionByType(right.type->type, llvmData), &left.value, 1, llvmFunc->params->issueName);
+	KarVartreeFunctionParams* params = kar_vartree_get_function_params(function);
+	LLVMValueRef cleanLeft = LLVMBuildCall(llvmData->builder, getLLVMCleanFunctionByType(right.type->type, llvmData), &left.value, 1, params->issueName);
 	LLVMBuildBr(llvmData->builder, mergeBlock);
 	elseBlock = LLVMGetInsertBlock(llvmData->builder);
 
@@ -588,6 +629,9 @@ static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData
 static KarExpressionResult calc_expression(KarExpressionResult context, KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	// TODO: Проверить на компиляторе большое количество открывающихся и закрывающихся скобок.
 	switch (token->type) {
+
+	case (KAR_TOKEN_IDENTIFIER): return get_identifier(token, moduleName, vars, errors);
+
 	case (KAR_TOKEN_VAL_NULL): return get_val_null(vars);
 	case (KAR_TOKEN_VAL_TRUE): return get_val_true(vars);
 	case (KAR_TOKEN_VAL_FALSE): return get_val_false(vars);
@@ -599,11 +643,24 @@ static KarExpressionResult calc_expression(KarExpressionResult context, KarToken
 	case (KAR_TOKEN_VAL_MINUS_INFINITY): return get_val_minus_infinity(vars);
 	case (KAR_TOKEN_VAL_STRING): return get_val_char(token->str, llvmData, vars);
 
-	case(KAR_TOKEN_SIGN_OPEN_BRACES): return get_open_braces(context, token, llvmData, moduleName, vars, errors);
-	case(KAR_TOKEN_SIGN_GET_FIELD): return get_field(context, token, llvmData, moduleName, vars, errors);
-	case(KAR_TOKEN_SIGN_CALL_METHOD): return get_call_method(context, token, llvmData, moduleName, vars, errors);
-	case(KAR_TOKEN_SIGN_UNCLEAN): return get_sign_unclean(token, llvmData, moduleName, vars, errors);
-	case(KAR_TOKEN_SIGN_CLEAN): return get_sign_clean(token, llvmData, moduleName, vars, errors);
+	case (KAR_TOKEN_VAR_BOOL): return kar_expression_result_var(vars->standard.boolType);
+	case (KAR_TOKEN_VAR_INTEGER8): return kar_expression_result_var(vars->standard.int8Type);
+	case (KAR_TOKEN_VAR_INTEGER16): return kar_expression_result_var(vars->standard.int16Type);
+	case (KAR_TOKEN_VAR_INTEGER32): return kar_expression_result_var(vars->standard.int32Type);
+	case (KAR_TOKEN_VAR_INTEGER64): return kar_expression_result_var(vars->standard.int64Type);
+	case (KAR_TOKEN_VAR_UNSIGNED8): return kar_expression_result_var(vars->standard.unsigned8Type);
+	case (KAR_TOKEN_VAR_UNSIGNED16): return kar_expression_result_var(vars->standard.unsigned16Type);
+	case (KAR_TOKEN_VAR_UNSIGNED32): return kar_expression_result_var(vars->standard.unsigned32Type);
+	case (KAR_TOKEN_VAR_UNSIGNED64): return kar_expression_result_var(vars->standard.unsigned64Type);
+	case (KAR_TOKEN_VAR_FLOAT32): return kar_expression_result_var(vars->standard.float32Type);
+	case (KAR_TOKEN_VAR_FLOAT64): return kar_expression_result_var(vars->standard.float64Type);
+	case (KAR_TOKEN_VAR_STRING): return kar_expression_result_var(vars->standard.stringType);
+
+	case (KAR_TOKEN_SIGN_OPEN_BRACES): return get_open_braces(context, token, llvmData, moduleName, vars, errors);
+	case (KAR_TOKEN_SIGN_GET_FIELD): return get_field(context, token, llvmData, moduleName, vars, errors);
+	case (KAR_TOKEN_SIGN_CALL_METHOD): return get_call_method(context, token, llvmData, moduleName, vars, errors);
+	case (KAR_TOKEN_SIGN_UNCLEAN): return get_sign_unclean(token, llvmData, moduleName, vars, errors);
+	case (KAR_TOKEN_SIGN_CLEAN): return get_sign_clean(token, llvmData, moduleName, vars, errors);
 	default: return kar_expression_result_none();
 	}
 }

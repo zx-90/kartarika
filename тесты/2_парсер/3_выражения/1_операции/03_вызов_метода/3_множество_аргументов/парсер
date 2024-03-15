@@ -4,11 +4,11 @@ MODULE(1, 1): --
 			VAR_MODIFIER_PUBLIC(1, 1): --
 			MODIFIER_STAT(1, 10): --
 		BLOCK_BODY(1, 32): --
-			SIGN_GET_FIELD(1, 32): --
-				IDENTIFIER(1, 26): [Модуль]
-				SIGN_CALL_METHOD(1, 33): --
+			SIGN_CALL_METHOD(1, 32): --
+				SIGN_GET_FIELD(1, 32): --
+					IDENTIFIER(1, 26): [Модуль]
 					IDENTIFIER(1, 33): [Обработать]
-					SIGN_ARGUMENT(1, 44): --
-						VAL_INTEGER(1, 44): [8]
-					SIGN_ARGUMENT(1, 47): --
-						VAL_STRING(1, 47): [строка]
+				SIGN_ARGUMENT(1, 44): --
+					VAL_INTEGER(1, 44): [8]
+				SIGN_ARGUMENT(1, 47): --
+					VAL_STRING(1, 47): [строка]

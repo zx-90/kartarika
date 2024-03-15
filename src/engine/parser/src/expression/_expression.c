@@ -7,19 +7,17 @@
 #include "model/token.h"
 #include "model/project_error_list.h"
 
-bool kar_parser_make_call_method(KarToken* token);
-bool kar_parser_make_arguments(KarToken* token, KarString* moduleName, KarProjectErrorList* errors);
-bool kar_parser_make_path(KarToken* token, KarString* moduleName, KarProjectErrorList* errors);
+bool kar_parser_make_path_call(KarToken* token, KarString* moduleName, KarProjectErrorList* errors);
+bool kar_parser_make_method_arguments(KarToken* token, KarString* moduleName, KarProjectErrorList* errors);
 bool kar_parser_make_operands(KarToken* token, KarString* moduleName, KarProjectErrorList* errors);
 bool kar_parser_remove_spaces(KarToken* token);
 bool kar_parser_concat_single_minus_number(KarToken* token);
 
 bool kar_parser_parse_expression(KarToken* token, KarString* moduleName, KarProjectErrorList* errors) {
 	bool b = true;
-	b = b && kar_parser_make_call_method(token);
-	b = b && kar_parser_make_path(token, moduleName, errors);
+	b = b && kar_parser_make_path_call(token, moduleName, errors);
 	b = b && kar_parser_remove_spaces(token);
-	b = b && kar_parser_make_arguments(token, moduleName, errors);
+	b = b && kar_parser_make_method_arguments(token, moduleName, errors);
 	b = b && kar_parser_make_operands(token, moduleName, errors);
 	b = b && kar_parser_concat_single_minus_number(token);
 	return b;

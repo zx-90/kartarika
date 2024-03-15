@@ -11,29 +11,29 @@ MODULE(1, 1): --
 					VAL_INTEGER(2, 12): [3]
 				BLOCK_BODY(3, 1): --
 					COMMAND_EXPRESSION(3, 3): --
-						SIGN_GET_FIELD(3, 6): --
-							IDENTIFIER(3, 3): [Кар]
-							SIGN_CALL_METHOD(3, 7): --
+						SIGN_CALL_METHOD(3, 6): --
+							SIGN_GET_FIELD(3, 6): --
+								IDENTIFIER(3, 3): [Кар]
 								IDENTIFIER(3, 7): [Печатать]
-								SIGN_ARGUMENT(3, 16): --
-									IDENTIFIER(3, 16): [Б]
+							SIGN_ARGUMENT(3, 16): --
+								IDENTIFIER(3, 16): [Б]
 				SIGN_EQUAL(4, 15): --
 					IDENTIFIER(4, 13): [А]
 					VAL_INTEGER(4, 18): [4]
 				BLOCK_BODY(5, 1): --
 					COMMAND_EXPRESSION(5, 3): --
-						SIGN_GET_FIELD(5, 6): --
-							IDENTIFIER(5, 3): [Кар]
-							SIGN_CALL_METHOD(5, 7): --
+						SIGN_CALL_METHOD(5, 6): --
+							SIGN_GET_FIELD(5, 6): --
+								IDENTIFIER(5, 3): [Кар]
 								IDENTIFIER(5, 7): [Печатать]
-								SIGN_ARGUMENT(5, 16): --
-									IDENTIFIER(5, 16): [В]
+							SIGN_ARGUMENT(5, 16): --
+								IDENTIFIER(5, 16): [В]
 				VAL_TRUE(6, 2): --
 				BLOCK_BODY(7, 1): --
 					COMMAND_EXPRESSION(7, 3): --
-						SIGN_GET_FIELD(7, 6): --
-							IDENTIFIER(7, 3): [Кар]
-							SIGN_CALL_METHOD(7, 7): --
+						SIGN_CALL_METHOD(7, 6): --
+							SIGN_GET_FIELD(7, 6): --
+								IDENTIFIER(7, 3): [Кар]
 								IDENTIFIER(7, 7): [Печатать]
-								SIGN_ARGUMENT(7, 16): --
-									VAL_STRING(7, 16): [Неизвестное значение]
+							SIGN_ARGUMENT(7, 16): --
+								VAL_STRING(7, 16): [Неизвестное значение]

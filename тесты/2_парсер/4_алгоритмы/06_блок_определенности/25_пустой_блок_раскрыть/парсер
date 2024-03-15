@@ -14,9 +14,9 @@ MODULE(1, 1): --
 					COMMAND_PASS(3, 3): --
 				BLOCK_BODY(5, 1): --
 					COMMAND_EXPRESSION(5, 3): --
-						SIGN_GET_FIELD(5, 6): --
-							IDENTIFIER(5, 3): [Кар]
-							SIGN_CALL_METHOD(5, 7): --
+						SIGN_CALL_METHOD(5, 6): --
+							SIGN_GET_FIELD(5, 6): --
+								IDENTIFIER(5, 3): [Кар]
 								IDENTIFIER(5, 7): [Печатать]
-								SIGN_ARGUMENT(5, 16): --
-									VAL_STRING(5, 16): [У воина нет оружия!]
+							SIGN_ARGUMENT(5, 16): --
+								VAL_STRING(5, 16): [У воина нет оружия!]

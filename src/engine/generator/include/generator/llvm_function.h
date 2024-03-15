@@ -13,11 +13,11 @@
 #include "model/vartree_function_params.h"
 
 typedef struct {
-    KarVartreeFunctionParams* params;
+	KarVartree* var;
     LLVMValueRef value;
 } KarLLVMFunction;
 
-KarLLVMFunction* kar_llvm_function_create(KarVartreeFunctionParams* params);
+KarLLVMFunction* kar_llvm_function_create(KarVartree* var);
 void kar_llvm_function_free(KarLLVMFunction* func);
 
 void kar_llvm_function_init(KarLLVMFunction* func, LLVMModuleRef module, KarVars *vars);
