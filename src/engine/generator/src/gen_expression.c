@@ -501,8 +501,8 @@ static LLVMValueRef getLLVMCleanFunctionByType(KarVartypeElement type, KarLLVMDa
 
 static KarExpressionResult get_sign_unclean(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* leftToken = kar_token_child_get(token, 0);
-	KarExpressionResult leftResult = calc_expression(kar_expression_result_none(), leftToken, llvmData, moduleName, vars, errors);
-	KarVartree* varType = leftResult.type;
+	KarExpressionResult left = calc_expression(kar_expression_result_none(), leftToken, llvmData, moduleName, vars, errors);
+	KarVartree* varType = left.type;
 	if (varType == NULL) {
 		kar_project_error_list_create_add(errors, moduleName, &leftToken->cursor, 1, "Невозможно определить левую часть неопределённости.");
 		return kar_expression_result_none();
@@ -515,58 +515,65 @@ static KarExpressionResult get_sign_unclean(KarToken* token, KarLLVMData* llvmDa
 
 	KarExpressionResult right;
 	if (kar_token_child_count(token) == 1) {
-		right = get_val_null(vars);
+		if (left.value != NULL) {
+			right = left;
+		} else {
+			right = get_val_null(vars);
+		}
 	} else {
+		if (left.value != NULL) {
+			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Левая часть операции неопределённости - является значением, а не классом, при этом сеществует правая часть.");
+			return kar_expression_result_none();
+		}
 		right = calc_expression(kar_expression_result_none(), kar_token_child_get(token, 1), llvmData, moduleName, vars, errors);
 	}
 	if (kar_expression_result_is_none(right)) {
 		return kar_expression_result_none();
 	}
 
-	LLVMValueRef value;
+	KarExpressionResult res_clean;
+	res_clean.type = get_reduced_type(varType, vars);
+	res_clean.value = NULL;
 	if (right.type == vars->standard.nullType) {
-		value = LLVMBuildCall(llvmData->builder, llvmData->createPointer, &right.value, 1, "asdf");
+		res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->createPointer, &right.value, 1, "asdf");
 	} else {
-		KarExpressionResult left;
-		left.type = varType;
-		left.value = NULL;
 		bool b = get_convinient_type(&left, &right, llvmData, vars);
 		if (!b) {
 			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Типы левой и правой части неопределённости не совпадают.");
 			return kar_expression_result_none();
 		}
-		if (left.type == vars->standard.boolType) {
-			value = LLVMBuildCall(llvmData->builder, llvmData->cleanBool, &right.value, 1, "asdf");
-		} else if (left.type == vars->standard.int8Type) {
-			value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger8, &right.value, 1, "asdf");
-		} else if (left.type == vars->standard.int16Type) {
-			value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger16, &right.value, 1, "asdf");
-		} else if (left.type == vars->standard.int32Type) {
-			value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger32, &right.value, 1, "asdf");
-		} else if (left.type == vars->standard.int64Type) {
-			value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger64, &right.value, 1, "asdf");
-		} else if (left.type == vars->standard.unsigned8Type) {
-			value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned8, &right.value, 1, "asdf");
-		} else if (left.type == vars->standard.unsigned16Type) {
-			value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned16, &right.value, 1, "asdf");
-		} else if (left.type == vars->standard.unsigned32Type) {
-			value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned32, &right.value, 1, "asdf");
-		} else if (left.type == vars->standard.unsigned64Type) {
-			value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned64, &right.value, 1, "asdf");
-		} else if (left.type == vars->standard.float32Type) {
-			value = LLVMBuildCall(llvmData->builder, llvmData->cleanFloat32, &right.value, 1, "asdf");
-		} else if (left.type == vars->standard.float64Type) {
-			value = LLVMBuildCall(llvmData->builder, llvmData->cleanFloat64, &right.value, 1, "asdf");
-		} else if (left.type == vars->standard.stringType) {
-			value = LLVMBuildCall(llvmData->builder, llvmData->cleanString, &right.value, 1, "asdf");
+		if (res_clean.type == vars->standard.boolType) {
+			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanBool, &right.value, 1, "asdf");
+		} else if (res_clean.type == vars->standard.int8Type) {
+			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger8, &right.value, 1, "asdf");
+		} else if (res_clean.type == vars->standard.int16Type) {
+			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger16, &right.value, 1, "asdf");
+		} else if (res_clean.type == vars->standard.int32Type) {
+			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger32, &right.value, 1, "asdf");
+		} else if (res_clean.type == vars->standard.int64Type) {
+			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger64, &right.value, 1, "asdf");
+		} else if (res_clean.type == vars->standard.unsigned8Type) {
+			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned8, &right.value, 1, "asdf");
+		} else if (res_clean.type == vars->standard.unsigned16Type) {
+			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned16, &right.value, 1, "asdf");
+		} else if (res_clean.type == vars->standard.unsigned32Type) {
+			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned32, &right.value, 1, "asdf");
+		} else if (res_clean.type == vars->standard.unsigned64Type) {
+			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned64, &right.value, 1, "asdf");
+		} else if (res_clean.type == vars->standard.float32Type) {
+			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanFloat32, &right.value, 1, "asdf");
+		} else if (res_clean.type == vars->standard.float64Type) {
+			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanFloat64, &right.value, 1, "asdf");
+		} else if (res_clean.type == vars->standard.stringType) {
+			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanString, &right.value, 1, "asdf");
 		} else {
 			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Операция неопределённости для данного типа не поддерживается.");
 			return kar_expression_result_none();
 		}
 	}
 	KarExpressionResult result;
-	result.type = getUncleanVarByType(varType->type, vars);
-	result.value = value;
+	result.type = getUncleanVarByType(res_clean.type->type, vars);
+	result.value = res_clean.value;
 	return result;
 }
 
