@@ -41,65 +41,119 @@ static bool kar_expression_result_is_none(KarExpressionResult result) {
 	return (result.type == NULL && result.value == NULL);
 }
 
-static bool is_int_type_family(KarVartree* var, KarVars* vars) {
-	return
-		var == vars->standard.int8Type ||
-		var == vars->standard.int16Type ||
-		var == vars->standard.int32Type ||
-		var == vars->standard.int64Type ||
-		var == vars->standard.unsigned8Type ||
-		var == vars->standard.unsigned16Type ||
-		var == vars->standard.unsigned32Type ||
-		var == vars->standard.unsigned64Type;
-}
-
-static bool is_float_type_family(KarVartree* var, KarVars* vars) {
-	return
-		var == vars->standard.float32Type ||
-		var == vars->standard.float64Type;
-}
-
-static bool get_convinient_type(KarExpressionResult* var1, KarExpressionResult* var2, KarLLVMData *llvmData, KarVars *vars) {
-	if (var1->type == var2->type) {
-		return true;
-	}
+static bool cast_type(KarExpressionResult* varFrom, KarExpressionResult* varTo, KarLLVMData *llvmData, KarVars *vars) {
 	if (
-		var1->type == vars->standard.decimalType ||
-		var1->type == vars->standard.hexadecimalType
+		varFrom->type == vars->standard.decimalType
 	) {
-		if (is_int_type_family(var2->type, vars) || is_float_type_family(var2->type, vars)) {
+		if (varTo->type == vars->standard.int8Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMTrunc, varFrom->value, LLVMInt8Type(), "decimal_to_int8");
+			return true;
+		} else if (varTo->type == vars->standard.int16Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMTrunc, varFrom->value, LLVMInt16Type(), "decimal_to_int16");
+			return true;
+		} else if (varTo->type == vars->standard.int32Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMTrunc, varFrom->value, LLVMInt32Type(), "decimal_to_int32");
+			return true;
+		} else if (varTo->type == vars->standard.int64Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMTrunc, varFrom->value, LLVMInt64Type(), "decimal_to_int64");
+			return true;
+		} else if (varTo->type == vars->standard.unsigned8Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMTrunc, varFrom->value, LLVMInt8Type(), "decimal_to_unsigned8");
+			return true;
+		} else if (varTo->type == vars->standard.unsigned16Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMTrunc, varFrom->value, LLVMInt16Type(), "decimal_to_unsigned16");
+			return true;
+		} else if (varTo->type == vars->standard.unsigned32Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMTrunc, varFrom->value, LLVMInt32Type(), "decimal_to_unsigned32");
+			return true;
+		} else if (varTo->type == vars->standard.unsigned64Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMTrunc, varFrom->value, LLVMInt64Type(), "decimal_to_unsigned64");
+			return true;
+		} else if (varTo->type == vars->standard.float32Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMSIToFP, varFrom->value, LLVMInt64Type(), "decimal_to_float32");
+			return true;
+		} else if (varTo->type == vars->standard.float64Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMSIToFP, varFrom->value, LLVMInt64Type(), "decimal_to_float64");
 			return true;
 		}
-		// TODO: Вместо float64 надо использовать 0float до определения типа.
-	} else if (var1->type == vars->standard.float64Type) {
-		if (var2->type == vars->standard.float32Type) {
-			var1->type = vars->standard.float32Type;
-			var1->value = LLVMBuildCast(llvmData->builder, LLVMFPTrunc, var1->value, LLVMFloatType(), "double_to_float");
+	} else if (varFrom->type == vars->standard.hexadecimalType) {
+		if (varTo->type == vars->standard.int8Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMTrunc, varFrom->value, LLVMInt8Type(), "hex_to_int8");
+			return true;
+		} else if (varTo->type == vars->standard.int16Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMTrunc, varFrom->value, LLVMInt16Type(), "hex_to_int16");
+			return true;
+		} else if (varTo->type == vars->standard.int32Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMTrunc, varFrom->value, LLVMInt32Type(), "hex_to_int32");
+			return true;
+		} else if (varTo->type == vars->standard.int64Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMTrunc, varFrom->value, LLVMInt64Type(), "hex_to_int64");
+			return true;
+		} else if (varTo->type == vars->standard.unsigned8Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMTrunc, varFrom->value, LLVMInt8Type(), "hex_to_unsigned8");
+			return true;
+		} else if (varTo->type == vars->standard.unsigned16Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMTrunc, varFrom->value, LLVMInt16Type(), "hex_to_unsigned16");
+			return true;
+		} else if (varTo->type == vars->standard.unsigned32Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMTrunc, varFrom->value, LLVMInt32Type(), "hex_to_unsigned32");
+			return true;
+		} else if (varTo->type == vars->standard.unsigned64Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMTrunc, varFrom->value, LLVMInt64Type(), "hex_to_unsigned64");
+			return true;
+		} else if (varTo->type == vars->standard.float32Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMUIToFP, varFrom->value, LLVMInt64Type(), "hex_to_float32");
+			return true;
+		} else if (varTo->type == vars->standard.float64Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMUIToFP, varFrom->value, LLVMInt64Type(), "hex_to_float64");
 			return true;
 		}
-	} else if (
-		var2->type == vars->standard.decimalType ||
-		var2->type == vars->standard.hexadecimalType
-	) {
-		if (is_int_type_family(var1->type, vars) || is_float_type_family(var1->type, vars)) {
+	} else if (varFrom->type == vars->standard.literalFloat) {
+		if (varTo->type == vars->standard.float32Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMFPTrunc, varFrom->value, LLVMFloatType(), "literal_double_to_float");
 			return true;
-		}
-		// TODO: Вместо float64 надо использовать 0float до определения типа.
-	} else if (var2->type == vars->standard.float64Type) {
-		if (var1->type == vars->standard.float32Type) {
-			var2->type = vars->standard.float32Type;
-			var2->value = LLVMBuildCast(llvmData->builder, LLVMFPTrunc, var2->value, LLVMFloatType(), "double_to_float");
+		} else if (varTo->type == vars->standard.float64Type) {
+			varFrom->type = varTo->type;
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMFPTrunc, varFrom->value, LLVMDoubleType(), "literal_double_to_double");
 			return true;
 		}
 	}
 	return false;
 }
 
+static bool check_and_cast_types(KarExpressionResult* var1, KarExpressionResult* var2, KarLLVMData *llvmData, KarVars *vars) {
+	if (var1->type == var2->type) {
+		return true;
+	}
+	return cast_type(var1, var2, llvmData, vars) ||
+			cast_type(var2, var1, llvmData, vars);
+}
+
 static KarExpressionResult calc_expression(KarExpressionResult context, KarToken* token, KarLLVMData *llvmData, KarString *moduleName, KarVars *vars, KarProjectErrorList *errors);
 
 static KarExpressionResult  get_val_null(KarVars* vars) {
 	KarExpressionResult result;
-	// TODO: Необходимо добавить в анализатор тип для Пусто.
 	result.type = vars->standard.nullType;
 	result.value = LLVMConstNull(LLVMInt8Type());
 	return result;
@@ -216,28 +270,28 @@ static KarExpressionResult get_val_float(KarToken* token, KarString* moduleName,
 	}
 
 	KarExpressionResult result;
-	result.type = vars->standard.float64Type;
+	result.type = vars->standard.literalFloat;
 	result.value = LLVMConstReal(LLVMDoubleType(), d);
 	return result;
 }
 
 static KarExpressionResult get_val_nan(KarVars* vars) {
 	KarExpressionResult result;
-	result.type = vars->standard.float64Type;
+	result.type = vars->standard.literalFloat;
 	result.value = LLVMConstReal(LLVMDoubleType(), DNAN);
 	return result;
 }
 
 static KarExpressionResult get_val_infinity(KarVars* vars) {
 	KarExpressionResult result;
-	result.type = vars->standard.float64Type;
+	result.type = vars->standard.literalFloat;
 	result.value = LLVMConstReal(LLVMDoubleType(), INFINITY);
 	return result;
 }
 
 static KarExpressionResult get_val_minus_infinity(KarVars* vars) {
 	KarExpressionResult result;
-	result.type = vars->standard.float64Type;
+	result.type = vars->standard.literalFloat;
 	result.value = LLVMConstReal(LLVMDoubleType(), -INFINITY);
 	return result;
 }
@@ -278,6 +332,9 @@ static KarVartree* get_reduced_type(KarVartree* type, KarVars* vars) {
 	if (type == vars->standard.hexadecimalType) {
 		return vars->standard.unsigned32Type;
 	}
+	if (type == vars->standard.literalFloat) {
+		return vars->standard.float64Type;
+	}
 	return type;
 }
 
@@ -287,6 +344,9 @@ static KarVartree* get_reduced64_type(KarVartree* type, KarVars* vars) {
 	}
 	if (type == vars->standard.hexadecimalType) {
 		return vars->standard.unsigned64Type;
+	}
+	if (type == vars->standard.literalFloat) {
+		return vars->standard.float64Type;
 	}
 	return type;
 }
@@ -300,7 +360,6 @@ static KarExpressionResult get_field(KarExpressionResult context, KarToken* toke
 	KarToken* right = kar_token_child_get(token, 1);
 
 	KarExpressionResult leftRes = calc_expression(context, left, llvmData, moduleName, vars, errors);
-	// TODO: Надо ещё правильно вычислять значения, если левый операнд имеет не пустое поле value.
 	if (leftRes.value != NULL) {
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Левый операнд должен быть классом, а не экземпляром класса.");
 		return kar_expression_result_none();
@@ -507,7 +566,7 @@ static KarExpressionResult get_sign_unclean(KarToken* token, KarLLVMData* llvmDa
 		kar_project_error_list_create_add(errors, moduleName, &leftToken->cursor, 1, "Невозможно определить левую часть неопределённости.");
 		return kar_expression_result_none();
 	}
-	LLVMValueRef func = getLLVMCleanFunctionByType(varType->type, llvmData);
+	LLVMValueRef func = getLLVMCleanFunctionByType(get_reduced_type(varType, vars)->type, llvmData);
 	if (func == NULL) {
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Левая часть операции неопределённости не является классом.");
 		return kar_expression_result_none();
@@ -537,7 +596,7 @@ static KarExpressionResult get_sign_unclean(KarToken* token, KarLLVMData* llvmDa
 	if (right.type == vars->standard.nullType) {
 		res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->createPointer, &right.value, 1, "asdf");
 	} else {
-		bool b = get_convinient_type(&left, &right, llvmData, vars);
+		bool b = check_and_cast_types(&left, &right, llvmData, vars);
 		if (!b) {
 			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Типы левой и правой части неопределённости не совпадают.");
 			return kar_expression_result_none();
@@ -578,10 +637,6 @@ static KarExpressionResult get_sign_unclean(KarToken* token, KarLLVMData* llvmDa
 }
 
 static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
-	// TODO: Надо правильно обрабатывать взаимодействие типов и числовых литералов.
-	//       Например, выражение Целое8?(0) ! 0 не будет работать, так как справа
-	//       тип Целое8!, а слева число 0 приводится к типу Целое32, но это число
-	//       должно приводиться к типу Целое 8 в данном случае.
 	KarToken* leftToken = kar_token_child_get(token, 0);
 	KarExpressionResult left = calc_expression(kar_expression_result_none(), leftToken, llvmData, moduleName, vars, errors);
 	if (!left.type || left.type->type != KAR_VARTYPE_UNCLEAN_CLASS) {
@@ -609,7 +664,9 @@ static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData
 	LLVMPositionBuilderAtEnd(llvmData->builder, thenBlock);
 	KarToken* rightToken = kar_token_child_get(token, 1);
 	KarExpressionResult right = calc_expression(kar_expression_result_none(), rightToken, llvmData, moduleName, vars, errors);
-	if (right.type != kar_vartree_get_unclean_class(left.type)) {
+	//KarVartree* cleanLeft = kar_vartree_args_get(left.type, 0);
+	KarExpressionResult cleanLeft = kar_expression_result_var(kar_vartree_args_get(left.type, 0));
+	if (!check_and_cast_types(&cleanLeft, &right, llvmData, vars)) {
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "В операции раскрытия типы левой и правой части не совпадают.");
 		return kar_expression_result_none();
 	}
@@ -618,17 +675,17 @@ static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData
 
 	LLVMPositionBuilderAtEnd(llvmData->builder, elseBlock);
 	KarVartreeFunctionParams* params = kar_vartree_get_function_params(function);
-	LLVMValueRef cleanLeft = LLVMBuildCall(llvmData->builder, getLLVMCleanFunctionByType(right.type->type, llvmData), &left.value, 1, params->issueName);
+	LLVMValueRef cleanLeftValue = LLVMBuildCall(llvmData->builder, getLLVMCleanFunctionByType(cleanLeft.type->type, llvmData), &left.value, 1, params->issueName);
 	LLVMBuildBr(llvmData->builder, mergeBlock);
 	elseBlock = LLVMGetInsertBlock(llvmData->builder);
 
 	LLVMPositionBuilderAtEnd(llvmData->builder, mergeBlock);
 	LLVMValueRef phi = LLVMBuildPhi(llvmData->builder, LLVMTypeOf(right.value), "ph");
 	LLVMAddIncoming(phi, &right.value, &thenBlock, 1);
-	LLVMAddIncoming(phi, &cleanLeft, &elseBlock, 1);
+	LLVMAddIncoming(phi, &cleanLeftValue, &elseBlock, 1);
 
 	KarExpressionResult result;
-	result.type = right.type;
+	result.type = cleanLeft.type;
 	result.value = phi;
 	return result;
 }

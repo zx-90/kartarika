@@ -17,6 +17,9 @@ typedef enum {
 	KAR_VARTYPE_UNKNOWN,
 	
 	KAR_VARTYPE_BOOL,
+	KAR_VARTYPE_0INTEGER,
+	KAR_VARTYPE_0HEX,
+	KAR_VARTYPE_0FLOAT,
 	KAR_VARTYPE_INTEGER8,
 	KAR_VARTYPE_INTEGER16,
 	KAR_VARTYPE_INTEGER32,
@@ -79,6 +82,9 @@ KarVartree* kar_vartree_create_integer64(const KarString* name);
 KarVartree* kar_vartree_create_integer32(const KarString* name);
 KarVartree* kar_vartree_create_integer16(const KarString* name);
 KarVartree* kar_vartree_create_integer8(const KarString* name);
+KarVartree* kar_vartree_create_0float(const KarString* name);
+KarVartree* kar_vartree_create_0hex(const KarString* name);
+KarVartree* kar_vartree_create_0integer(const KarString* name);
 KarVartree* kar_vartree_create_bool(const KarString* name);
 
 void kar_vartree_free(KarVartree* vartree);

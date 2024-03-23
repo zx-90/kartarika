@@ -16,7 +16,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_BINARY_DIR}/bin)
 endif()
 
 if(MSVC)
-	# TODO: Добавить опции компилятора для более строгой проверки кода.
+	# TODO: Р”РѕР±Р°РІРёС‚СЊ РѕРїС†РёРё РєРѕРјРїРёР»СЏС‚РѕСЂР° РґР»СЏ Р±РѕР»РµРµ СЃС‚СЂРѕРіРѕР№ РїСЂРѕРІРµСЂРєРё РєРѕРґР°.
 	add_compile_options(/Y-)
 else()
 	add_compile_options(-Werror -Wall -Wextra -Wpedantic -Wcast-align -Wcast-qual -Wconversion -Wenum-compare -Wfloat-equal -Wredundant-decls -Wsign-conversion)

@@ -19,6 +19,7 @@ typedef struct {
 
 		KarVartree* decimalType;
 		KarVartree* hexadecimalType;
+		KarVartree* literalFloat;
 
 		KarVartree* int8Type;
         KarVartree* int16Type;

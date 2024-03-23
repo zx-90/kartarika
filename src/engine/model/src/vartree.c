@@ -158,6 +158,18 @@ KarVartree* kar_vartree_create_integer8(const KarString* name) {
 	return vartree_create_name(KAR_VARTYPE_INTEGER8, name);
 }
 
+KarVartree* kar_vartree_create_0float(const KarString* name) {
+	return vartree_create_name(KAR_VARTYPE_0FLOAT, name);
+}
+
+KarVartree* kar_vartree_create_0hex(const KarString* name) {
+	return vartree_create_name(KAR_VARTYPE_0HEX, name);
+}
+
+KarVartree* kar_vartree_create_0integer(const KarString* name) {
+	return vartree_create_name(KAR_VARTYPE_0INTEGER, name);
+}
+
 KarVartree* kar_vartree_create_bool(const KarString* name) {
 	return vartree_create_name(KAR_VARTYPE_BOOL, name);
 }

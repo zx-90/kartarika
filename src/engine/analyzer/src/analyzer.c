@@ -33,12 +33,12 @@ static bool fill_standard_lib(KarVars* vars) {
 	KarVartree* type_bool = kar_vartree_create_bool("Буль");
 	kar_vartree_child_add(types, type_bool);
 	
-	// TODO: Здесь не create_bool, здесь для них специальные функции надо написать.
-	// TODO: Добавить 0Дробное.
-	KarVartree* type_decimal = kar_vartree_create_bool("0Десятичное");
+	KarVartree* type_decimal = kar_vartree_create_0integer("0Десятичное");
 	kar_vartree_child_add(types, type_decimal);
-	KarVartree* type_hexadecimal = kar_vartree_create_bool("0Шестнадцатеричное");
+	KarVartree* type_hexadecimal = kar_vartree_create_0hex("0Шестнадцатеричное");
 	kar_vartree_child_add(types, type_hexadecimal);
+	KarVartree* type_0float = kar_vartree_create_0float("0Дробное");
+	kar_vartree_child_add(types, type_0float);
 
 	KarVartree* type_integer8 = kar_vartree_create_integer8("Целое8");
 	kar_vartree_child_add(types, type_integer8);
@@ -113,6 +113,8 @@ static bool fill_standard_lib(KarVars* vars) {
 	kar_vartree_child_add(types, type_float);
 	
 	// Неопределённости.
+	// TODO: Имена функций и переменных в библиотеке должны начинаться на "_kartarika_library".
+	//       Необходимо проверить здесь и далее.
 	KarVartree* type_unclean = kar_vartree_create_unclean("Неопределённость");
 	kar_vartree_child_add(types, type_unclean);
 	kar_vartree_child_add(type_unclean, kar_vartree_create_function("ПустойЛи", DYNAMIC | PUBLIC, "_kartarika_unclean_is_empty", NULL, 0, type_bool));
@@ -361,7 +363,6 @@ static bool fill_standard_lib(KarVars* vars) {
 	kar_vartree_child_add(type_console, kar_vartree_create_function("Вывод", STATIC | PUBLIC, "_kartarika_library_write_float32", &type_float32, 1, NULL));
 	kar_vartree_child_add(type_console, kar_vartree_create_function("Вывод", STATIC | PUBLIC, "_kartarika_library_write_float64", &type_float64, 1, NULL));
 	kar_vartree_child_add(type_console, kar_vartree_create_function("Вывод", STATIC | PUBLIC, "_kartarika_library_write_float64", &type_float, 1, NULL));
-	// TODO: Поменять функцию на "_kartarika_library_write_string"
 	kar_vartree_child_add(type_console, kar_vartree_create_function("Вывод", STATIC | PUBLIC, "_kartarika_library_write_string", &type_string, 1, NULL));
 
     KarVartree* type_thread_error = kar_vartree_create_class("ПотокОшибок");
@@ -400,6 +401,7 @@ static bool fill_standard_lib(KarVars* vars) {
 	vars->standard.boolType = type_bool;
 	vars->standard.decimalType = type_decimal;
 	vars->standard.hexadecimalType = type_hexadecimal;
+	vars->standard.literalFloat = type_0float;
 	vars->standard.int8Type = type_integer8;
     vars->standard.int16Type = type_integer16;
     vars->standard.int32Type = type_integer32;
