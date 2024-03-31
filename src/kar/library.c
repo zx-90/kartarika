@@ -562,6 +562,10 @@ _kartarika_smart_pointer*  _kartarika_library_convert_float##num1##_to_integer##
 	}\
 	int##num2##_t* b = (int##num2##_t*)malloc(sizeof(int##num2##_t));\
 	*b = value;\
+	if ((value > 0.0 && *b < 0) || (value < 0.0 && *b > 0)) {\
+		free(b);\
+		return _kartarika_smart_pointer_create(NULL);\
+	}\
 	return _kartarika_smart_pointer_create(b);\
 }
 
@@ -575,12 +579,13 @@ _KARTARIKA_CONVERT_FLOAT_TO_INTEGER(64, 32)
 _KARTARIKA_CONVERT_FLOAT_TO_INTEGER(64, 64)
 
 // TODO: Приведение к long double для сравнения не кажется хорошей идеей. Подумать.
+// TODO: Странное сравнение ((long double)value >= (long double)UINT##num2##_MAX + 1) из-за глюка в VS.
 #define _KARTARIKA_CONVERT_FLOAT_TO_UNSIGNED(num1, num2)\
 _kartarika_smart_pointer*  _kartarika_library_convert_float##num1##_to_unsigned##num2(float##num1##_t value) {\
 	if (value != value) {\
 		return _kartarika_smart_pointer_create(NULL);\
 	}\
-	if ((long double)value > (long double)UINT##num2##_MAX || (long double)value <= (long double)-1.0) {\
+	if ((long double)value >= (long double)UINT##num2##_MAX + 1 || (long double)value <= (long double)-1.0) {\
 		return _kartarika_smart_pointer_create(NULL);\
 	}\
 	uint##num2##_t* b = (uint##num2##_t*)malloc(sizeof(uint##num2##_t));\
