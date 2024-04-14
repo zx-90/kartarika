@@ -39,6 +39,10 @@ KarLLVMData* kar_llvm_data_create(LLVMContextRef context, LLVMModuleRef module, 
 	LLVMTypeRef freeFuncType = LLVMFunctionType(LLVMVoidType(), &pointerType, 1, false);
 	result->freePointer = LLVMAddFunction(module, "_kartarika_smart_pointer_free", freeFuncType);
 
+	LLVMTypeRef addStringFuncIn[] = {pointerType, pointerType};
+	LLVMTypeRef addStringFuncType = LLVMFunctionType(pointerType, addStringFuncIn, 2, false);
+	result->addString = LLVMAddFunction(module, "_kartarika_library_string_sum", addStringFuncType);
+
 	LLVMTypeRef createStringFuncType = LLVMFunctionType(pointerType, &pointerType, 1, false);
 	result->createString = LLVMAddFunction(module, "_kartarika_library_string_create", createStringFuncType);
 

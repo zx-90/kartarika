@@ -79,11 +79,11 @@ static bool cast_type(KarExpressionResult* varFrom, KarExpressionResult* varTo, 
 			return true;
 		} else if (varTo->type == vars->standard.float32Type) {
 			varFrom->type = varTo->type;
-			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMSIToFP, varFrom->value, LLVMInt64Type(), "decimal_to_float32");
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMSIToFP, varFrom->value, LLVMFloatType(), "decimal_to_float32");
 			return true;
 		} else if (varTo->type == vars->standard.float64Type) {
 			varFrom->type = varTo->type;
-			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMSIToFP, varFrom->value, LLVMInt64Type(), "decimal_to_float64");
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMSIToFP, varFrom->value, LLVMDoubleType(), "decimal_to_float64");
 			return true;
 		}
 	} else if (varFrom->type == vars->standard.hexadecimalType) {
@@ -121,11 +121,11 @@ static bool cast_type(KarExpressionResult* varFrom, KarExpressionResult* varTo, 
 			return true;
 		} else if (varTo->type == vars->standard.float32Type) {
 			varFrom->type = varTo->type;
-			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMUIToFP, varFrom->value, LLVMInt64Type(), "hex_to_float32");
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMUIToFP, varFrom->value, LLVMFloatType(), "hex_to_float32");
 			return true;
 		} else if (varTo->type == vars->standard.float64Type) {
 			varFrom->type = varTo->type;
-			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMUIToFP, varFrom->value, LLVMInt64Type(), "hex_to_float64");
+			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMUIToFP, varFrom->value, LLVMDoubleType(), "hex_to_float64");
 			return true;
 		}
 	} else if (varFrom->type == vars->standard.literalFloat) {
@@ -710,7 +710,7 @@ static KarExpressionResult get_sign_single_plus(KarToken* token, KarLLVMData* ll
 		return res;
 	}
 	KarString* path = kar_vartree_create_full_path(get_reduced_type(res.type, vars));
-	KarString* errorText = kar_string_create_format("Операция унарный плюс недопустима для типа\"%s\".", path);
+	KarString* errorText = kar_string_create_format("Операция унарный плюс недопустима для типа \"%s\".", path);
 	kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
 	KAR_FREE(path);
 	KAR_FREE(errorText);
@@ -742,7 +742,62 @@ static KarExpressionResult get_sign_single_minus(KarToken* token, KarLLVMData* l
 		return res;
 	}
 	KarString* path = kar_vartree_create_full_path(get_reduced_type(res.type, vars));
-	KarString* errorText = kar_string_create_format("Операция унарный минус недопустима для типа\"%s\".", path);
+	KarString* errorText = kar_string_create_format("Операция унарный минус недопустима для типа \"%s\".", path);
+	kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
+	KAR_FREE(path);
+	KAR_FREE(errorText);
+	return kar_expression_result_none();
+}
+
+static KarExpressionResult get_sign_plus(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	KarToken* left = kar_token_child_get(token, 0);
+	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarToken* right = kar_token_child_get(token, 1);
+	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
+		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
+		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
+		KarString* errorText = kar_string_create_format("Операция плюс недопустима для типов \"%s\" и \"%s\".", pathLeft, pathRight);
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
+		KAR_FREE(pathLeft);
+		KAR_FREE(pathRight);
+		KAR_FREE(errorText);
+		return kar_expression_result_none();
+	}
+	if (leftRes.type == vars->standard.decimalType ||
+		leftRes.type == vars->standard.hexadecimalType ||
+		leftRes.type == vars->standard.int8Type ||
+		leftRes.type == vars->standard.int16Type ||
+		leftRes.type == vars->standard.int32Type ||
+		leftRes.type == vars->standard.int64Type ||
+		leftRes.type == vars->standard.unsigned8Type ||
+		leftRes.type == vars->standard.unsigned16Type ||
+		leftRes.type == vars->standard.unsigned32Type ||
+		leftRes.type == vars->standard.unsigned64Type
+	) {
+		KarExpressionResult res = kar_expression_result_none();
+		res.type = leftRes.type;
+		res.value = LLVMBuildAdd(llvmData->builder, leftRes.value, rightRes.value, "sum");
+		return res;
+	}
+	if (leftRes.type == vars->standard.literalFloat ||
+		leftRes.type == vars->standard.float32Type ||
+		leftRes.type == vars->standard.float64Type
+	) {
+		KarExpressionResult res = kar_expression_result_none();
+		res.type = leftRes.type;
+		res.value = LLVMBuildFAdd(llvmData->builder, leftRes.value, rightRes.value, "sum");
+		return res;
+	}
+	if (leftRes.type == vars->standard.stringType) {
+		KarExpressionResult res = kar_expression_result_none();
+		res.type = leftRes.type;
+		LLVMValueRef in[] = {leftRes.value, rightRes.value};
+		res.value = LLVMBuildCall(llvmData->builder, llvmData->addString, in, 2, "sumString");
+		return res;
+	}
+	KarString* path = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
+	KarString* errorText = kar_string_create_format("Операция унарный плюс недопустима для типа \"%s\".", path);
 	kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
 	KAR_FREE(path);
 	KAR_FREE(errorText);
@@ -787,6 +842,7 @@ static KarExpressionResult calc_expression(KarToken* token, KarLLVMData* llvmDat
 
 	case (KAR_TOKEN_SIGN_SINGLE_PLUS): return get_sign_single_plus(token, llvmData, moduleName, vars, errors);
 	case (KAR_TOKEN_SIGN_SINGLE_MINUS): return get_sign_single_minus(token, llvmData, moduleName, vars, errors);
+	case (KAR_TOKEN_SIGN_PLUS): return get_sign_plus(token, llvmData, moduleName, vars, errors);
 	default:
 		// TODO: В сообщении об ошибке добавить тип оператора.
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Неизвестный оператор.");
