@@ -705,23 +705,44 @@ static KarExpressionResult get_sign_single_plus(KarToken* token, KarLLVMData* ll
 		res.type == vars->standard.unsigned32Type ||
 		res.type == vars->standard.unsigned64Type ||
 		res.type == vars->standard.float32Type ||
-		res.type == vars->standard.float64Type ||
-
-		res.type == vars->standard.uncleanInt8 ||
-		res.type == vars->standard.uncleanInt16 ||
-		res.type == vars->standard.uncleanInt32 ||
-		res.type == vars->standard.uncleanInt64 ||
-		res.type == vars->standard.uncleanUnsigned8 ||
-		res.type == vars->standard.uncleanUnsigned16 ||
-		res.type == vars->standard.uncleanUnsigned32 ||
-		res.type == vars->standard.uncleanUnsigned64 ||
-		res.type == vars->standard.uncleanFloat32 ||
-		res.type == vars->standard.uncleanFloat64
+		res.type == vars->standard.float64Type
 	) {
 		return res;
 	}
 	KarString* path = kar_vartree_create_full_path(get_reduced_type(res.type, vars));
 	KarString* errorText = kar_string_create_format("Операция унарный плюс недопустима для типа\"%s\".", path);
+	kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
+	KAR_FREE(path);
+	KAR_FREE(errorText);
+	return kar_expression_result_none();
+}
+
+static KarExpressionResult get_sign_single_minus(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	KarToken* child = kar_token_child_get(token, 0);
+	KarExpressionResult res = calc_expression(child, llvmData, moduleName, vars, errors);
+	if (res.type == vars->standard.decimalType ||
+		res.type == vars->standard.hexadecimalType ||
+		res.type == vars->standard.int8Type ||
+		res.type == vars->standard.int16Type ||
+		res.type == vars->standard.int32Type ||
+		res.type == vars->standard.int64Type ||
+		res.type == vars->standard.unsigned8Type ||
+		res.type == vars->standard.unsigned16Type ||
+		res.type == vars->standard.unsigned32Type ||
+		res.type == vars->standard.unsigned64Type
+	) {
+		res.value = LLVMBuildNeg(llvmData->builder, res.value, "unary_minus");
+		return res;
+	}
+	if (res.type == vars->standard.literalFloat ||
+		res.type == vars->standard.float32Type ||
+		res.type == vars->standard.float64Type
+	) {
+		res.value = LLVMBuildFNeg(llvmData->builder, res.value, "unary_minus");
+		return res;
+	}
+	KarString* path = kar_vartree_create_full_path(get_reduced_type(res.type, vars));
+	KarString* errorText = kar_string_create_format("Операция унарный минус недопустима для типа\"%s\".", path);
 	kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
 	KAR_FREE(path);
 	KAR_FREE(errorText);
@@ -765,6 +786,7 @@ static KarExpressionResult calc_expression(KarToken* token, KarLLVMData* llvmDat
 	case (KAR_TOKEN_SIGN_CLEAN): return get_sign_clean(token, llvmData, moduleName, vars, errors);
 
 	case (KAR_TOKEN_SIGN_SINGLE_PLUS): return get_sign_single_plus(token, llvmData, moduleName, vars, errors);
+	case (KAR_TOKEN_SIGN_SINGLE_MINUS): return get_sign_single_minus(token, llvmData, moduleName, vars, errors);
 	default:
 		// TODO: В сообщении об ошибке добавить тип оператора.
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Неизвестный оператор.");
