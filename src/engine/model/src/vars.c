@@ -10,6 +10,9 @@ static void clean_standard(KarVars* vars) {
 	vars->standard.nullType = NULL;
 
 	vars->standard.boolType = NULL;
+	vars->standard.decimalType = NULL;
+	vars->standard.hexadecimalType = NULL;
+	vars->standard.literalFloatType = NULL;
 	vars->standard.int8Type = NULL;
 	vars->standard.int16Type = NULL;
 	vars->standard.int32Type = NULL;
@@ -26,6 +29,9 @@ static void clean_standard(KarVars* vars) {
 	vars->standard.stringType = NULL;
 
 	vars->standard.uncleanBool = NULL;
+	vars->standard.uncleanDecimal = NULL;
+	vars->standard.uncleanHexadecimal = NULL;
+	vars->standard.uncleanLiteralFloat = NULL;
 	vars->standard.uncleanInt8 = NULL;
 	vars->standard.uncleanInt16 = NULL;
 	vars->standard.uncleanInt32 = NULL;

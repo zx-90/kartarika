@@ -128,7 +128,7 @@ static bool cast_type(KarExpressionResult* varFrom, KarExpressionResult* varTo, 
 			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMUIToFP, varFrom->value, LLVMDoubleType(), "hex_to_float64");
 			return true;
 		}
-	} else if (varFrom->type == vars->standard.literalFloat) {
+	} else if (varFrom->type == vars->standard.literalFloatType) {
 		if (varTo->type == vars->standard.float32Type) {
 			varFrom->type = varTo->type;
 			varFrom->value = LLVMBuildCast(llvmData->builder, LLVMFPTrunc, varFrom->value, LLVMFloatType(), "literal_double_to_float");
@@ -270,28 +270,28 @@ static KarExpressionResult get_val_float(KarToken* token, KarString* moduleName,
 	}
 
 	KarExpressionResult result;
-	result.type = vars->standard.literalFloat;
+	result.type = vars->standard.literalFloatType;
 	result.value = LLVMConstReal(LLVMDoubleType(), d);
 	return result;
 }
 
 static KarExpressionResult get_val_nan(KarVars* vars) {
 	KarExpressionResult result;
-	result.type = vars->standard.literalFloat;
+	result.type = vars->standard.literalFloatType;
 	result.value = LLVMConstReal(LLVMDoubleType(), DNAN);
 	return result;
 }
 
 static KarExpressionResult get_val_infinity(KarVars* vars) {
 	KarExpressionResult result;
-	result.type = vars->standard.literalFloat;
+	result.type = vars->standard.literalFloatType;
 	result.value = LLVMConstReal(LLVMDoubleType(), INFINITY);
 	return result;
 }
 
 static KarExpressionResult get_val_minus_infinity(KarVars* vars) {
 	KarExpressionResult result;
-	result.type = vars->standard.literalFloat;
+	result.type = vars->standard.literalFloatType;
 	result.value = LLVMConstReal(LLVMDoubleType(), -INFINITY);
 	return result;
 }
@@ -332,7 +332,7 @@ static KarVartree* get_reduced_type(KarVartree* type, KarVars* vars) {
 	if (type == vars->standard.hexadecimalType) {
 		return vars->standard.unsigned32Type;
 	}
-	if (type == vars->standard.literalFloat) {
+	if (type == vars->standard.literalFloatType) {
 		return vars->standard.float64Type;
 	}
 	return type;
@@ -345,7 +345,7 @@ static KarVartree* get_reduced64_type(KarVartree* type, KarVars* vars) {
 	if (type == vars->standard.hexadecimalType) {
 		return vars->standard.unsigned64Type;
 	}
-	if (type == vars->standard.literalFloat) {
+	if (type == vars->standard.literalFloatType) {
 		return vars->standard.float64Type;
 	}
 	return type;
@@ -542,6 +542,9 @@ static KarVartree* getUncleanVarByType(KarVartypeElement type, KarVars* vars) {
 static LLVMValueRef getLLVMCleanFunctionByType(KarVartypeElement type, KarLLVMData* llvmData) {
 	switch (type) {
 		case KAR_VARTYPE_BOOL: return llvmData->uncleanBool;
+		case KAR_VARTYPE_0INTEGER: return llvmData->uncleanInteger64;
+		case KAR_VARTYPE_0HEX: return llvmData->uncleanUnsigned64;
+		case KAR_VARTYPE_0FLOAT: return llvmData->uncleanFloat64;
 		case KAR_VARTYPE_INTEGER8: return llvmData->uncleanInteger8;
 		case KAR_VARTYPE_INTEGER16: return llvmData->uncleanInteger16;
 		case KAR_VARTYPE_INTEGER32: return llvmData->uncleanInteger32;
@@ -556,6 +559,60 @@ static LLVMValueRef getLLVMCleanFunctionByType(KarVartypeElement type, KarLLVMDa
 		default: return NULL;
 	}
 	return NULL;
+}
+
+static KarExpressionResult getCleanValue(KarExpressionResult res_clean, KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	KarExpressionResult result = kar_expression_result_none();
+	if (res_clean.type == vars->standard.boolType) {
+		result.type = vars->standard.uncleanBool;
+		result.value = LLVMBuildCall(llvmData->builder, llvmData->cleanBool, &res_clean.value, 1, "asdf");
+	} else if (res_clean.type == vars->standard.decimalType) {
+		result.type = vars->standard.uncleanDecimal;
+		result.value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger64, &res_clean.value, 1, "asdf");
+	} else if (res_clean.type == vars->standard.hexadecimalType) {
+		result.type = vars->standard.uncleanHexadecimal;
+		result.value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned64, &res_clean.value, 1, "asdf");
+	} else if (res_clean.type == vars->standard.literalFloatType) {
+		result.type = vars->standard.uncleanLiteralFloat;
+		result.value = LLVMBuildCall(llvmData->builder, llvmData->cleanFloat64, &res_clean.value, 1, "asdf");
+	} else if (res_clean.type == vars->standard.int8Type) {
+		result.type = vars->standard.uncleanInt8;
+		result.value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger8, &res_clean.value, 1, "asdf");
+	} else if (res_clean.type == vars->standard.int16Type) {
+		result.type = vars->standard.uncleanInt16;
+		result.value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger16, &res_clean.value, 1, "asdf");
+	} else if (res_clean.type == vars->standard.int32Type) {
+		result.type = vars->standard.uncleanInt32;
+		result.value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger32, &res_clean.value, 1, "asdf");
+	} else if (res_clean.type == vars->standard.int64Type) {
+		result.type = vars->standard.uncleanInt64;
+		result.value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger64, &res_clean.value, 1, "asdf");
+	} else if (res_clean.type == vars->standard.unsigned8Type) {
+		result.type = vars->standard.uncleanUnsigned8;
+		result.value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned8, &res_clean.value, 1, "asdf");
+	} else if (res_clean.type == vars->standard.unsigned16Type) {
+		result.type = vars->standard.uncleanUnsigned16;
+		result.value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned16, &res_clean.value, 1, "asdf");
+	} else if (res_clean.type == vars->standard.unsigned32Type) {
+		result.type = vars->standard.uncleanUnsigned32;
+		result.value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned32, &res_clean.value, 1, "asdf");
+	} else if (res_clean.type == vars->standard.unsigned64Type) {
+		result.type = vars->standard.uncleanUnsigned64;
+		result.value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned64, &res_clean.value, 1, "asdf");
+	} else if (res_clean.type == vars->standard.float32Type) {
+		result.type = vars->standard.uncleanFloat32;
+		result.value = LLVMBuildCall(llvmData->builder, llvmData->cleanFloat32, &res_clean.value, 1, "asdf");
+	} else if (res_clean.type == vars->standard.float64Type) {
+		result.type = vars->standard.uncleanFloat64;
+		result.value = LLVMBuildCall(llvmData->builder, llvmData->cleanFloat64, &res_clean.value, 1, "asdf");
+	} else if (res_clean.type == vars->standard.stringType) {
+		result.type = vars->standard.uncleanString;
+		result.value = LLVMBuildCall(llvmData->builder, llvmData->cleanString, &res_clean.value, 1, "asdf");
+	} else {
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Операция неопределённости для данного типа не поддерживается.");
+		return kar_expression_result_none();
+	}
+	return result;
 }
 
 static KarExpressionResult get_sign_unclean(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
@@ -601,34 +658,8 @@ static KarExpressionResult get_sign_unclean(KarToken* token, KarLLVMData* llvmDa
 			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Типы левой и правой части неопределённости не совпадают.");
 			return kar_expression_result_none();
 		}
-		if (res_clean.type == vars->standard.boolType) {
-			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanBool, &right.value, 1, "asdf");
-		} else if (res_clean.type == vars->standard.int8Type) {
-			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger8, &right.value, 1, "asdf");
-		} else if (res_clean.type == vars->standard.int16Type) {
-			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger16, &right.value, 1, "asdf");
-		} else if (res_clean.type == vars->standard.int32Type) {
-			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger32, &right.value, 1, "asdf");
-		} else if (res_clean.type == vars->standard.int64Type) {
-			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanInteger64, &right.value, 1, "asdf");
-		} else if (res_clean.type == vars->standard.unsigned8Type) {
-			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned8, &right.value, 1, "asdf");
-		} else if (res_clean.type == vars->standard.unsigned16Type) {
-			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned16, &right.value, 1, "asdf");
-		} else if (res_clean.type == vars->standard.unsigned32Type) {
-			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned32, &right.value, 1, "asdf");
-		} else if (res_clean.type == vars->standard.unsigned64Type) {
-			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanUnsigned64, &right.value, 1, "asdf");
-		} else if (res_clean.type == vars->standard.float32Type) {
-			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanFloat32, &right.value, 1, "asdf");
-		} else if (res_clean.type == vars->standard.float64Type) {
-			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanFloat64, &right.value, 1, "asdf");
-		} else if (res_clean.type == vars->standard.stringType) {
-			res_clean.value = LLVMBuildCall(llvmData->builder, llvmData->cleanString, &right.value, 1, "asdf");
-		} else {
-			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Операция неопределённости для данного типа не поддерживается.");
-			return kar_expression_result_none();
-		}
+		res_clean.value = right.value;
+		return getCleanValue(res_clean, token, llvmData, moduleName, vars, errors);
 	}
 	KarExpressionResult result;
 	result.type = getUncleanVarByType(res_clean.type->type, vars);
@@ -695,7 +726,7 @@ static KarExpressionResult get_sign_single_plus(KarToken* token, KarLLVMData* ll
 	KarExpressionResult res = calc_expression(child, llvmData, moduleName, vars, errors);
 	if (res.type == vars->standard.decimalType ||
 		res.type == vars->standard.hexadecimalType ||
-		res.type == vars->standard.literalFloat ||
+		res.type == vars->standard.literalFloatType ||
 		res.type == vars->standard.int8Type ||
 		res.type == vars->standard.int16Type ||
 		res.type == vars->standard.int32Type ||
@@ -734,7 +765,7 @@ static KarExpressionResult get_sign_single_minus(KarToken* token, KarLLVMData* l
 		res.value = LLVMBuildNeg(llvmData->builder, res.value, "unary_minus");
 		return res;
 	}
-	if (res.type == vars->standard.literalFloat ||
+	if (res.type == vars->standard.literalFloatType ||
 		res.type == vars->standard.float32Type ||
 		res.type == vars->standard.float64Type
 	) {
@@ -780,7 +811,7 @@ static KarExpressionResult get_sign_plus(KarToken* token, KarLLVMData* llvmData,
 		res.value = LLVMBuildAdd(llvmData->builder, leftRes.value, rightRes.value, "sum");
 		return res;
 	}
-	if (leftRes.type == vars->standard.literalFloat ||
+	if (leftRes.type == vars->standard.literalFloatType ||
 		leftRes.type == vars->standard.float32Type ||
 		leftRes.type == vars->standard.float64Type
 	) {
@@ -835,7 +866,7 @@ static KarExpressionResult get_sign_minus(KarToken* token, KarLLVMData* llvmData
 		res.value = LLVMBuildSub(llvmData->builder, leftRes.value, rightRes.value, "sum");
 		return res;
 	}
-	if (leftRes.type == vars->standard.literalFloat ||
+	if (leftRes.type == vars->standard.literalFloatType ||
 		leftRes.type == vars->standard.float32Type ||
 		leftRes.type == vars->standard.float64Type
 	) {
@@ -883,7 +914,7 @@ static KarExpressionResult get_sign_mul(KarToken* token, KarLLVMData* llvmData, 
 		res.value = LLVMBuildMul(llvmData->builder, leftRes.value, rightRes.value, "sum");
 		return res;
 	}
-	if (leftRes.type == vars->standard.literalFloat ||
+	if (leftRes.type == vars->standard.literalFloatType ||
 		leftRes.type == vars->standard.float32Type ||
 		leftRes.type == vars->standard.float64Type
 	) {
@@ -894,6 +925,133 @@ static KarExpressionResult get_sign_mul(KarToken* token, KarLLVMData* llvmData, 
 	}
 	KarString* path = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 	KarString* errorText = kar_string_create_format("Операция умножение недопустима для типа \"%s\".", path);
+	kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
+	KAR_FREE(path);
+	KAR_FREE(errorText);
+	return kar_expression_result_none();
+}
+
+static KarExpressionResult get_sign_div(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	KarToken* left = kar_token_child_get(token, 0);
+	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarToken* right = kar_token_child_get(token, 1);
+	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
+		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
+		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
+		KarString* errorText = kar_string_create_format("Операция умножение недопустима для типов \"%s\" и \"%s\".", pathLeft, pathRight);
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
+		KAR_FREE(pathLeft);
+		KAR_FREE(pathRight);
+		KAR_FREE(errorText);
+		return kar_expression_result_none();
+	}
+
+
+	if (leftRes.type == vars->standard.decimalType ||
+		leftRes.type == vars->standard.hexadecimalType ||
+		leftRes.type == vars->standard.int8Type ||
+		leftRes.type == vars->standard.int16Type ||
+		leftRes.type == vars->standard.int32Type ||
+		leftRes.type == vars->standard.int64Type ||
+		leftRes.type == vars->standard.unsigned8Type ||
+		leftRes.type == vars->standard.unsigned16Type ||
+		leftRes.type == vars->standard.unsigned32Type ||
+		leftRes.type == vars->standard.unsigned64Type
+	) {
+		LLVMValueRef zero;
+		if (leftRes.type == vars->standard.int8Type ||
+			leftRes.type == vars->standard.unsigned8Type
+		) {
+			zero = LLVMConstInt(LLVMInt8Type(), 0, 0);
+		}
+		if (leftRes.type == vars->standard.int16Type ||
+			leftRes.type == vars->standard.unsigned16Type
+		) {
+			zero = LLVMConstInt(LLVMInt16Type(), 0, 0);
+		}
+		if (leftRes.type == vars->standard.int32Type ||
+			leftRes.type == vars->standard.unsigned32Type
+		) {
+			zero = LLVMConstInt(LLVMInt32Type(), 0, 0);
+		}
+		if (leftRes.type == vars->standard.decimalType ||
+			leftRes.type == vars->standard.hexadecimalType ||
+			leftRes.type == vars->standard.int64Type ||
+			leftRes.type == vars->standard.unsigned64Type
+		) {
+			zero = LLVMConstInt(LLVMInt64Type(), 0, 0);
+		}
+
+	LLVMValueRef expressionValue = LLVMBuildICmp(llvmData->builder, LLVMIntEQ, rightRes.value, zero, "var");
+
+	LLVMValueRef theFunction = LLVMGetBasicBlockParent(LLVMGetInsertBlock(llvmData->builder));
+	KarString* thenString = kar_string_create_format("then_div%lu", llvmData->counter);
+	LLVMBasicBlockRef thenBlock = LLVMAppendBasicBlock(theFunction, thenString);
+	KAR_FREE(thenString);
+	KarString* elseString = kar_string_create_format("else_div%lu", llvmData->counter);
+	LLVMBasicBlockRef elseBlock = LLVMAppendBasicBlock(theFunction, elseString);
+	KAR_FREE(elseString);
+	KarString* mergeString = kar_string_create_format("merge_div%lu", llvmData->counter);
+	LLVMBasicBlockRef mergeBlock = LLVMAppendBasicBlock(theFunction, mergeString);
+	KAR_FREE(mergeString);
+	llvmData->counter++;
+	LLVMBuildCondBr(llvmData->builder, expressionValue, thenBlock, elseBlock);
+
+	LLVMPositionBuilderAtEnd(llvmData->builder, thenBlock);
+	KarExpressionResult unknown_value = get_val_null(vars);
+	LLVMValueRef unknown = LLVMBuildCall(llvmData->builder, llvmData->createPointer, &unknown_value.value, 1, "asdf");
+	LLVMBuildBr(llvmData->builder, mergeBlock);
+	thenBlock = LLVMGetInsertBlock(llvmData->builder);
+
+	LLVMPositionBuilderAtEnd(llvmData->builder, elseBlock);
+	KarExpressionResult res = kar_expression_result_none();
+	if (leftRes.type == vars->standard.decimalType ||
+		leftRes.type == vars->standard.int8Type ||
+		leftRes.type == vars->standard.int16Type ||
+		leftRes.type == vars->standard.int32Type ||
+		leftRes.type == vars->standard.int64Type
+	) {
+		res.type = leftRes.type;
+		res.value = LLVMBuildSDiv(llvmData->builder, leftRes.value, rightRes.value, "sum");
+		res = getCleanValue(res, token, llvmData, moduleName, vars, errors);
+	}
+	if (leftRes.type == vars->standard.hexadecimalType ||
+		leftRes.type == vars->standard.unsigned8Type ||
+		leftRes.type == vars->standard.unsigned16Type ||
+		leftRes.type == vars->standard.unsigned32Type ||
+		leftRes.type == vars->standard.unsigned64Type
+	) {
+		res.type = leftRes.type;
+		res.value = LLVMBuildUDiv(llvmData->builder, leftRes.value, rightRes.value, "sum");
+		res = getCleanValue(res, token, llvmData, moduleName, vars, errors);
+	}
+	LLVMBuildBr(llvmData->builder, mergeBlock);
+	elseBlock = LLVMGetInsertBlock(llvmData->builder);
+
+	LLVMPositionBuilderAtEnd(llvmData->builder, mergeBlock);
+	LLVMValueRef phi = LLVMBuildPhi(llvmData->builder, LLVMTypeOf(res.value), "ph_div");
+	LLVMAddIncoming(phi, &unknown, &thenBlock, 1);
+	LLVMAddIncoming(phi, &res.value, &elseBlock, 1);
+
+	//KarExpressionResult res = kar_expression_result_none();
+	res.value = phi;
+	return res;
+
+
+	}
+
+	if (leftRes.type == vars->standard.literalFloatType ||
+		leftRes.type == vars->standard.float32Type ||
+		leftRes.type == vars->standard.float64Type
+	) {
+		KarExpressionResult res = kar_expression_result_none();
+		res.type = leftRes.type;
+		res.value = LLVMBuildFDiv(llvmData->builder, leftRes.value, rightRes.value, "sum");
+		return res;
+	}
+	KarString* path = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
+	KarString* errorText = kar_string_create_format("Операция деления недопустима для типа \"%s\".", path);
 	kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
 	KAR_FREE(path);
 	KAR_FREE(errorText);
@@ -941,6 +1099,7 @@ static KarExpressionResult calc_expression(KarToken* token, KarLLVMData* llvmDat
 	case (KAR_TOKEN_SIGN_PLUS): return get_sign_plus(token, llvmData, moduleName, vars, errors);
 	case (KAR_TOKEN_SIGN_MINUS): return get_sign_minus(token, llvmData, moduleName, vars, errors);
 	case (KAR_TOKEN_SIGN_MUL): return get_sign_mul(token, llvmData, moduleName, vars, errors);
+	case (KAR_TOKEN_SIGN_DIV): return get_sign_div(token, llvmData, moduleName, vars, errors);
 	default:
 		// TODO: В сообщении об ошибке добавить тип оператора.
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Неизвестный оператор.");

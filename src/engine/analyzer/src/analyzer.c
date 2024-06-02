@@ -37,8 +37,8 @@ static bool fill_standard_lib(KarVars* vars) {
 	kar_vartree_child_add(types, type_decimal);
 	KarVartree* type_hexadecimal = kar_vartree_create_0hex("0Шестнадцатеричное");
 	kar_vartree_child_add(types, type_hexadecimal);
-	KarVartree* type_0float = kar_vartree_create_0float("0Дробное");
-	kar_vartree_child_add(types, type_0float);
+	KarVartree* type_literal_float = kar_vartree_create_0float("0Дробное");
+	kar_vartree_child_add(types, type_literal_float);
 
 	KarVartree* type_integer8 = kar_vartree_create_integer8("Целое8");
 	kar_vartree_child_add(types, type_integer8);
@@ -122,6 +122,18 @@ static bool fill_standard_lib(KarVars* vars) {
 	KarVartree* type_unclean_bool = kar_vartree_create_unclean_class(type_bool);
 	kar_vartree_child_add(types, type_unclean_bool);
 	kar_vartree_child_add(type_unclean_bool, kar_vartree_create_function("ПустойЛи", DYNAMIC | PUBLIC, "_kartarika_unclean_is_empty", NULL, 0, type_bool));
+
+	KarVartree* type_unclean_decimal = kar_vartree_create_unclean_class(type_decimal);
+	kar_vartree_child_add(types, type_unclean_decimal);
+	kar_vartree_child_add(type_unclean_decimal, kar_vartree_create_function("ПустойЛи", DYNAMIC | PUBLIC, "_kartarika_unclean_is_empty", NULL, 0, type_bool));
+
+	KarVartree* type_unclean_hexadecimal = kar_vartree_create_unclean_class(type_hexadecimal);
+	kar_vartree_child_add(types, type_unclean_hexadecimal);
+	kar_vartree_child_add(type_unclean_hexadecimal, kar_vartree_create_function("ПустойЛи", DYNAMIC | PUBLIC, "_kartarika_unclean_is_empty", NULL, 0, type_bool));
+
+	KarVartree* type_unclean_literal_float = kar_vartree_create_unclean_class(type_literal_float);
+	kar_vartree_child_add(types, type_unclean_literal_float);
+	kar_vartree_child_add(type_unclean_literal_float, kar_vartree_create_function("ПустойЛи", DYNAMIC | PUBLIC, "_kartarika_unclean_is_empty", NULL, 0, type_bool));
 
 	KarVartree* type_unclean_integer8 = kar_vartree_create_unclean_class(type_integer8);
 	kar_vartree_child_add(types, type_unclean_integer8);
@@ -401,7 +413,7 @@ static bool fill_standard_lib(KarVars* vars) {
 	vars->standard.boolType = type_bool;
 	vars->standard.decimalType = type_decimal;
 	vars->standard.hexadecimalType = type_hexadecimal;
-	vars->standard.literalFloat = type_0float;
+	vars->standard.literalFloatType = type_literal_float;
 	vars->standard.int8Type = type_integer8;
     vars->standard.int16Type = type_integer16;
     vars->standard.int32Type = type_integer32;
@@ -419,6 +431,9 @@ static bool fill_standard_lib(KarVars* vars) {
 	vars->standard.unclean = type_unclean;
 
 	vars->standard.uncleanBool = type_unclean_bool;
+	vars->standard.uncleanDecimal = type_unclean_decimal;
+	vars->standard.uncleanHexadecimal = type_unclean_hexadecimal;
+	vars->standard.uncleanLiteralFloat = type_unclean_literal_float;
 	vars->standard.uncleanInt8 = type_unclean_integer8;
 	vars->standard.uncleanInt16 = type_unclean_integer16;
 	vars->standard.uncleanInt32 = type_unclean_integer32;
