@@ -1437,7 +1437,7 @@ static KarExpressionResult get_sign_bit_or(KarToken* token, KarLLVMData* llvmDat
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
-		KarString* errorText = kar_string_create_format("Операция побитового И недопустима для типов \"%s\" и \"%s\".", pathLeft, pathRight);
+		KarString* errorText = kar_string_create_format("Операция побитового ИЛИ недопустима для типов \"%s\" и \"%s\".", pathLeft, pathRight);
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
 		KAR_FREE(pathLeft);
 		KAR_FREE(pathRight);
@@ -1463,7 +1463,48 @@ static KarExpressionResult get_sign_bit_or(KarToken* token, KarLLVMData* llvmDat
 	}
 
 	KarString* path = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
-	KarString* errorText = kar_string_create_format("Операция побитового И недопустима для типа \"%s\".", path);
+	KarString* errorText = kar_string_create_format("Операция побитового ИЛИ недопустима для типа \"%s\".", path);
+	kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
+	KAR_FREE(path);
+	KAR_FREE(errorText);
+	return kar_expression_result_none();
+}
+
+static KarExpressionResult get_sign_bit_xor(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	KarToken* left = kar_token_child_get(token, 0);
+	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarToken* right = kar_token_child_get(token, 1);
+	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
+		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
+		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
+		KarString* errorText = kar_string_create_format("Операция побитового исключающего ИЛИ недопустима для типов \"%s\" и \"%s\".", pathLeft, pathRight);
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
+		KAR_FREE(pathLeft);
+		KAR_FREE(pathRight);
+		KAR_FREE(errorText);
+		return kar_expression_result_none();
+	}
+
+	if (leftRes.type == vars->standard.decimalType ||
+		leftRes.type == vars->standard.hexadecimalType ||
+		leftRes.type == vars->standard.int8Type ||
+		leftRes.type == vars->standard.int16Type ||
+		leftRes.type == vars->standard.int32Type ||
+		leftRes.type == vars->standard.int64Type ||
+		leftRes.type == vars->standard.unsigned8Type ||
+		leftRes.type == vars->standard.unsigned16Type ||
+		leftRes.type == vars->standard.unsigned32Type ||
+		leftRes.type == vars->standard.unsigned64Type
+	) {
+		KarExpressionResult res = kar_expression_result_none();
+		res.type = rightRes.type;
+		res.value = LLVMBuildXor(llvmData->builder, rightRes.value, leftRes.value, "var");
+		return res;
+	}
+
+	KarString* path = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
+	KarString* errorText = kar_string_create_format("Операция побитового исключающего ИЛИ недопустима для типа \"%s\".", path);
 	kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
 	KAR_FREE(path);
 	KAR_FREE(errorText);
@@ -1517,6 +1558,7 @@ static KarExpressionResult calc_expression(KarToken* token, KarLLVMData* llvmDat
 	case (KAR_TOKEN_SIGN_MOD_CLEAN): return get_sign_mod_clean(token, llvmData, moduleName, vars, errors);
 	case (KAR_TOKEN_SIGN_BIT_AND): return get_sign_bit_and(token, llvmData, moduleName, vars, errors);
 	case (KAR_TOKEN_SIGN_BIT_OR): return get_sign_bit_or(token, llvmData, moduleName, vars, errors);
+	case (KAR_TOKEN_SIGN_BIT_XOR): return get_sign_bit_xor(token, llvmData, moduleName, vars, errors);
 	default:
 		// TODO: В сообщении об ошибке добавить тип оператора.
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Неизвестный оператор.");
