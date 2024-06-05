@@ -1588,6 +1588,47 @@ static KarExpressionResult get_sign_bit_right(KarToken* token, KarLLVMData* llvm
 	return kar_expression_result_none();
 }
 
+static KarExpressionResult get_sign_bit_left(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	KarToken* left = kar_token_child_get(token, 0);
+	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarToken* right = kar_token_child_get(token, 1);
+	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
+		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
+		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
+		KarString* errorText = kar_string_create_format("Операция побитового сдвига влево недопустима для типов \"%s\" и \"%s\".", pathLeft, pathRight);
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
+		KAR_FREE(pathLeft);
+		KAR_FREE(pathRight);
+		KAR_FREE(errorText);
+		return kar_expression_result_none();
+	}
+
+	if (leftRes.type == vars->standard.decimalType ||
+		leftRes.type == vars->standard.hexadecimalType ||
+		leftRes.type == vars->standard.int8Type ||
+		leftRes.type == vars->standard.int16Type ||
+		leftRes.type == vars->standard.int32Type ||
+		leftRes.type == vars->standard.int64Type ||
+		leftRes.type == vars->standard.unsigned8Type ||
+		leftRes.type == vars->standard.unsigned16Type ||
+		leftRes.type == vars->standard.unsigned32Type ||
+		leftRes.type == vars->standard.unsigned64Type
+	) {
+		KarExpressionResult res = kar_expression_result_none();
+		res.type = leftRes.type;
+		res.value = LLVMBuildShl(llvmData->builder, leftRes.value, rightRes.value, "var");
+		return res;
+	}
+
+	KarString* path = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
+	KarString* errorText = kar_string_create_format("Операция побитового сдвига влево недопустима для типа \"%s\".", path);
+	kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
+	KAR_FREE(path);
+	KAR_FREE(errorText);
+	return kar_expression_result_none();
+}
+
 static KarExpressionResult calc_expression(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	// TODO: Проверить на компиляторе большое количество открывающихся и закрывающихся скобок.
 	switch (token->type) {
@@ -1638,6 +1679,7 @@ static KarExpressionResult calc_expression(KarToken* token, KarLLVMData* llvmDat
 	case (KAR_TOKEN_SIGN_BIT_XOR): return get_sign_bit_xor(token, llvmData, moduleName, vars, errors);
 	case (KAR_TOKEN_SIGN_BIT_NOT): return get_sign_bit_not(token, llvmData, moduleName, vars, errors);
 	case (KAR_TOKEN_SIGN_BIT_RIGHT): return get_sign_bit_right(token, llvmData, moduleName, vars, errors);
+	case (KAR_TOKEN_SIGN_BIT_LEFT): return get_sign_bit_left(token, llvmData, moduleName, vars, errors);
 	default:
 		// TODO: В сообщении об ошибке добавить тип оператора.
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Неизвестный оператор.");
