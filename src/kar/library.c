@@ -138,6 +138,10 @@ _kartarika_smart_pointer* _kartarika_library_string_sum(_kartarika_smart_pointer
 	return _kartarika_smart_pointer_create(str);
 }
 
+bool _kartarika_library_string_is_equal(_kartarika_smart_pointer* str1, _kartarika_smart_pointer* str2) {
+	return !strcmp(str1->value, str2->value);
+}
+
 static bool is_char_begin(char c) {
 	return ((c & 0x80) == 0) ||
 			(((c ^ 0xC0) & 0xE0) == 0) ||

@@ -20,8 +20,10 @@ typedef struct {
 	LLVMValueRef createPointer;
 	LLVMValueRef addRefPointer;
 	LLVMValueRef freePointer;
+
 	LLVMValueRef createString;
 	LLVMValueRef addString;
+	LLVMValueRef isEqualString;
 
 	LLVMValueRef cleanBool;
 	LLVMValueRef cleanInteger8;

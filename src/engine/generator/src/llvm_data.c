@@ -43,6 +43,9 @@ KarLLVMData* kar_llvm_data_create(LLVMContextRef context, LLVMModuleRef module, 
 	LLVMTypeRef addStringFuncType = LLVMFunctionType(pointerType, addStringFuncIn, 2, false);
 	result->addString = LLVMAddFunction(module, "_kartarika_library_string_sum", addStringFuncType);
 
+	LLVMTypeRef isEqualStringFuncType = LLVMFunctionType(boolType, addStringFuncIn, 2, false);
+	result->isEqualString = LLVMAddFunction(module, "_kartarika_library_string_is_equal", isEqualStringFuncType);
+
 	LLVMTypeRef createStringFuncType = LLVMFunctionType(pointerType, &pointerType, 1, false);
 	result->createString = LLVMAddFunction(module, "_kartarika_library_string_create", createStringFuncType);
 
