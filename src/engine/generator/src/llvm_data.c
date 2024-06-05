@@ -46,6 +46,9 @@ KarLLVMData* kar_llvm_data_create(LLVMContextRef context, LLVMModuleRef module, 
 	LLVMTypeRef isEqualStringFuncType = LLVMFunctionType(boolType, addStringFuncIn, 2, false);
 	result->isEqualString = LLVMAddFunction(module, "_kartarika_library_string_is_equal", isEqualStringFuncType);
 
+	LLVMTypeRef isNotEqualStringFuncType = LLVMFunctionType(boolType, addStringFuncIn, 2, false);
+	result->isNotEqualString = LLVMAddFunction(module, "_kartarika_library_string_is_not_equal", isNotEqualStringFuncType);
+
 	LLVMTypeRef createStringFuncType = LLVMFunctionType(pointerType, &pointerType, 1, false);
 	result->createString = LLVMAddFunction(module, "_kartarika_library_string_create", createStringFuncType);
 

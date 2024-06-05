@@ -24,6 +24,7 @@ typedef struct {
 	LLVMValueRef createString;
 	LLVMValueRef addString;
 	LLVMValueRef isEqualString;
+	LLVMValueRef isNotEqualString;
 
 	LLVMValueRef cleanBool;
 	LLVMValueRef cleanInteger8;
