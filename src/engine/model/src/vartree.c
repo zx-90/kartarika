@@ -218,6 +218,9 @@ static KarString* create_full_name(KarVartree* var) {
 }
 
 KarString* kar_vartree_create_full_path(KarVartree* var) {
+	if (var == NULL) {
+		return "Неизвестный тип";
+	}
 	KarString* result = create_full_name(var);
 	while (kar_vartree_child_parent(var) != NULL) {
 		var = kar_vartree_child_parent(var);
