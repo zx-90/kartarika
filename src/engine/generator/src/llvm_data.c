@@ -43,11 +43,13 @@ KarLLVMData* kar_llvm_data_create(LLVMContextRef context, LLVMModuleRef module, 
 	LLVMTypeRef addStringFuncType = LLVMFunctionType(pointerType, addStringFuncIn, 2, false);
 	result->addString = LLVMAddFunction(module, "_kartarika_library_string_sum", addStringFuncType);
 
-	LLVMTypeRef isEqualStringFuncType = LLVMFunctionType(boolType, addStringFuncIn, 2, false);
-	result->isEqualString = LLVMAddFunction(module, "_kartarika_library_string_is_equal", isEqualStringFuncType);
-
-	LLVMTypeRef isNotEqualStringFuncType = LLVMFunctionType(boolType, addStringFuncIn, 2, false);
-	result->isNotEqualString = LLVMAddFunction(module, "_kartarika_library_string_is_not_equal", isNotEqualStringFuncType);
+	LLVMTypeRef compareStringFuncType = LLVMFunctionType(boolType, addStringFuncIn, 2, false);
+	result->isEqualString = LLVMAddFunction(module, "_kartarika_library_string_is_equal", compareStringFuncType);
+	result->isNotEqualString = LLVMAddFunction(module, "_kartarika_library_string_is_not_equal", compareStringFuncType);
+	result->isGreaterString = LLVMAddFunction(module, "_kartarika_library_string_is_greater", compareStringFuncType);
+	result->isGreaterOrEqualString = LLVMAddFunction(module, "_kartarika_library_string_is_greater_or_equal", compareStringFuncType);
+	result->isLessString = LLVMAddFunction(module, "_kartarika_library_string_is_less", compareStringFuncType);
+	result->isLessOrEqualString = LLVMAddFunction(module, "_kartarika_library_string_is_less_or_equal", compareStringFuncType);
 
 	LLVMTypeRef createStringFuncType = LLVMFunctionType(pointerType, &pointerType, 1, false);
 	result->createString = LLVMAddFunction(module, "_kartarika_library_string_create", createStringFuncType);

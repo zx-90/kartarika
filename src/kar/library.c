@@ -139,11 +139,27 @@ _kartarika_smart_pointer* _kartarika_library_string_sum(_kartarika_smart_pointer
 }
 
 bool _kartarika_library_string_is_equal(_kartarika_smart_pointer* str1, _kartarika_smart_pointer* str2) {
-	return !strcmp(str1->value, str2->value);
+	return strcmp(str1->value, str2->value) == 0;
 }
 
 bool _kartarika_library_string_is_not_equal(_kartarika_smart_pointer* str1, _kartarika_smart_pointer* str2) {
-	return strcmp(str1->value, str2->value);
+	return strcmp(str1->value, str2->value) != 0;
+}
+
+bool _kartarika_library_string_is_greater(_kartarika_smart_pointer* str1, _kartarika_smart_pointer* str2) {
+	return strcmp(str1->value, str2->value) > 0;
+}
+
+bool _kartarika_library_string_is_greater_or_equal(_kartarika_smart_pointer* str1, _kartarika_smart_pointer* str2) {
+	return strcmp(str1->value, str2->value) >= 0;
+}
+
+bool _kartarika_library_string_is_less(_kartarika_smart_pointer* str1, _kartarika_smart_pointer* str2) {
+	return strcmp(str1->value, str2->value) < 0;
+}
+
+bool _kartarika_library_string_is_less_or_equal(_kartarika_smart_pointer* str1, _kartarika_smart_pointer* str2) {
+	return strcmp(str1->value, str2->value) <= 0;
 }
 
 static bool is_char_begin(char c) {
