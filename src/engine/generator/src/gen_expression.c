@@ -2013,6 +2013,34 @@ static KarExpressionResult get_sign_less_or_equal(KarToken* token, KarLLVMData* 
 	return kar_expression_result_none();
 }
 
+static KarExpressionResult get_sign_and(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	KarToken* left = kar_token_child_get(token, 0);
+	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	if (leftRes.type != vars->standard.boolType) {
+		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
+		KarString* errorText = kar_string_create_format("Операция логическое И слева от операнда недопустима для типа \"%s\".", pathLeft);
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
+		KAR_FREE(pathLeft);
+		KAR_FREE(errorText);
+		return kar_expression_result_none();
+	}
+	KarToken* right = kar_token_child_get(token, 1);
+	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	if (rightRes.type != vars->standard.boolType) {
+		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
+		KarString* errorText = kar_string_create_format("Операция логическое И справа от операнда недопустима для типа \"%s\".", pathRight);
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
+		KAR_FREE(pathRight);
+		KAR_FREE(errorText);
+		return kar_expression_result_none();
+	}
+
+	KarExpressionResult res = kar_expression_result_none();
+	res.type = vars->standard.boolType;
+	res.value = LLVMBuildAnd(llvmData->builder, leftRes.value, rightRes.value, "var");
+	return res;
+}
+
 static KarExpressionResult calc_expression(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	// TODO: Проверить на компиляторе большое количество открывающихся и закрывающихся скобок.
 	switch (token->type) {
@@ -2070,6 +2098,7 @@ static KarExpressionResult calc_expression(KarToken* token, KarLLVMData* llvmDat
 	case (KAR_TOKEN_SIGN_GREATER_OR_EQUAL): return get_sign_greater_or_equal(token, llvmData, moduleName, vars, errors);
 	case (KAR_TOKEN_SIGN_LESS): return get_sign_less(token, llvmData, moduleName, vars, errors);
 	case (KAR_TOKEN_SIGN_LESS_OR_EQUAL): return get_sign_less_or_equal(token, llvmData, moduleName, vars, errors);
+	case (KAR_TOKEN_SIGN_AND): return get_sign_and(token, llvmData, moduleName, vars, errors);
 	default:
 		// TODO: В сообщении об ошибке добавить тип оператора.
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Неизвестный оператор.");
