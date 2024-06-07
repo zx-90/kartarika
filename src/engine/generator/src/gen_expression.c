@@ -1697,7 +1697,7 @@ static KarExpressionResult get_sign_not_equal(KarToken* token, KarLLVMData* llvm
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
-		KarString* errorText = kar_string_create_format("Операция равно недопустима для типов \"%s\" и \"%s\".", pathLeft, pathRight);
+		KarString* errorText = kar_string_create_format("Операция НЕ равно недопустима для типов \"%s\" и \"%s\".", pathLeft, pathRight);
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
 		KAR_FREE(pathLeft);
 		KAR_FREE(pathRight);
@@ -1742,7 +1742,7 @@ static KarExpressionResult get_sign_not_equal(KarToken* token, KarLLVMData* llvm
 	}
 
 	KarString* path = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
-	KarString* errorText = kar_string_create_format("Операция равно недопустима для типа \"%s\".", path);
+	KarString* errorText = kar_string_create_format("Операция НЕ равно недопустима для типа \"%s\".", path);
 	kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
 	KAR_FREE(path);
 	KAR_FREE(errorText);
@@ -1757,7 +1757,7 @@ static KarExpressionResult get_sign_greater(KarToken* token, KarLLVMData* llvmDa
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
-		KarString* errorText = kar_string_create_format("Операция равно недопустима для типов \"%s\" и \"%s\".", pathLeft, pathRight);
+		KarString* errorText = kar_string_create_format("Операция больше недопустима для типов \"%s\" и \"%s\".", pathLeft, pathRight);
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
 		KAR_FREE(pathLeft);
 		KAR_FREE(pathRight);
@@ -1808,7 +1808,7 @@ static KarExpressionResult get_sign_greater(KarToken* token, KarLLVMData* llvmDa
 	}
 
 	KarString* path = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
-	KarString* errorText = kar_string_create_format("Операция равно недопустима для типа \"%s\".", path);
+	KarString* errorText = kar_string_create_format("Операция больше недопустима для типа \"%s\".", path);
 	kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
 	KAR_FREE(path);
 	KAR_FREE(errorText);
@@ -1823,7 +1823,7 @@ static KarExpressionResult get_sign_greater_or_equal(KarToken* token, KarLLVMDat
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
-		KarString* errorText = kar_string_create_format("Операция равно недопустима для типов \"%s\" и \"%s\".", pathLeft, pathRight);
+		KarString* errorText = kar_string_create_format("Операция больше или равно недопустима для типов \"%s\" и \"%s\".", pathLeft, pathRight);
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
 		KAR_FREE(pathLeft);
 		KAR_FREE(pathRight);
@@ -1874,7 +1874,7 @@ static KarExpressionResult get_sign_greater_or_equal(KarToken* token, KarLLVMDat
 	}
 
 	KarString* path = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
-	KarString* errorText = kar_string_create_format("Операция равно недопустима для типа \"%s\".", path);
+	KarString* errorText = kar_string_create_format("Операция больше или равно недопустима для типа \"%s\".", path);
 	kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
 	KAR_FREE(path);
 	KAR_FREE(errorText);
@@ -1889,7 +1889,7 @@ static KarExpressionResult get_sign_less(KarToken* token, KarLLVMData* llvmData,
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
-		KarString* errorText = kar_string_create_format("Операция равно недопустима для типов \"%s\" и \"%s\".", pathLeft, pathRight);
+		KarString* errorText = kar_string_create_format("Операция меньше недопустима для типов \"%s\" и \"%s\".", pathLeft, pathRight);
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
 		KAR_FREE(pathLeft);
 		KAR_FREE(pathRight);
@@ -1940,7 +1940,7 @@ static KarExpressionResult get_sign_less(KarToken* token, KarLLVMData* llvmData,
 	}
 
 	KarString* path = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
-	KarString* errorText = kar_string_create_format("Операция равно недопустима для типа \"%s\".", path);
+	KarString* errorText = kar_string_create_format("Операция меньше недопустима для типа \"%s\".", path);
 	kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
 	KAR_FREE(path);
 	KAR_FREE(errorText);
@@ -1955,7 +1955,7 @@ static KarExpressionResult get_sign_less_or_equal(KarToken* token, KarLLVMData* 
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
-		KarString* errorText = kar_string_create_format("Операция равно недопустима для типов \"%s\" и \"%s\".", pathLeft, pathRight);
+		KarString* errorText = kar_string_create_format("Операция меньше или равно недопустима для типов \"%s\" и \"%s\".", pathLeft, pathRight);
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
 		KAR_FREE(pathLeft);
 		KAR_FREE(pathRight);
@@ -2006,7 +2006,7 @@ static KarExpressionResult get_sign_less_or_equal(KarToken* token, KarLLVMData* 
 	}
 
 	KarString* path = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
-	KarString* errorText = kar_string_create_format("Операция равно недопустима для типа \"%s\".", path);
+	KarString* errorText = kar_string_create_format("Операция меньше или равно недопустима для типа \"%s\".", path);
 	kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
 	KAR_FREE(path);
 	KAR_FREE(errorText);
@@ -2046,7 +2046,7 @@ static KarExpressionResult get_sign_or(KarToken* token, KarLLVMData* llvmData, K
 	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
 	if (leftRes.type != vars->standard.boolType) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
-		KarString* errorText = kar_string_create_format("Операция логическое И слева от операнда недопустима для типа \"%s\".", pathLeft);
+		KarString* errorText = kar_string_create_format("Операция логическое ИЛИ слева от операнда недопустима для типа \"%s\".", pathLeft);
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
 		KAR_FREE(pathLeft);
 		KAR_FREE(errorText);
@@ -2056,7 +2056,7 @@ static KarExpressionResult get_sign_or(KarToken* token, KarLLVMData* llvmData, K
 	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
 	if (rightRes.type != vars->standard.boolType) {
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
-		KarString* errorText = kar_string_create_format("Операция логическое И справа от операнда недопустима для типа \"%s\".", pathRight);
+		KarString* errorText = kar_string_create_format("Операция логическое ИЛИ справа от операнда недопустима для типа \"%s\".", pathRight);
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
 		KAR_FREE(pathRight);
 		KAR_FREE(errorText);
@@ -2066,6 +2066,24 @@ static KarExpressionResult get_sign_or(KarToken* token, KarLLVMData* llvmData, K
 	KarExpressionResult res = kar_expression_result_none();
 	res.type = vars->standard.boolType;
 	res.value = LLVMBuildOr(llvmData->builder, leftRes.value, rightRes.value, "var");
+	return res;
+}
+
+static KarExpressionResult get_sign_not(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	KarToken* left = kar_token_child_get(token, 0);
+	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	if (leftRes.type != vars->standard.boolType) {
+		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
+		KarString* errorText = kar_string_create_format("Операция логическое НЕ недопустима для типа \"%s\".", pathLeft);
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
+		KAR_FREE(pathLeft);
+		KAR_FREE(errorText);
+		return kar_expression_result_none();
+	}
+
+	KarExpressionResult res = kar_expression_result_none();
+	res.type = vars->standard.boolType;
+	res.value = LLVMBuildNot(llvmData->builder, leftRes.value, "var");
 	return res;
 }
 
@@ -2128,6 +2146,7 @@ static KarExpressionResult calc_expression(KarToken* token, KarLLVMData* llvmDat
 	case (KAR_TOKEN_SIGN_LESS_OR_EQUAL): return get_sign_less_or_equal(token, llvmData, moduleName, vars, errors);
 	case (KAR_TOKEN_SIGN_AND): return get_sign_and(token, llvmData, moduleName, vars, errors);
 	case (KAR_TOKEN_SIGN_OR): return get_sign_or(token, llvmData, moduleName, vars, errors);
+	case (KAR_TOKEN_SIGN_NOT): return get_sign_not(token, llvmData, moduleName, vars, errors);
 	default:
 		// TODO: В сообщении об ошибке добавить тип оператора.
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Неизвестный оператор.");
