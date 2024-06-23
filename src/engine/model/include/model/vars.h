@@ -8,9 +8,11 @@
 #define KAR_VARS_H
 
 #include "vartree.h"
+#include "local_vars.h"
 
 typedef struct {
     KarVartree* vartree;
+	KarLocalStack* locals;
     KAR_ARRAY_STRUCT(KarVartree) default_list;
     struct {
 		KarVartree* nullType;
@@ -71,6 +73,7 @@ typedef struct {
 KarVars* kar_vars_create();
 void kar_vars_free(KarVars* vars);
 
+KarLocalVar* kar_vars_local_find(KarVars* vars, KarString* name);
 KarVartree* kar_vars_find(KarVars* vars, KarString* name);
 KarVartree* kar_vars_find_args(KarVars* vars, KarString* name, KarVartree** args, size_t args_count);
 

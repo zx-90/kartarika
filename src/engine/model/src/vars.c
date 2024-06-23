@@ -52,6 +52,7 @@ KarVars* kar_vars_create() {
     KAR_CREATE(vars, KarVars);
 
     vars->vartree = NULL;
+	vars->locals = kar_local_stack_create();
     kar_vars_default_list_init(vars);
 	clean_standard(vars);
 
@@ -62,9 +63,24 @@ void kar_vars_free(KarVars* vars) {
     if (vars->vartree != NULL) {
         kar_vartree_free(vars->vartree);
     }
+	kar_local_stack_free(vars->locals);
     kar_vars_default_list_tear_all(vars);
 	clean_standard(vars);
     KAR_FREE(vars)
+}
+
+KarLocalVar* kar_vars_local_find(KarVars* vars, KarString* name) {
+	if (name == NULL) {
+		return NULL;
+	}
+	for (size_t i = 0; i < kar_local_stack_block_count(vars->locals); i++) {
+		KarLocalBlock* block = kar_local_stack_block_get(vars->locals, i);
+		KarLocalVar* var = kar_local_block_get_var_by_name(block, name);
+		if (var != NULL) {
+			return var;
+		}
+	}
+	return NULL;
 }
 
 KarVartree* kar_vars_find(KarVars* vars, KarString* name) {

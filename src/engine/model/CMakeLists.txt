@@ -12,6 +12,8 @@ src/project_error_list.c
 src/vartree_function_params.c
 src/vartree.c
 
+src/local_vars.c
+
 src/vars.c
 src/project.c
 )

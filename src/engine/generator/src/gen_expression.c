@@ -18,26 +18,21 @@
 // TODO: Перенести в core. Создать отдельный файл для математики.
 #define DNAN (INFINITY * 0.0)
 
-typedef struct {
-	KarVartree* type;
-	LLVMValueRef value;
-} KarExpressionResult;
-
-KarExpressionResult kar_expression_result_none() {
+static KarExpressionResult kar_expression_result_none() {
 	KarExpressionResult result;
 	result.type = NULL;
 	result.value = NULL;
 	return result;
 }
 
-KarExpressionResult kar_expression_result_var(KarVartree* var) {
+static KarExpressionResult kar_expression_result_var(KarVartree* var) {
 	KarExpressionResult result;
 	result.type = var;
 	result.value = NULL;
 	return result;
 }
 
-static bool kar_expression_result_is_none(KarExpressionResult result) {
+bool kar_expression_result_is_none(KarExpressionResult result) {
 	return (result.type == NULL && result.value == NULL);
 }
 
@@ -149,8 +144,6 @@ static bool check_and_cast_types(KarExpressionResult* var1, KarExpressionResult*
 	return cast_type(var1, var2, llvmData, vars) ||
 			cast_type(var2, var1, llvmData, vars);
 }
-
-static KarExpressionResult calc_expression(KarToken* token, KarLLVMData *llvmData, KarString *moduleName, KarVars *vars, KarProjectErrorList *errors);
 
 static KarExpressionResult  get_val_null(KarVars* vars) {
 	KarExpressionResult result;
@@ -314,6 +307,13 @@ static KarVartree* get_new_context(KarVartree* context, KarString* name, KarVart
 }
 
 static KarExpressionResult get_identifier(KarToken* token, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	KarLocalVar* local = kar_vars_local_find(vars, token->str);
+	if (local != NULL) {
+		KarExpressionResult res = kar_expression_result_none();
+		res.type = local->type;
+		res.value = local->value;
+		return res;
+	}
 	KarExpressionResult res = kar_expression_result_none();
 	res.type = kar_vars_find(vars, token->str);
 	if (kar_expression_result_is_none(res)) {
@@ -352,14 +352,14 @@ static KarVartree* get_reduced64_type(KarVartree* type, KarVars* vars) {
 }
 
 static KarExpressionResult get_open_braces(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
-	return calc_expression(kar_token_child_get(token, 0), llvmData, moduleName, vars, errors);
+	return kar_generate_calc_expression(kar_token_child_get(token, 0), llvmData, moduleName, vars, errors);
 }
 
 static KarExpressionResult get_field(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
 	KarToken* right = kar_token_child_get(token, 1);
 
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	if (leftRes.value != NULL) {
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Левый операнд должен быть классом, а не экземпляром класса.");
 		return kar_expression_result_none();
@@ -426,7 +426,7 @@ static KarExpressionResult get_call_method(KarToken* token, KarLLVMData* llvmDat
 			return kar_expression_result_none();
 		}
 		funcName = nameToken->str;
-		cont = calc_expression(contToken, llvmData, moduleName, vars, errors);
+		cont = kar_generate_calc_expression(contToken, llvmData, moduleName, vars, errors);
 	} else if (left->str == NULL) {
 		funcName = get_token_string(left);
 		if (funcName == NULL) {
@@ -451,7 +451,7 @@ static KarExpressionResult get_call_method(KarToken* token, KarLLVMData* llvmDat
 	for (size_t i = 0; i < kar_token_child_count(token); i++) {
 		KarToken* child = kar_token_child_get(token , i);
 		if (child->type == KAR_TOKEN_SIGN_ARGUMENT) {
-			KarExpressionResult res = calc_expression(kar_token_child_get(child, 0), llvmData, moduleName, vars, errors);
+			KarExpressionResult res = kar_generate_calc_expression(kar_token_child_get(child, 0), llvmData, moduleName, vars, errors);
 			if (kar_expression_result_is_none(res)) {
 				KAR_FREE(argsVartree);
 				KAR_FREE(argsLLVM);
@@ -617,7 +617,7 @@ static KarExpressionResult getCleanValue(KarExpressionResult res_clean, KarToken
 
 static KarExpressionResult get_sign_unclean(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* leftToken = kar_token_child_get(token, 0);
-	KarExpressionResult left = calc_expression(leftToken, llvmData, moduleName, vars, errors);
+	KarExpressionResult left = kar_generate_calc_expression(leftToken, llvmData, moduleName, vars, errors);
 	KarVartree* varType = left.type;
 	if (varType == NULL) {
 		kar_project_error_list_create_add(errors, moduleName, &leftToken->cursor, 1, "Невозможно определить левую часть неопределённости.");
@@ -641,7 +641,7 @@ static KarExpressionResult get_sign_unclean(KarToken* token, KarLLVMData* llvmDa
 			kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Левая часть операции неопределённости - является значением, а не классом, при этом сеществует правая часть.");
 			return kar_expression_result_none();
 		}
-		right = calc_expression(kar_token_child_get(token, 1), llvmData, moduleName, vars, errors);
+		right = kar_generate_calc_expression(kar_token_child_get(token, 1), llvmData, moduleName, vars, errors);
 	}
 	if (kar_expression_result_is_none(right)) {
 		return kar_expression_result_none();
@@ -669,7 +669,7 @@ static KarExpressionResult get_sign_unclean(KarToken* token, KarLLVMData* llvmDa
 
 static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* leftToken = kar_token_child_get(token, 0);
-	KarExpressionResult left = calc_expression(leftToken, llvmData, moduleName, vars, errors);
+	KarExpressionResult left = kar_generate_calc_expression(leftToken, llvmData, moduleName, vars, errors);
 	if (!left.type || left.type->type != KAR_VARTYPE_UNCLEAN_CLASS) {
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Левая часть операции раскрытия выражения не является неопределённостью.");
 		return kar_expression_result_none();
@@ -694,7 +694,7 @@ static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData
 
 	LLVMPositionBuilderAtEnd(llvmData->builder, thenBlock);
 	KarToken* rightToken = kar_token_child_get(token, 1);
-	KarExpressionResult right = calc_expression(rightToken, llvmData, moduleName, vars, errors);
+	KarExpressionResult right = kar_generate_calc_expression(rightToken, llvmData, moduleName, vars, errors);
 	//KarVartree* cleanLeft = kar_vartree_args_get(left.type, 0);
 	KarExpressionResult cleanLeft = kar_expression_result_var(kar_vartree_args_get(left.type, 0));
 	if (!check_and_cast_types(&cleanLeft, &right, llvmData, vars)) {
@@ -723,7 +723,7 @@ static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData
 
 static KarExpressionResult get_sign_single_plus(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* child = kar_token_child_get(token, 0);
-	KarExpressionResult res = calc_expression(child, llvmData, moduleName, vars, errors);
+	KarExpressionResult res = kar_generate_calc_expression(child, llvmData, moduleName, vars, errors);
 	if (res.type == vars->standard.decimalType ||
 		res.type == vars->standard.hexadecimalType ||
 		res.type == vars->standard.literalFloatType ||
@@ -750,7 +750,7 @@ static KarExpressionResult get_sign_single_plus(KarToken* token, KarLLVMData* ll
 
 static KarExpressionResult get_sign_single_minus(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* child = kar_token_child_get(token, 0);
-	KarExpressionResult res = calc_expression(child, llvmData, moduleName, vars, errors);
+	KarExpressionResult res = kar_generate_calc_expression(child, llvmData, moduleName, vars, errors);
 	if (res.type == vars->standard.decimalType ||
 		res.type == vars->standard.hexadecimalType ||
 		res.type == vars->standard.int8Type ||
@@ -782,9 +782,9 @@ static KarExpressionResult get_sign_single_minus(KarToken* token, KarLLVMData* l
 
 static KarExpressionResult get_sign_plus(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
@@ -837,9 +837,9 @@ static KarExpressionResult get_sign_plus(KarToken* token, KarLLVMData* llvmData,
 
 static KarExpressionResult get_sign_minus(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
@@ -885,9 +885,9 @@ static KarExpressionResult get_sign_minus(KarToken* token, KarLLVMData* llvmData
 
 static KarExpressionResult get_sign_mul(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
@@ -933,9 +933,9 @@ static KarExpressionResult get_sign_mul(KarToken* token, KarLLVMData* llvmData, 
 
 static KarExpressionResult get_sign_div(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
@@ -1056,9 +1056,9 @@ static KarExpressionResult get_sign_div(KarToken* token, KarLLVMData* llvmData, 
 
 static KarExpressionResult get_sign_div_clean(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
@@ -1166,9 +1166,9 @@ static KarExpressionResult get_sign_div_clean(KarToken* token, KarLLVMData* llvm
 
 static KarExpressionResult get_sign_mod(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
@@ -1280,9 +1280,9 @@ static KarExpressionResult get_sign_mod(KarToken* token, KarLLVMData* llvmData, 
 
 static KarExpressionResult get_sign_mod_clean(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
@@ -1390,9 +1390,9 @@ static KarExpressionResult get_sign_mod_clean(KarToken* token, KarLLVMData* llvm
 
 static KarExpressionResult get_sign_bit_and(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
@@ -1431,9 +1431,9 @@ static KarExpressionResult get_sign_bit_and(KarToken* token, KarLLVMData* llvmDa
 
 static KarExpressionResult get_sign_bit_or(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
@@ -1472,9 +1472,9 @@ static KarExpressionResult get_sign_bit_or(KarToken* token, KarLLVMData* llvmDat
 
 static KarExpressionResult get_sign_bit_xor(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
@@ -1513,7 +1513,7 @@ static KarExpressionResult get_sign_bit_xor(KarToken* token, KarLLVMData* llvmDa
 
 static KarExpressionResult get_sign_bit_not(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 
 	if (leftRes.type == vars->standard.decimalType ||
 		leftRes.type == vars->standard.hexadecimalType ||
@@ -1542,9 +1542,9 @@ static KarExpressionResult get_sign_bit_not(KarToken* token, KarLLVMData* llvmDa
 
 static KarExpressionResult get_sign_bit_right(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
@@ -1590,9 +1590,9 @@ static KarExpressionResult get_sign_bit_right(KarToken* token, KarLLVMData* llvm
 
 static KarExpressionResult get_sign_bit_left(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
@@ -1631,9 +1631,9 @@ static KarExpressionResult get_sign_bit_left(KarToken* token, KarLLVMData* llvmD
 
 static KarExpressionResult get_sign_equal(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
@@ -1691,9 +1691,9 @@ static KarExpressionResult get_sign_equal(KarToken* token, KarLLVMData* llvmData
 
 static KarExpressionResult get_sign_not_equal(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
@@ -1751,9 +1751,9 @@ static KarExpressionResult get_sign_not_equal(KarToken* token, KarLLVMData* llvm
 
 static KarExpressionResult get_sign_greater(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
@@ -1817,9 +1817,9 @@ static KarExpressionResult get_sign_greater(KarToken* token, KarLLVMData* llvmDa
 
 static KarExpressionResult get_sign_greater_or_equal(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
@@ -1883,9 +1883,9 @@ static KarExpressionResult get_sign_greater_or_equal(KarToken* token, KarLLVMDat
 
 static KarExpressionResult get_sign_less(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
@@ -1949,9 +1949,9 @@ static KarExpressionResult get_sign_less(KarToken* token, KarLLVMData* llvmData,
 
 static KarExpressionResult get_sign_less_or_equal(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (!check_and_cast_types(&leftRes, &rightRes, llvmData, vars)) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(rightRes.type, vars));
@@ -2015,7 +2015,7 @@ static KarExpressionResult get_sign_less_or_equal(KarToken* token, KarLLVMData* 
 
 static KarExpressionResult get_sign_and(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	if (leftRes.type != vars->standard.boolType) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* errorText = kar_string_create_format("Операция логическое И слева от операнда недопустима для типа \"%s\".", pathLeft);
@@ -2025,7 +2025,7 @@ static KarExpressionResult get_sign_and(KarToken* token, KarLLVMData* llvmData, 
 		return kar_expression_result_none();
 	}
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (rightRes.type != vars->standard.boolType) {
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* errorText = kar_string_create_format("Операция логическое И справа от операнда недопустима для типа \"%s\".", pathRight);
@@ -2043,7 +2043,7 @@ static KarExpressionResult get_sign_and(KarToken* token, KarLLVMData* llvmData, 
 
 static KarExpressionResult get_sign_or(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	if (leftRes.type != vars->standard.boolType) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* errorText = kar_string_create_format("Операция логическое ИЛИ слева от операнда недопустима для типа \"%s\".", pathLeft);
@@ -2053,7 +2053,7 @@ static KarExpressionResult get_sign_or(KarToken* token, KarLLVMData* llvmData, K
 		return kar_expression_result_none();
 	}
 	KarToken* right = kar_token_child_get(token, 1);
-	KarExpressionResult rightRes = calc_expression(right, llvmData, moduleName, vars, errors);
+	KarExpressionResult rightRes = kar_generate_calc_expression(right, llvmData, moduleName, vars, errors);
 	if (rightRes.type != vars->standard.boolType) {
 		KarString* pathRight = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* errorText = kar_string_create_format("Операция логическое ИЛИ справа от операнда недопустима для типа \"%s\".", pathRight);
@@ -2071,7 +2071,7 @@ static KarExpressionResult get_sign_or(KarToken* token, KarLLVMData* llvmData, K
 
 static KarExpressionResult get_sign_not(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarToken* left = kar_token_child_get(token, 0);
-	KarExpressionResult leftRes = calc_expression(left, llvmData, moduleName, vars, errors);
+	KarExpressionResult leftRes = kar_generate_calc_expression(left, llvmData, moduleName, vars, errors);
 	if (leftRes.type != vars->standard.boolType) {
 		KarString* pathLeft = kar_vartree_create_full_path(get_reduced_type(leftRes.type, vars));
 		KarString* errorText = kar_string_create_format("Операция логическое НЕ недопустима для типа \"%s\".", pathLeft);
@@ -2087,7 +2087,7 @@ static KarExpressionResult get_sign_not(KarToken* token, KarLLVMData* llvmData, 
 	return res;
 }
 
-static KarExpressionResult calc_expression(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+KarExpressionResult kar_generate_calc_expression(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	// TODO: Проверить на компиляторе большое количество открывающихся и закрывающихся скобок.
 	switch (token->type) {
 
@@ -2156,7 +2156,7 @@ static KarExpressionResult calc_expression(KarToken* token, KarLLVMData* llvmDat
 
 bool kar_generate_expression(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	if (token->type != KAR_TOKEN_COMMAND_EXPRESSION) {
-		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Токен не является командой.");
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Токен не является выражением.");
 		return false;
 	}
 	if (kar_token_child_count(token) != 1) {
@@ -2164,6 +2164,6 @@ bool kar_generate_expression(KarToken* token, KarLLVMData* llvmData, KarString* 
 		return false;
 	}
 	KarToken* child = kar_token_child_get(token, 0);
-	KarExpressionResult res = calc_expression(child, llvmData, moduleName, vars, errors);
+	KarExpressionResult res = kar_generate_calc_expression(child, llvmData, moduleName, vars, errors);
 	return !kar_expression_result_is_none(res);
 }
