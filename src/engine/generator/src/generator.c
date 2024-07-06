@@ -52,6 +52,42 @@ static bool generate_commands(KarToken* token, KarLLVMData* llvmData, KarString*
 			}
 			KarLocalVar* var = kar_local_var_create(varNameToken->str, result.type, result.value);
 			kar_local_block_var_add(block, var);
+		} else if (child->type == KAR_TOKEN_COMMAND_ASSIGN) {
+			KarToken* varNameToken = kar_token_child_get(child, 0);
+			if (varNameToken->type != KAR_TOKEN_IDENTIFIER) {
+				kar_project_error_list_create_add(errors, moduleName, &varNameToken->cursor, 1, "Правая часть  имеет не корректное имя.");
+				LLVMBuildRetVoid(llvmData->builder);
+				return false;
+			}
+			KarLocalBlock* block = kar_local_stack_block_get(vars->locals, 0);
+			KarLocalVar* var = kar_local_block_get_var_by_name(block, varNameToken->str);
+			if (var == NULL) {
+				kar_project_error_list_create_add(errors, moduleName, &varNameToken->cursor, 1, "Переменной с таким именем не существует.");
+				LLVMBuildRetVoid(llvmData->builder);
+				return false;
+			}
+			KarToken* expressionToken = kar_token_child_get(child, 1);
+			KarExpressionResult result = kar_generate_calc_expression(expressionToken, llvmData, moduleName, vars, errors);
+			if (kar_expression_result_is_none(result)) {
+				LLVMBuildRetVoid(llvmData->builder);
+				return false;
+			}
+			KarExpressionResult varExpr = {var->type, var->value};
+			if (var->type != result.type && !kar_expression_cast_type(&result, &varExpr, llvmData, vars)) {
+				KarString* varType = kar_vartree_create_full_path(var->type);
+				KarString* expressionType = kar_vartree_create_full_path(result.type);
+				KarString* errorStr = kar_string_create_format(
+					"Попытка присвоить переменной %s с типом %s несовместимый с ним тип %s",
+					var->name, varType, expressionType
+				);
+				KAR_FREE(expressionType);
+				KAR_FREE(varType);
+				kar_project_error_list_create_add(errors, moduleName, &expressionToken->cursor, 1, errorStr);
+				KAR_FREE(errorStr);
+				LLVMBuildRetVoid(llvmData->builder);
+				return false;
+			}
+			var->value = result.value;
 		} else {
 			kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Токен не является командой.");
 			LLVMBuildRetVoid(llvmData->builder);

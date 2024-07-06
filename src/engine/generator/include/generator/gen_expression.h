@@ -18,6 +18,8 @@ typedef struct {
 
 bool kar_expression_result_is_none(KarExpressionResult result);
 
+bool kar_expression_cast_type(KarExpressionResult* varFrom, KarExpressionResult* varTo, KarLLVMData *llvmData, KarVars *vars);
+
 KarExpressionResult kar_generate_calc_expression(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors);
 bool kar_generate_expression(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors);
 

@@ -36,7 +36,7 @@ bool kar_expression_result_is_none(KarExpressionResult result) {
 	return (result.type == NULL && result.value == NULL);
 }
 
-static bool cast_type(KarExpressionResult* varFrom, KarExpressionResult* varTo, KarLLVMData *llvmData, KarVars *vars) {
+bool kar_expression_cast_type(KarExpressionResult* varFrom, KarExpressionResult* varTo, KarLLVMData *llvmData, KarVars *vars) {
 	if (
 		varFrom->type == vars->standard.decimalType
 	) {
@@ -141,8 +141,8 @@ static bool check_and_cast_types(KarExpressionResult* var1, KarExpressionResult*
 	if (var1->type == var2->type) {
 		return true;
 	}
-	return cast_type(var1, var2, llvmData, vars) ||
-			cast_type(var2, var1, llvmData, vars);
+	return kar_expression_cast_type(var1, var2, llvmData, vars) ||
+			kar_expression_cast_type(var2, var1, llvmData, vars);
 }
 
 static KarExpressionResult  get_val_null(KarVars* vars) {
