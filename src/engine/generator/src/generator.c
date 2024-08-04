@@ -52,6 +52,27 @@ static bool generate_commands(KarToken* token, KarLLVMData* llvmData, KarString*
 			}
 			KarLocalVar* var = kar_local_var_create(varNameToken->str, result.type, result.value);
 			kar_local_block_var_add(block, var);
+		} else if (child->type == KAR_TOKEN_COMMAND_CONST_DECLARATION) {
+			KarToken* varNameToken = kar_token_child_get(child, 0);
+			if (varNameToken->type != KAR_TOKEN_IDENTIFIER) {
+				kar_project_error_list_create_add(errors, moduleName, &varNameToken->cursor, 1, "Правая часть объявления переменной имеет не корректное имя.");
+				LLVMBuildRetVoid(llvmData->builder);
+				return false;
+			}
+			KarLocalBlock* block = kar_local_stack_block_get(vars->locals, 0);
+			if (kar_local_block_get_var_by_name(block, varNameToken->str) != NULL) {
+				kar_project_error_list_create_add(errors, moduleName, &varNameToken->cursor, 1, "Переменная с таким именем уже существует.");
+				LLVMBuildRetVoid(llvmData->builder);
+				return false;
+			}
+			KarToken* expressionToken = kar_token_child_get(child, 1);
+			KarExpressionResult result = kar_generate_calc_expression(expressionToken, llvmData, moduleName, vars, errors);
+			if (kar_expression_result_is_none(result)) {
+				LLVMBuildRetVoid(llvmData->builder);
+				return false;
+			}
+			KarLocalVar* var = kar_local_var_create_const(varNameToken->str, result.type, result.value);
+			kar_local_block_var_add(block, var);
 		} else if (child->type == KAR_TOKEN_COMMAND_ASSIGN) {
 			KarToken* varNameToken = kar_token_child_get(child, 0);
 			if (varNameToken->type != KAR_TOKEN_IDENTIFIER) {
@@ -63,6 +84,11 @@ static bool generate_commands(KarToken* token, KarLLVMData* llvmData, KarString*
 			KarLocalVar* var = kar_local_block_get_var_by_name(block, varNameToken->str);
 			if (var == NULL) {
 				kar_project_error_list_create_add(errors, moduleName, &varNameToken->cursor, 1, "Переменной с таким именем не существует.");
+				LLVMBuildRetVoid(llvmData->builder);
+				return false;
+			}
+			if (var->is_const) {
+				kar_project_error_list_create_add(errors, moduleName, &varNameToken->cursor, 1, "Попытка присвоения константе нового значения.");
 				LLVMBuildRetVoid(llvmData->builder);
 				return false;
 			}

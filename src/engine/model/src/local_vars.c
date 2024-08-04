@@ -12,6 +12,18 @@ KarLocalVar* kar_local_var_create(KarString* name, KarVartree* type, void* value
 	KAR_CREATE(var, KarLocalVar);
 
 	var->name = kar_string_create(name);
+	var->is_const = false;
+	var->type = type;
+	var->value = value;
+
+	return var;
+}
+
+KarLocalVar* kar_local_var_create_const(KarString* name, KarVartree* type, void* value) {
+	KAR_CREATE(var, KarLocalVar);
+
+	var->name = kar_string_create(name);
+	var->is_const = true;
 	var->type = type;
 	var->value = value;
 

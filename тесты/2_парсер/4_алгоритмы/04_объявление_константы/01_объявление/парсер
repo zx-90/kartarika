@@ -1,0 +1,11 @@
+MODULE(1, 1): --
+	METHOD(1, 1): [Затычка]
+		METHOD_MODIFIER(1, 1): --
+		METHOD_PARAMETERS(1, 14): --
+		METHOD_RETURN_TYPE(1, 16): --
+		BLOCK_BODY(2, 1): --
+			COMMAND_CONST_DECLARATION(2, 2): --
+				IDENTIFIER(2, 8): [А]
+				SIGN_PLUS(2, 13): --
+					VAL_INTEGER(2, 12): [2]
+					VAL_INTEGER(2, 14): [3]

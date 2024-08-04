@@ -16,11 +16,13 @@
 
 typedef struct {
 	KarString* name;
+	bool is_const;
 	KarVartree* type;
 	void* value;
 } KarLocalVar;
 
 KarLocalVar* kar_local_var_create(KarString* name, KarVartree* type, void* value);
+KarLocalVar* kar_local_var_create_const(KarString* name, KarVartree* type, void* value);
 void kar_local_var_free(KarLocalVar* var);
 
 bool kar_local_var_less(KarLocalVar* var1, KarLocalVar* var2);
