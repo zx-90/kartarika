@@ -114,6 +114,23 @@ static bool generate_commands(KarToken* token, KarLLVMData* llvmData, KarString*
 				return false;
 			}
 			var->value = result.value;
+		} else if (child->type == KAR_TOKEN_COMMAND_BLOCK) {
+			if (kar_token_child_count(child) != 1) {
+				kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Внутренняя ошибка. Количество потомков блока должно быть равно 1.");
+				LLVMBuildRetVoid(llvmData->builder);
+				return false;
+			}
+			KarToken* block_body = kar_token_child_get(child, 0);
+			if (block_body->type != KAR_TOKEN_BLOCK_BODY) {
+				kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Внутренняя ошибка. Тип потомка блока не является его телом.");
+				LLVMBuildRetVoid(llvmData->builder);
+				return false;
+			}
+			kar_local_stack_block_insert(vars->locals, kar_local_block_create(), 0);
+			if (!generate_commands(block_body, llvmData, moduleName, vars, errors)) {
+				return false;
+			}
+			kar_local_stack_block_erase(vars->locals, 0);
 		} else {
 			kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Токен не является командой.");
 			LLVMBuildRetVoid(llvmData->builder);
