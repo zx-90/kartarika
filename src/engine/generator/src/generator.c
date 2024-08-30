@@ -21,124 +21,7 @@
 #include "core/alloc.h"
 #include "model/vartree_function_params.h"
 #include "generator/llvm_data.h"
-#include "generator/gen_expression.h"
-
-static bool generate_commands(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
-	for (size_t i = 0; i < kar_token_child_count(token); ++i) {
-		KarToken* child = kar_token_child_get(token, i);
-		if (child->type == KAR_TOKEN_COMMAND_EXPRESSION) {
-			if (!kar_generate_expression(child, llvmData, moduleName, vars, errors)) {
-				LLVMBuildRetVoid(llvmData->builder);
-				return false;
-			}
-		} else if (child->type == KAR_TOKEN_COMMAND_DECLARATION) {
-			KarToken* varNameToken = kar_token_child_get(child, 0);
-			if (varNameToken->type != KAR_TOKEN_IDENTIFIER) {
-				kar_project_error_list_create_add(errors, moduleName, &varNameToken->cursor, 1, "Правая часть объявления переменной имеет не корректное имя.");
-				LLVMBuildRetVoid(llvmData->builder);
-				return false;
-			}
-			KarLocalBlock* block = kar_local_stack_block_get(vars->locals, 0);
-			if (kar_local_block_get_var_by_name(block, varNameToken->str) != NULL) {
-				kar_project_error_list_create_add(errors, moduleName, &varNameToken->cursor, 1, "Переменная с таким именем уже существует.");
-				LLVMBuildRetVoid(llvmData->builder);
-				return false;
-			}
-			KarToken* expressionToken = kar_token_child_get(child, 1);
-			KarExpressionResult result = kar_generate_calc_expression(expressionToken, llvmData, moduleName, vars, errors);
-			if (kar_expression_result_is_none(result)) {
-				LLVMBuildRetVoid(llvmData->builder);
-				return false;
-			}
-			KarLocalVar* var = kar_local_var_create(varNameToken->str, result.type, result.value);
-			kar_local_block_var_add(block, var);
-		} else if (child->type == KAR_TOKEN_COMMAND_CONST_DECLARATION) {
-			KarToken* varNameToken = kar_token_child_get(child, 0);
-			if (varNameToken->type != KAR_TOKEN_IDENTIFIER) {
-				kar_project_error_list_create_add(errors, moduleName, &varNameToken->cursor, 1, "Правая часть объявления переменной имеет не корректное имя.");
-				LLVMBuildRetVoid(llvmData->builder);
-				return false;
-			}
-			KarLocalBlock* block = kar_local_stack_block_get(vars->locals, 0);
-			if (kar_local_block_get_var_by_name(block, varNameToken->str) != NULL) {
-				kar_project_error_list_create_add(errors, moduleName, &varNameToken->cursor, 1, "Переменная с таким именем уже существует.");
-				LLVMBuildRetVoid(llvmData->builder);
-				return false;
-			}
-			KarToken* expressionToken = kar_token_child_get(child, 1);
-			KarExpressionResult result = kar_generate_calc_expression(expressionToken, llvmData, moduleName, vars, errors);
-			if (kar_expression_result_is_none(result)) {
-				LLVMBuildRetVoid(llvmData->builder);
-				return false;
-			}
-			KarLocalVar* var = kar_local_var_create_const(varNameToken->str, result.type, result.value);
-			kar_local_block_var_add(block, var);
-		} else if (child->type == KAR_TOKEN_COMMAND_ASSIGN) {
-			KarToken* varNameToken = kar_token_child_get(child, 0);
-			if (varNameToken->type != KAR_TOKEN_IDENTIFIER) {
-				kar_project_error_list_create_add(errors, moduleName, &varNameToken->cursor, 1, "Правая часть  имеет не корректное имя.");
-				LLVMBuildRetVoid(llvmData->builder);
-				return false;
-			}
-			KarLocalBlock* block = kar_local_stack_block_get(vars->locals, 0);
-			KarLocalVar* var = kar_local_block_get_var_by_name(block, varNameToken->str);
-			if (var == NULL) {
-				kar_project_error_list_create_add(errors, moduleName, &varNameToken->cursor, 1, "Переменной с таким именем не существует.");
-				LLVMBuildRetVoid(llvmData->builder);
-				return false;
-			}
-			if (var->is_const) {
-				kar_project_error_list_create_add(errors, moduleName, &varNameToken->cursor, 1, "Попытка присвоения константе нового значения.");
-				LLVMBuildRetVoid(llvmData->builder);
-				return false;
-			}
-			KarToken* expressionToken = kar_token_child_get(child, 1);
-			KarExpressionResult result = kar_generate_calc_expression(expressionToken, llvmData, moduleName, vars, errors);
-			if (kar_expression_result_is_none(result)) {
-				LLVMBuildRetVoid(llvmData->builder);
-				return false;
-			}
-			KarExpressionResult varExpr = {var->type, var->value};
-			if (var->type != result.type && !kar_expression_cast_type(&result, &varExpr, llvmData, vars)) {
-				KarString* varType = kar_vartree_create_full_path(var->type);
-				KarString* expressionType = kar_vartree_create_full_path(result.type);
-				KarString* errorStr = kar_string_create_format(
-					"Попытка присвоить переменной %s с типом %s несовместимый с ним тип %s",
-					var->name, varType, expressionType
-				);
-				KAR_FREE(expressionType);
-				KAR_FREE(varType);
-				kar_project_error_list_create_add(errors, moduleName, &expressionToken->cursor, 1, errorStr);
-				KAR_FREE(errorStr);
-				LLVMBuildRetVoid(llvmData->builder);
-				return false;
-			}
-			var->value = result.value;
-		} else if (child->type == KAR_TOKEN_COMMAND_BLOCK) {
-			if (kar_token_child_count(child) != 1) {
-				kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Внутренняя ошибка. Количество потомков блока должно быть равно 1.");
-				LLVMBuildRetVoid(llvmData->builder);
-				return false;
-			}
-			KarToken* block_body = kar_token_child_get(child, 0);
-			if (block_body->type != KAR_TOKEN_BLOCK_BODY) {
-				kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Внутренняя ошибка. Тип потомка блока не является его телом.");
-				LLVMBuildRetVoid(llvmData->builder);
-				return false;
-			}
-			kar_local_stack_block_insert(vars->locals, kar_local_block_create(), 0);
-			if (!generate_commands(block_body, llvmData, moduleName, vars, errors)) {
-				return false;
-			}
-			kar_local_stack_block_erase(vars->locals, 0);
-		} else {
-			kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Токен не является командой.");
-			LLVMBuildRetVoid(llvmData->builder);
-			return false;
-		}
-	}
-	return true;
-}
+#include "generator/gen_algorithm.h"
 
 static bool generate_function(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	if (token->type != KAR_TOKEN_METHOD) {
@@ -153,7 +36,7 @@ static bool generate_function(KarToken* token, KarLLVMData* llvmData, KarString*
 		KarToken* body = kar_token_child_get_last(token, 0);
 
 		kar_local_stack_block_insert(vars->locals, kar_local_block_create(), 0);
-		if (!generate_commands(body, llvmData, moduleName, vars, errors)) {
+		if (!kar_generate_algorithm(body, llvmData, moduleName, vars, errors)) {
 			return false;
 		}
 		kar_local_stack_block_erase(vars->locals, 0);
