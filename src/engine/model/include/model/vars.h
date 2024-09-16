@@ -74,8 +74,9 @@ KarVars* kar_vars_create();
 void kar_vars_free(KarVars* vars);
 
 KarLocalVar* kar_vars_local_find(KarVars* vars, KarString* name);
-KarVartree* kar_vars_find(KarVars* vars, KarString* name);
-KarVartree* kar_vars_find_args(KarVars* vars, KarString* name, KarVartree** args, size_t args_count);
+KarVartree* kar_vars_find_root(KarVars* vars, KarString* name);
+KarVartree* kar_vars_find_root_args(KarVars* vars, KarString* name, KarVartree** args, size_t args_count);
+KarVartree* kar_vars_find_child(KarVars* vars, KarVartree* parent, KarString* name, KarVartree** args, size_t args_count);
 
 KAR_ARRAY_HEADER(vars_default_list, KarVars, KarVartree)
 

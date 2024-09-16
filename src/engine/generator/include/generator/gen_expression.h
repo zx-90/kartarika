@@ -17,6 +17,7 @@ typedef struct {
 } KarExpressionResult;
 
 bool kar_expression_result_is_none(KarExpressionResult result);
+LLVMValueRef getLLVMCleanFunctionByType(KarVartypeElement type, KarLLVMData* llvmData);
 
 bool kar_expression_cast_type(KarExpressionResult* varFrom, KarExpressionResult* varTo, KarLLVMData *llvmData, KarVars *vars);
 

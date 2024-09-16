@@ -298,14 +298,6 @@ static KarExpressionResult get_val_char(KarString*str, KarLLVMData* llvmData, Ka
 	return result;
 }
 
-static KarVartree* get_new_context(KarVartree* context, KarString* name, KarVartree** args, size_t args_count, KarVars* vars) {
-	if (context == NULL) {
-		return kar_vars_find_args(vars, name, args, args_count);
-	} else {
-		return kar_vartree_find_args(context, name, args, args_count);
-	}
-}
-
 static KarExpressionResult get_identifier(KarToken* token, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	KarLocalVar* local = kar_vars_local_find(vars, token->str);
 	if (local != NULL) {
@@ -315,7 +307,7 @@ static KarExpressionResult get_identifier(KarToken* token, KarString* moduleName
 		return res;
 	}
 	KarExpressionResult res = kar_expression_result_none();
-	res.type = kar_vars_find(vars, token->str);
+	res.type = kar_vars_find_root(vars, token->str);
 	if (kar_expression_result_is_none(res)) {
 		KarString* error_text = kar_string_create_format("Не могу найти поле \"%s\".", token->str);
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, error_text);
@@ -477,7 +469,7 @@ static KarExpressionResult get_call_method(KarToken* token, KarLLVMData* llvmDat
 		return res;
 	}
 
-	KarVartree* function = get_new_context(cont.type, funcName, argsVartree, num, vars);
+	KarVartree* function = kar_vars_find_child(vars, cont.type, funcName, argsVartree, num);
 	if (function == NULL) {
 		KarString* errorText = kar_string_create_format("Не могу найти объект \"%s\".", kar_vartree_create_full_name_args(funcName, argsVartree, num));
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, errorText);
@@ -539,7 +531,7 @@ static KarVartree* getUncleanVarByType(KarVartypeElement type, KarVars* vars) {
 	return NULL;
 }
 
-static LLVMValueRef getLLVMCleanFunctionByType(KarVartypeElement type, KarLLVMData* llvmData) {
+LLVMValueRef getLLVMCleanFunctionByType(KarVartypeElement type, KarLLVMData* llvmData) {
 	switch (type) {
 		case KAR_VARTYPE_BOOL: return llvmData->uncleanBool;
 		case KAR_VARTYPE_0INTEGER: return llvmData->uncleanInteger64;
@@ -675,7 +667,7 @@ static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData
 		return kar_expression_result_none();
 	}
 
-	KarVartree* function = get_new_context(vars->standard.unclean, "ПустойЛи", NULL, 0, vars);
+	KarVartree* function = kar_vars_find_child(vars, vars->standard.unclean, "ПустойЛи", NULL, 0);
 	KarLLVMFunction* llvmFunc = kar_llvm_data_get_function(llvmData, function, vars);
 	LLVMValueRef expressionValue = LLVMBuildCall(llvmData->builder, kar_llvm_function_get_ref(llvmFunc), &left.value, 1, "var");
 

@@ -83,7 +83,7 @@ KarLocalVar* kar_vars_local_find(KarVars* vars, KarString* name) {
 	return NULL;
 }
 
-KarVartree* kar_vars_find(KarVars* vars, KarString* name) {
+KarVartree* kar_vars_find_root(KarVars* vars, KarString* name) {
 	if (name == NULL) {
 		return NULL;
 	}
@@ -96,7 +96,7 @@ KarVartree* kar_vars_find(KarVars* vars, KarString* name) {
     return NULL;
 }
 
-KarVartree* kar_vars_find_args(KarVars* vars, KarString* name, KarVartree** args, size_t args_count) {
+KarVartree* kar_vars_find_root_args(KarVars* vars, KarString* name, KarVartree** args, size_t args_count) {
 	if (name == NULL) {
 		return NULL;
 	}
@@ -107,6 +107,14 @@ KarVartree* kar_vars_find_args(KarVars* vars, KarString* name, KarVartree** args
 		}
 	}
 	return NULL;
+}
+
+KarVartree* kar_vars_find_child(KarVars* vars, KarVartree* parent, KarString* name, KarVartree** args, size_t args_count) {
+	if (parent == NULL) {
+		return kar_vars_find_root_args(vars, name, args, args_count);
+	} else {
+		return kar_vartree_find_args(parent, name, args, args_count);
+	}
 }
 
 KAR_ARRAY_CODE(vars_default_list, KarVars, KarVartree, default_list, kar_vartree_free)
