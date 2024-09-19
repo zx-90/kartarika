@@ -122,16 +122,6 @@ static bool generate_clean(KarToken* token, KarLLVMData* llvmData, KarString* mo
 	if (kar_expression_result_is_none(uncleaned)) {
 		return false;
 	}
-	/*if (identifier->type != KAR_TOKEN_IDENTIFIER) {
-		kar_project_error_list_create_add(errors, moduleName, &identifier->cursor, 1, "Раскрыть можно только переменную.");
-		return false;
-	}*/
-	/*KarLocalBlock* block = kar_local_stack_block_get(vars->locals, 0);
-	KarLocalVar* uncleaned = kar_local_block_get_var_by_name(block, identifier->str);
-	if (!uncleaned) {
-		kar_project_error_list_create_add(errors, moduleName, &identifier->cursor, 1, "Не найдена переменная для раскрытия.");
-		return false;
-	}*/
 	if (uncleaned.type->type != KAR_VARTYPE_UNCLEAN_CLASS) {
 		kar_project_error_list_create_add(errors, moduleName, &uncleanedToken->cursor, 1, "Переменная не является неопределённостью.");
 		return false;
@@ -215,6 +205,67 @@ static bool generate_clean(KarToken* token, KarLLVMData* llvmData, KarString* mo
 	return true;
 }
 
+static bool generate_one_if(KarToken* token, size_t i, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	KarToken* conditionToken = kar_token_child_get(token, i);
+	KarExpressionResult condition = kar_generate_calc_expression(conditionToken, llvmData, moduleName, vars, errors);
+	if (kar_expression_result_is_none(condition)) {
+		return false;
+	}
+	if (condition.type->type != KAR_VARTYPE_BOOL) {
+		kar_project_error_list_create_add(errors, moduleName, &conditionToken->cursor, 1, "Условие должно содержать выражение, возврщающее тип \"Буль\".");
+		return false;
+	}
+
+	LLVMValueRef theFunction = LLVMGetBasicBlockParent(LLVMGetInsertBlock(llvmData->builder));
+	KarString* thenString = kar_string_create_format("then%lu", llvmData->counter);
+	LLVMBasicBlockRef thenBlock = LLVMAppendBasicBlock(theFunction, thenString);
+	KAR_FREE(thenString);
+	KarString* elseString = kar_string_create_format("else%lu", llvmData->counter);
+	LLVMBasicBlockRef elseBlock = LLVMAppendBasicBlock(theFunction, elseString);
+	KAR_FREE(elseString);
+	KarString* mergeString = kar_string_create_format("merge%lu", llvmData->counter);
+	LLVMBasicBlockRef mergeBlock = LLVMAppendBasicBlock(theFunction, mergeString);
+	KAR_FREE(mergeString);
+	llvmData->counter++;
+	LLVMBuildCondBr(llvmData->builder, condition.value, thenBlock, elseBlock);
+
+	LLVMPositionBuilderAtEnd(llvmData->builder, thenBlock);
+	if (!generate_block_body(kar_token_child_get(token, i + 1), llvmData, moduleName, vars, errors)) {
+		return false;
+	}
+	LLVMBuildBr(llvmData->builder, mergeBlock);
+	thenBlock = LLVMGetInsertBlock(llvmData->builder);
+
+	LLVMPositionBuilderAtEnd(llvmData->builder, elseBlock);
+	if (i + 2 < kar_token_child_count(token)) {
+		if (!generate_one_if(token, i + 2, llvmData, moduleName, vars, errors)) {
+			return false;
+		}
+	}
+	LLVMBuildBr(llvmData->builder, mergeBlock);
+	elseBlock = LLVMGetInsertBlock(llvmData->builder);
+
+	LLVMPositionBuilderAtEnd(llvmData->builder, mergeBlock);
+	LLVMValueRef phi = LLVMBuildPhi(llvmData->builder, LLVMVoidType(), "ph");
+	LLVMValueRef phi_res = LLVMConstInt(LLVMInt1Type(), 0, 0);
+	LLVMValueRef phi_res2 = LLVMConstInt(LLVMInt1Type(), 0, 0);
+	LLVMAddIncoming(phi, &phi_res, &thenBlock, 1);
+	LLVMAddIncoming(phi, &phi_res2, &elseBlock, 1);
+
+	return true;
+
+}
+
+static bool generate_if(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	size_t count = kar_token_child_count(token);
+	if (count % 2 != 0) {
+		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Внутрення ошибка при парсинге блока \"если\". Количество потомков блока нечётное.");
+		return false;
+	}
+
+	return generate_one_if(token, 0, llvmData, moduleName, vars, errors);
+}
+
 static bool generate_algorithm(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
 	switch (token->type) {
 	case (KAR_TOKEN_COMMAND_EXPRESSION):
@@ -229,6 +280,8 @@ static bool generate_algorithm(KarToken* token, KarLLVMData* llvmData, KarString
 		return generate_block(token, llvmData, moduleName, vars, errors);
 	case (KAR_TOKEN_COMMAND_CLEAN):
 		return generate_clean(token, llvmData, moduleName, vars, errors);
+	case (KAR_TOKEN_COMMAND_IF):
+		return generate_if(token, llvmData, moduleName, vars, errors);
 	default:
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Токен не является командой.");
 		LLVMBuildRetVoid(llvmData->builder);
