@@ -56,6 +56,7 @@ KarLocalBlock* kar_local_block_create() {
 	KAR_CREATE(block, KarLocalBlock);
 
 	kar_local_block_var_init(block);
+	block->blockParams = NULL;
 
 	return block;
 }
@@ -83,6 +84,7 @@ KarLocalStack* kar_local_stack_create() {
 	KAR_CREATE(stack, KarLocalStack);
 
 	kar_local_stack_block_init(stack);
+	stack->params = NULL;
 
 	return stack;
 }

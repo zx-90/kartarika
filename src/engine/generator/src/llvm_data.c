@@ -157,3 +157,25 @@ KarLLVMFunction* kar_llvm_data_get_function(KarLLVMData* llvmData, KarVartree* f
 	kar_llvm_function_init(llvmFunc, llvmData->module, vars);
 	return llvmFunc;
 }
+
+LLVMValueRef kar_llvm_data_get_clean_function_by_type(KarLLVMData* llvmData, KarVartypeElement type) {
+	switch (type) {
+		case KAR_VARTYPE_BOOL: return llvmData->uncleanBool;
+		case KAR_VARTYPE_0INTEGER: return llvmData->uncleanInteger64;
+		case KAR_VARTYPE_0HEX: return llvmData->uncleanUnsigned64;
+		case KAR_VARTYPE_0FLOAT: return llvmData->uncleanFloat64;
+		case KAR_VARTYPE_INTEGER8: return llvmData->uncleanInteger8;
+		case KAR_VARTYPE_INTEGER16: return llvmData->uncleanInteger16;
+		case KAR_VARTYPE_INTEGER32: return llvmData->uncleanInteger32;
+		case KAR_VARTYPE_INTEGER64: return llvmData->uncleanInteger64;
+		case KAR_VARTYPE_UNSIGNED8: return llvmData->uncleanUnsigned8;
+		case KAR_VARTYPE_UNSIGNED16: return llvmData->uncleanUnsigned16;
+		case KAR_VARTYPE_UNSIGNED32: return llvmData->uncleanUnsigned32;
+		case KAR_VARTYPE_UNSIGNED64: return llvmData->uncleanUnsigned64;
+		case KAR_VARTYPE_FLOAT32: return llvmData->uncleanFloat32;
+		case KAR_VARTYPE_FLOAT64: return llvmData->uncleanFloat64;
+		case KAR_VARTYPE_STRING: return llvmData->uncleanString;
+		default: return NULL;
+	}
+	return NULL;
+}

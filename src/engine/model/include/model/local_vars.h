@@ -32,6 +32,7 @@ bool kar_local_var_equal(KarLocalVar* var1, KarLocalVar* var2);
 
 typedef struct {
 	KAR_SET_STRUCT(KarLocalVar) vars;
+	void* blockParams;
 } KarLocalBlock;
 
 KarLocalBlock* kar_local_block_create();
@@ -47,6 +48,7 @@ KAR_SET_HEADER(local_block_var, KarLocalBlock, KarLocalVar)
 
 typedef struct {
 	KAR_ARRAY_STRUCT(KarLocalBlock) blocks;
+	void* params;
 } KarLocalStack;
 
 KarLocalStack* kar_local_stack_create();

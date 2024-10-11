@@ -10,6 +10,35 @@
 
 #include <llvm-c/Core.h>
 
+typedef struct {
+	LLVMBasicBlockRef continueLabel;
+	LLVMBasicBlockRef breakLabel;
+} KarBlockParams;
+
+/*
+Эти две функции написаны, чтобы обойти багу LLVM.
+Так как если пишешь 2 перехода подряд:
+
+	br label %exit0
+	br label %merge1
+
+То он переходит по последней ссылке. А в откомпилированном *.ll файле
+переходит по первой метке. Так что приходится убирать вторую и дальше метки.
+
+*/
+
+static void set_jump(LLVMBasicBlockRef ref, KarLLVMData* llvmData, KarVars* vars) {
+	if (!vars->locals->params) {
+		LLVMBuildBr(llvmData->builder, ref);
+	}
+	vars->locals->params = (void*)true;
+}
+
+static LLVMBasicBlockRef end_block(KarLLVMData* llvmData, KarVars* vars) {
+	vars->locals->params = false;
+	return LLVMGetInsertBlock(llvmData->builder);
+}
+
 static bool generate_algorithm(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors);
 
 static bool generate_declaration(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
@@ -28,7 +57,18 @@ static bool generate_declaration(KarToken* token, KarLLVMData* llvmData, KarStri
 	if (kar_expression_result_is_none(result)) {
 		return false;
 	}
-	KarLocalVar* var = kar_local_var_create(varNameToken->str, result.type, result.value);
+	LLVMTypeRef type = kar_expression_get_type_by_vartype(vars, result.type);
+	if (type == NULL) {
+		kar_project_error_list_create_add(errors, moduleName, &expressionToken->cursor, 1, "Неизвестный тип для присваивания переменной.");
+		return false;
+	}
+	LLVMValueRef varAlloc = LLVMBuildAlloca(llvmData->builder, type, varNameToken->str);
+	LLVMBuildStore(llvmData->builder, kar_expression_get_reduced_value(result.type, result.value, llvmData, vars), varAlloc);
+	KarLocalVar* var = kar_local_var_create(
+		varNameToken->str,
+		kar_expression_get_reduced_type(result.type, vars),
+		varAlloc
+	);
 	kar_local_block_var_add(block, var);
 	return true;
 }
@@ -60,8 +100,7 @@ static bool generate_assign(KarToken* token, KarLLVMData* llvmData, KarString* m
 		kar_project_error_list_create_add(errors, moduleName, &varNameToken->cursor, 1, "Правая часть  имеет не корректное имя.");
 		return false;
 	}
-	KarLocalBlock* block = kar_local_stack_block_get(vars->locals, 0);
-	KarLocalVar* var = kar_local_block_get_var_by_name(block, varNameToken->str);
+	KarLocalVar* var = kar_vars_local_find(vars, varNameToken->str);
 	if (var == NULL) {
 		kar_project_error_list_create_add(errors, moduleName, &varNameToken->cursor, 1, "Переменной с таким именем не существует.");
 		return false;
@@ -89,7 +128,7 @@ static bool generate_assign(KarToken* token, KarLLVMData* llvmData, KarString* m
 		KAR_FREE(errorStr);
 		return false;
 	}
-	var->value = result.value;
+	LLVMBuildStore(llvmData->builder, result.value, var->value);
 	return true;
 }
 
@@ -131,7 +170,7 @@ static bool generate_clean(KarToken* token, KarLLVMData* llvmData, KarString* mo
 	KarLLVMFunction* llvmFunc = kar_llvm_data_get_function(llvmData, function, vars);
 	LLVMValueRef expressionValue = LLVMBuildCall(llvmData->builder, kar_llvm_function_get_ref(llvmFunc), (LLVMValueRef*)&uncleaned.value, 1, "var");
 
-	LLVMValueRef theFunction = LLVMGetBasicBlockParent(LLVMGetInsertBlock(llvmData->builder));
+	LLVMValueRef theFunction = LLVMGetBasicBlockParent(end_block(llvmData, vars));
 	KarString* thenString = kar_string_create_format("then%lu", llvmData->counter);
 	LLVMBasicBlockRef thenBlock = LLVMAppendBasicBlock(theFunction, thenString);
 	KAR_FREE(thenString);
@@ -152,8 +191,8 @@ static bool generate_clean(KarToken* token, KarLLVMData* llvmData, KarString* mo
 		}
 	}
 
-	LLVMBuildBr(llvmData->builder, mergeBlock);
-	thenBlock = LLVMGetInsertBlock(llvmData->builder);
+	set_jump(mergeBlock, llvmData, vars);
+	thenBlock = end_block(llvmData, vars);
 
 	LLVMPositionBuilderAtEnd(llvmData->builder, elseBlock);
 
@@ -179,11 +218,13 @@ static bool generate_clean(KarToken* token, KarLLVMData* llvmData, KarString* mo
 		return false;
 	}
 	KarVartree* cleanType = kar_vartree_args_get(uncleaned.type, 0);
-	LLVMValueRef cleanValue = LLVMBuildCall(llvmData->builder, getLLVMCleanFunctionByType(cleanType->type, llvmData), (LLVMValueRef*)&uncleaned.value, 1, "");
+	LLVMValueRef cleanValue = LLVMBuildCall(llvmData->builder, kar_llvm_data_get_clean_function_by_type(llvmData, cleanType->type), (LLVMValueRef*)&uncleaned.value, 1, "");
 
 	kar_local_stack_block_insert(vars->locals, kar_local_block_create(), 0);
 	KarLocalBlock* subblock = kar_local_stack_block_get(vars->locals, 0);
-	KarLocalVar* var = kar_local_var_create(cleanName, cleanType, cleanValue);
+	// TODO: При раскрытии переменная становится константой, её нельзя менять внутри блока.
+	// Надо бы исправить на переменную.
+	KarLocalVar* var = kar_local_var_create_const(cleanName, cleanType, cleanValue);
 	kar_local_block_var_add(subblock, var);
 
 	if (!kar_generate_algorithm(thenToken, llvmData, moduleName, vars, errors)) {
@@ -192,11 +233,11 @@ static bool generate_clean(KarToken* token, KarLLVMData* llvmData, KarString* mo
 	}
 	kar_local_stack_block_erase(vars->locals, 0);
 
-	LLVMBuildBr(llvmData->builder, mergeBlock);
-	elseBlock = LLVMGetInsertBlock(llvmData->builder);
+	set_jump(mergeBlock, llvmData, vars);
+	elseBlock = end_block(llvmData, vars);
 
 	LLVMPositionBuilderAtEnd(llvmData->builder, mergeBlock);
-	LLVMValueRef phi = LLVMBuildPhi(llvmData->builder, LLVMVoidType(), "ph");
+	LLVMValueRef phi = LLVMBuildPhi(llvmData->builder, LLVMInt1Type(), "ph");
 	LLVMValueRef phi_res = LLVMConstInt(LLVMInt1Type(), 0, 0);
 	LLVMValueRef phi_res2 = LLVMConstInt(LLVMInt1Type(), 0, 0);
 	LLVMAddIncoming(phi, &phi_res, &thenBlock, 1);
@@ -216,7 +257,7 @@ static bool generate_one_if(KarToken* token, size_t i, KarLLVMData* llvmData, Ka
 		return false;
 	}
 
-	LLVMValueRef theFunction = LLVMGetBasicBlockParent(LLVMGetInsertBlock(llvmData->builder));
+	LLVMValueRef theFunction = LLVMGetBasicBlockParent(end_block(llvmData, vars));
 	KarString* thenString = kar_string_create_format("then%lu", llvmData->counter);
 	LLVMBasicBlockRef thenBlock = LLVMAppendBasicBlock(theFunction, thenString);
 	KAR_FREE(thenString);
@@ -233,8 +274,8 @@ static bool generate_one_if(KarToken* token, size_t i, KarLLVMData* llvmData, Ka
 	if (!generate_block_body(kar_token_child_get(token, i + 1), llvmData, moduleName, vars, errors)) {
 		return false;
 	}
-	LLVMBuildBr(llvmData->builder, mergeBlock);
-	thenBlock = LLVMGetInsertBlock(llvmData->builder);
+	set_jump(mergeBlock, llvmData, vars);
+	thenBlock = end_block(llvmData, vars);
 
 	LLVMPositionBuilderAtEnd(llvmData->builder, elseBlock);
 	if (i + 2 < kar_token_child_count(token)) {
@@ -242,18 +283,12 @@ static bool generate_one_if(KarToken* token, size_t i, KarLLVMData* llvmData, Ka
 			return false;
 		}
 	}
-	LLVMBuildBr(llvmData->builder, mergeBlock);
-	elseBlock = LLVMGetInsertBlock(llvmData->builder);
+	set_jump(mergeBlock, llvmData, vars);
+	elseBlock = end_block(llvmData, vars);
 
 	LLVMPositionBuilderAtEnd(llvmData->builder, mergeBlock);
-	LLVMValueRef phi = LLVMBuildPhi(llvmData->builder, LLVMVoidType(), "ph");
-	LLVMValueRef phi_res = LLVMConstInt(LLVMInt1Type(), 0, 0);
-	LLVMValueRef phi_res2 = LLVMConstInt(LLVMInt1Type(), 0, 0);
-	LLVMAddIncoming(phi, &phi_res, &thenBlock, 1);
-	LLVMAddIncoming(phi, &phi_res2, &elseBlock, 1);
 
 	return true;
-
 }
 
 static bool generate_if(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
@@ -264,6 +299,85 @@ static bool generate_if(KarToken* token, KarLLVMData* llvmData, KarString* modul
 	}
 
 	return generate_one_if(token, 0, llvmData, moduleName, vars, errors);
+}
+
+static bool generate_while(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	LLVMValueRef theFunction = LLVMGetBasicBlockParent(end_block(llvmData, vars));
+	KarString* headerString = kar_string_create_format("header%lu", llvmData->counter);
+	LLVMBasicBlockRef headerBlock = LLVMAppendBasicBlock(theFunction, headerString);
+	KAR_FREE(headerString);
+	KarString* bodyString = kar_string_create_format("body%lu", llvmData->counter);
+	LLVMBasicBlockRef bodyBlock = LLVMAppendBasicBlock(theFunction, bodyString);
+	KAR_FREE(bodyString);
+	KarString* exitString = kar_string_create_format("exit%lu", llvmData->counter);
+	LLVMBasicBlockRef exitBlock = LLVMAppendBasicBlock(theFunction, exitString);
+	KAR_FREE(exitString);
+	llvmData->counter++;
+	set_jump(headerBlock, llvmData, vars);
+
+	LLVMPositionBuilderAtEnd(llvmData->builder, headerBlock);
+	KarToken* conditionToken = kar_token_child_get(token, 0);
+	KarExpressionResult condition = kar_generate_calc_expression(conditionToken, llvmData, moduleName, vars, errors);
+	if (kar_expression_result_is_none(condition)) {
+		return false;
+	}
+	if (condition.type->type != KAR_VARTYPE_BOOL) {
+		kar_project_error_list_create_add(errors, moduleName, &conditionToken->cursor, 1, "Условие должно содержать выражение, возврщающее тип \"Буль\".");
+		return false;
+	}
+	LLVMBuildCondBr(llvmData->builder, condition.value, bodyBlock, exitBlock);
+	headerBlock = end_block(llvmData, vars);
+
+	LLVMPositionBuilderAtEnd(llvmData->builder, bodyBlock);
+	KarToken* blockBody = kar_token_child_get(token, 1);
+	if (blockBody->type != KAR_TOKEN_BLOCK_BODY) {
+		kar_project_error_list_create_add(errors, moduleName, &blockBody->cursor, 1, "Внутренняя ошибка. Тип потомка блока не является его телом.");
+		return false;
+	}
+	KarLocalBlock* localBlock = kar_local_block_create();
+	KarBlockParams params = {headerBlock, exitBlock};
+	localBlock->blockParams = &params;
+	kar_local_stack_block_insert(vars->locals, localBlock, 0);
+
+	if (!kar_generate_algorithm(blockBody, llvmData, moduleName, vars, errors)) {
+		kar_local_stack_block_erase(vars->locals, 0);
+		return false;
+	}
+	kar_local_stack_block_erase(vars->locals, 0);
+
+	set_jump(headerBlock, llvmData, vars);
+	bodyBlock = end_block(llvmData, vars);
+
+	LLVMPositionBuilderAtEnd(llvmData->builder, exitBlock);
+
+	return true;
+}
+
+static bool generate_break(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	KarLocalStack* stack = vars->locals;
+	size_t count = 0;
+	for (size_t i = 0; i < kar_local_stack_block_count(stack); i++) {
+		KarLocalBlock* block = kar_local_stack_block_get(stack, i);
+		if (block->blockParams == NULL) {
+			continue;
+		}
+		if (count + 1 == kar_token_child_count(token)) {
+			KarToken* last = kar_token_child_get(token, count);
+			if (last->type == KAR_TOKEN_COMMAND_BREAK) {
+				set_jump(((KarBlockParams*)block->blockParams)->breakLabel, llvmData, vars);
+				return true;
+			} else if (last->type == KAR_TOKEN_COMMAND_CONTINUE) {
+				set_jump(((KarBlockParams*)block->blockParams)->continueLabel, llvmData, vars);
+				return true;
+			} else {
+				kar_project_error_list_create_add(errors, moduleName, &last->cursor, 1, "Неизвестная команда перехода.");
+				return false;
+			}
+		}
+		count++;
+	}
+	kar_project_error_list_create_add(errors, moduleName, &kar_token_child_get(token, count)->cursor, 1, "Слишком длинная команда перехода.");
+	return false;
 }
 
 static bool generate_algorithm(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
@@ -282,6 +396,10 @@ static bool generate_algorithm(KarToken* token, KarLLVMData* llvmData, KarString
 		return generate_clean(token, llvmData, moduleName, vars, errors);
 	case (KAR_TOKEN_COMMAND_IF):
 		return generate_if(token, llvmData, moduleName, vars, errors);
+	case (KAR_TOKEN_COMMAND_WHILE):
+		return generate_while(token, llvmData, moduleName, vars, errors);
+	case (KAR_TOKEN_COMMAND_BREAK):
+		return generate_break(token, llvmData, moduleName, vars, errors);
 	default:
 		kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Токен не является командой.");
 		LLVMBuildRetVoid(llvmData->builder);

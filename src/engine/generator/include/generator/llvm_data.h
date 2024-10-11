@@ -63,7 +63,8 @@ KarLLVMData* kar_llvm_data_create(LLVMContextRef context, LLVMModuleRef module, 
 void kar_llvm_data_free(KarLLVMData* data);
 
 KAR_SET_HEADER(llvm_data_functions, KarLLVMData, KarLLVMFunction)
-
 KarLLVMFunction* kar_llvm_data_get_function(KarLLVMData* llvmData, KarVartree* func, KarVars* vars);
+
+LLVMValueRef kar_llvm_data_get_clean_function_by_type(KarLLVMData* llvmData, KarVartypeElement type);
 
 #endif // KAR_LLVM_DATA_H
