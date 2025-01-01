@@ -11,14 +11,14 @@
 
 #include "error.h"
 
-#define KAR_PROJECT_FILENAME "проект.кар"
-#define KAR_LEXER_ERROR_FILENAME "лексер.ошибка"
-#define KAR_LEXER_FILENAME "лексер"
-#define KAR_PARSER_ERROR_FILENAME "парсер.ошибка"
-#define KAR_PARSER_FILENAME "парсер"
-#define KAR_COMPILER_ERROR_FILENAME "компилятор.ошибка"
-#define KAR_OUT_FILENAME "вывод"
-#define KAR_COMMENT_FILENAME "коммент"
+#define KAR_PROJECT_FILENAME "Проект.кар"
+#define KAR_LEXER_ERROR_FILENAME "Лексер.ошибка"
+#define KAR_LEXER_FILENAME "Лексер"
+#define KAR_PARSER_ERROR_FILENAME "Парсер.ошибка"
+#define KAR_PARSER_FILENAME "Парсер"
+#define KAR_COMPILER_ERROR_FILENAME "Компилятор.ошибка"
+#define KAR_OUT_FILENAME "Вывод"
+#define KAR_COMMENT_FILENAME "Коммент"
 
 typedef struct {
 	bool is;
