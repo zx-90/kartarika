@@ -15,6 +15,8 @@ typedef struct {
 	KarLocalStack* locals;
     KAR_ARRAY_STRUCT(KarVartree) default_list;
     struct {
+		KarVartree* projectModule;
+
 		KarVartree* nullType;
 
 		KarVartree* boolType;

@@ -81,7 +81,7 @@ bool kar_file_system_is_directory(const KarString* path) {
 	return false;  
 }
 
-KarString* kar_file_system_get_basename(KarString* path) {
+KarString* kar_file_system_get_name(KarString* path) {
 	LPWSTR wPath = create_utf16_by_utf8(path);
 	if (wPath == NULL) {
 		return NULL;

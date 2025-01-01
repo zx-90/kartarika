@@ -43,71 +43,71 @@ static bool fill_standard_lib(KarVars* vars) {
 	KarVartree* type_integer8 = kar_vartree_create_integer8("Целое8");
 	kar_vartree_child_add(types, type_integer8);
 	// TODO: Посмотреть, адекватно ли константы для всех типов записываются в памяти.
-	kar_vartree_child_add(type_integer8, kar_vartree_create_const("Мин", type_integer8, (void*)0xFF));
-	kar_vartree_child_add(type_integer8, kar_vartree_create_const("Макс", type_integer8, (void*)0x7F));
+	kar_vartree_child_add(type_integer8, kar_vartree_create_const("Мин", VAR_STATIC | VAR_PUBLIC, type_integer8, (void*)0xFF));
+	kar_vartree_child_add(type_integer8, kar_vartree_create_const("Макс", VAR_STATIC | VAR_PUBLIC, type_integer8, (void*)0x7F));
 	
 	KarVartree* type_integer16 = kar_vartree_create_integer16("Целое16");
 	kar_vartree_child_add(types, type_integer16);
-	kar_vartree_child_add(type_integer16, kar_vartree_create_const("Мин", type_integer16, (void*)0xFFFF));
-	kar_vartree_child_add(type_integer16, kar_vartree_create_const("Макс", type_integer16, (void*)0x7FFF));
+	kar_vartree_child_add(type_integer16, kar_vartree_create_const("Мин", VAR_STATIC | VAR_PUBLIC, type_integer16, (void*)0xFFFF));
+	kar_vartree_child_add(type_integer16, kar_vartree_create_const("Макс", VAR_STATIC | VAR_PUBLIC, type_integer16, (void*)0x7FFF));
 	
 	KarVartree* type_integer32 = kar_vartree_create_integer32("Целое32");
 	kar_vartree_child_add(types, type_integer32);
-	kar_vartree_child_add(type_integer32, kar_vartree_create_const("Мин", type_integer32, (void*)0xFFFFFFFF));
-	kar_vartree_child_add(type_integer32, kar_vartree_create_const("Макс", type_integer32, (void*)0x7FFFFFFF));
+	kar_vartree_child_add(type_integer32, kar_vartree_create_const("Мин", VAR_STATIC | VAR_PUBLIC, type_integer32, (void*)0xFFFFFFFF));
+	kar_vartree_child_add(type_integer32, kar_vartree_create_const("Макс", VAR_STATIC | VAR_PUBLIC, type_integer32, (void*)0x7FFFFFFF));
 	
 	KarVartree* type_integer64 = kar_vartree_create_integer64("Целое64");
 	kar_vartree_child_add(types, type_integer64);
-	kar_vartree_child_add(type_integer64, kar_vartree_create_const("Мин", type_integer64, (void*)0xFFFFFFFFFFFFFFFF));
-	kar_vartree_child_add(type_integer64, kar_vartree_create_const("Макс", type_integer64, (void*)0x7FFFFFFFFFFFFFFF));
+	kar_vartree_child_add(type_integer64, kar_vartree_create_const("Мин", VAR_STATIC | VAR_PUBLIC, type_integer64, (void*)0xFFFFFFFFFFFFFFFF));
+	kar_vartree_child_add(type_integer64, kar_vartree_create_const("Макс", VAR_STATIC | VAR_PUBLIC, type_integer64, (void*)0x7FFFFFFFFFFFFFFF));
 	
     KarVartree* type_integer = kar_vartree_create_class_link("Целое", type_integer32);
 	kar_vartree_child_add(types, type_integer);
 	
 	KarVartree* type_unsigned8 = kar_vartree_create_unsigned8("Счётное8");
 	kar_vartree_child_add(types, type_unsigned8);
-	kar_vartree_child_add(type_unsigned8, kar_vartree_create_const("Макс", type_unsigned8, (void*)0xFF));
+	kar_vartree_child_add(type_unsigned8, kar_vartree_create_const("Макс", VAR_STATIC | VAR_PUBLIC, type_unsigned8, (void*)0xFF));
 	
 	KarVartree* type_unsigned16 = kar_vartree_create_unsigned16("Счётное16");
 	kar_vartree_child_add(types, type_unsigned16);
-	kar_vartree_child_add(type_unsigned16, kar_vartree_create_const("Макс", type_unsigned16, (void*)0xFFFF));
+	kar_vartree_child_add(type_unsigned16, kar_vartree_create_const("Макс", VAR_STATIC | VAR_PUBLIC, type_unsigned16, (void*)0xFFFF));
 	
 	KarVartree* type_unsigned32 = kar_vartree_create_unsigned32("Счётное32");
 	kar_vartree_child_add(types, type_unsigned32);
-	kar_vartree_child_add(type_unsigned32, kar_vartree_create_const("Макс", type_unsigned32, (void*)0xFFFFFFFF));
+	kar_vartree_child_add(type_unsigned32, kar_vartree_create_const("Макс", VAR_STATIC | VAR_PUBLIC, type_unsigned32, (void*)0xFFFFFFFF));
 	
 	KarVartree* type_unsigned64 = kar_vartree_create_unsigned64("Счётное64");
 	kar_vartree_child_add(types, type_unsigned64);
-	kar_vartree_child_add(type_unsigned64, kar_vartree_create_const("Макс", type_unsigned64, (void*)0xFFFFFFFFFFFFFFFF));
+	kar_vartree_child_add(type_unsigned64, kar_vartree_create_const("Макс", VAR_STATIC | VAR_PUBLIC, type_unsigned64, (void*)0xFFFFFFFFFFFFFFFF));
 	
     KarVartree* type_unsigned = kar_vartree_create_class_link("Счётное", type_unsigned32);
 	kar_vartree_child_add(types, type_unsigned);
 	
 	KarVartree* type_float32 = kar_vartree_create_float32("Дробное32");
 	kar_vartree_child_add(types, type_float32);
-	kar_vartree_child_add(type_float32, kar_vartree_create_const("БитыЭкспоненты", type_integer, (void*)7));
-	kar_vartree_child_add(type_float32, kar_vartree_create_const("БитыМантиссы", type_integer, (void*)24));
-	kar_vartree_child_add(type_float32, kar_vartree_create_const("ЭкспонентаМин", type_integer, (void*)-125));
-	kar_vartree_child_add(type_float32, kar_vartree_create_const("ЭкспонентаМакс", type_integer, (void*)128));
+	kar_vartree_child_add(type_float32, kar_vartree_create_const("БитыЭкспоненты", VAR_STATIC | VAR_PUBLIC, type_integer, (void*)7));
+	kar_vartree_child_add(type_float32, kar_vartree_create_const("БитыМантиссы", VAR_STATIC | VAR_PUBLIC, type_integer, (void*)24));
+	kar_vartree_child_add(type_float32, kar_vartree_create_const("ЭкспонентаМин", VAR_STATIC | VAR_PUBLIC, type_integer, (void*)-125));
+	kar_vartree_child_add(type_float32, kar_vartree_create_const("ЭкспонентаМакс", VAR_STATIC | VAR_PUBLIC, type_integer, (void*)128));
 	float f = 1.17549e-38f;
-	kar_vartree_child_add(type_float32, kar_vartree_create_const("Мин", type_float32, (void*)((size_t)f)));
+	kar_vartree_child_add(type_float32, kar_vartree_create_const("Мин", VAR_STATIC | VAR_PUBLIC, type_float32, (void*)((size_t)f)));
 	f = 3.40282e+38f;
-	kar_vartree_child_add(type_float32, kar_vartree_create_const("Макс", type_float32, (void*)((size_t)f)));
+	kar_vartree_child_add(type_float32, kar_vartree_create_const("Макс", VAR_STATIC | VAR_PUBLIC, type_float32, (void*)((size_t)f)));
 	f = 1.19209e-07f;
-	kar_vartree_child_add(type_float32, kar_vartree_create_const("Эпсилон", type_float32, (void*)((size_t)f)));
+	kar_vartree_child_add(type_float32, kar_vartree_create_const("Эпсилон", VAR_STATIC | VAR_PUBLIC, type_float32, (void*)((size_t)f)));
 	
 	KarVartree* type_float64 = kar_vartree_create_float64("Дробное64");
 	kar_vartree_child_add(types, type_float64);
-	kar_vartree_child_add(type_float64, kar_vartree_create_const("БитыЭкспоненты", type_integer, (void*)10));
-	kar_vartree_child_add(type_float64, kar_vartree_create_const("БитыМантиссы", type_integer, (void*)53));
-	kar_vartree_child_add(type_float64, kar_vartree_create_const("ЭкспонентаМин", type_integer, (void*)-1021));
-	kar_vartree_child_add(type_float64, kar_vartree_create_const("ЭкспонентаМакс", type_integer, (void*)1024));
+	kar_vartree_child_add(type_float64, kar_vartree_create_const("БитыЭкспоненты", VAR_STATIC | VAR_PUBLIC, type_integer, (void*)10));
+	kar_vartree_child_add(type_float64, kar_vartree_create_const("БитыМантиссы", VAR_STATIC | VAR_PUBLIC, type_integer, (void*)53));
+	kar_vartree_child_add(type_float64, kar_vartree_create_const("ЭкспонентаМин", VAR_STATIC | VAR_PUBLIC, type_integer, (void*)-1021));
+	kar_vartree_child_add(type_float64, kar_vartree_create_const("ЭкспонентаМакс", VAR_STATIC | VAR_PUBLIC, type_integer, (void*)1024));
 	double d = 2.22507e-308;
-	kar_vartree_child_add(type_float64, kar_vartree_create_const("Мин", type_float64, (void*)((size_t)d)));
+	kar_vartree_child_add(type_float64, kar_vartree_create_const("Мин", VAR_STATIC | VAR_PUBLIC, type_float64, (void*)((size_t)d)));
 	d = 1.79769e+308;
-	kar_vartree_child_add(type_float64, kar_vartree_create_const("Макс", type_float64, (void*)((size_t)d)));
+	kar_vartree_child_add(type_float64, kar_vartree_create_const("Макс", VAR_STATIC | VAR_PUBLIC, type_float64, (void*)((size_t)d)));
 	d = 2.22045e-16;
-	kar_vartree_child_add(type_float64, kar_vartree_create_const("Эпсилон", type_float64, (void*)((size_t)d)));
+	kar_vartree_child_add(type_float64, kar_vartree_create_const("Эпсилон", VAR_STATIC | VAR_PUBLIC, type_float64, (void*)((size_t)d)));
 	
 	KarVartree* type_float = kar_vartree_create_class_link("Дробное", type_float64);
 	kar_vartree_child_add(types, type_float);
@@ -407,6 +407,8 @@ static bool fill_standard_lib(KarVars* vars) {
     kar_vars_default_list_add(vars, kar);
     kar_vars_default_list_add(vars, root);
 
+	// Ссылки на модули.
+	vars->standard.projectModule = proj;
 	// Ссылки на стандартные типы.
 	vars->standard.nullType = type_null;
 

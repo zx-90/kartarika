@@ -14,6 +14,6 @@
 
 #include "generator/llvm_data.h"
 
-bool kar_generate_algorithm(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors);
+bool kar_generate_algorithm(KarToken* token, KarLLVMData* llvmData, KarVartree* module, KarVars* vars, KarProjectErrorList* errors);
 
 #endif // KAR_GEN_ALGORITHM_H

@@ -21,35 +21,11 @@
 #include "core/alloc.h"
 #include "model/vartree_function_params.h"
 #include "generator/llvm_data.h"
-#include "generator/gen_algorithm.h"
+#include "generator/gen_root.h"
 
-static bool generate_function(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
-	if (token->type != KAR_TOKEN_METHOD) {
-		return false;
-	}
-	if (kar_string_equal(token->str, "Запустить")) {
-		LLVMTypeRef func_type = LLVMFunctionType(LLVMVoidType(), NULL, 0, false);
-		LLVMValueRef main_func = LLVMAddFunction(llvmData->module, "main", func_type);
-		LLVMBasicBlockRef entry = LLVMAppendBasicBlock(main_func, "entry");
-		LLVMPositionBuilderAtEnd(llvmData->builder, entry);
-
-		KarToken* body = kar_token_child_get_last(token, 0);
-
-		kar_local_stack_block_insert(vars->locals, kar_local_block_create(), 0);
-		if (!kar_generate_algorithm(body, llvmData, moduleName, vars, errors)) {
-			return false;
-		}
-		kar_local_stack_block_erase(vars->locals, 0);
-		LLVMBuildRetVoid(llvmData->builder);
-	} else {
-		// Далее здесь необходимо дописать поддержку других методов.
-        kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Методы не поддерживаются. Поддерживается только метод \"Запустить\".");
-		return false;
-	}
-	return true;
-}
-	
 static bool generate_module(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
+	KarVartree* module = kar_vartree_create_class(moduleName);
+	kar_vartree_child_add(vars->standard.projectModule, module);
 	if (token->type != KAR_TOKEN_MODULE) {
         kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Внутрення ошибка. Токен не является типом модуль.");
 		return false;
@@ -57,11 +33,15 @@ static bool generate_module(KarToken* token, KarLLVMData* llvmData, KarString* m
 	for (size_t i = 0; i < kar_token_child_count(token); ++i) {
         KarToken* child = kar_token_child_get(token, i);
         if (child->type == KAR_TOKEN_METHOD) {
-			if (!generate_function(kar_token_child_get(token, i), llvmData, moduleName, vars, errors)) {
+			if (!kar_generate_function(child, llvmData, module, vars, errors)) {
+				return false;
+			}
+		} else if (child->type == KAR_TOKEN_FIELD_CONST) {
+			if (!kar_generate_const(child, llvmData, module, vars, errors)) {
 				return false;
 			}
 		} else {
-            kar_project_error_list_create_add(errors, moduleName, &child->cursor, 1, "Внутрення ошибка. Токен не является корневым элементом.");
+			kar_project_error_list_create_add(errors, module->name, &child->cursor, 1, "Внутрення ошибка. Токен не является корневым элементом.");
             return false;
 		}
 	}

@@ -10,6 +10,7 @@ src/project_error.c
 src/project_error_list.c
 
 src/vartree_function_params.c
+src/vartree_var_params.c
 src/vartree.c
 
 src/local_vars.c

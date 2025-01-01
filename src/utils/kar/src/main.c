@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #include "core/console_system.h"
+#include "core/file_system.h"
 #include "model/project.h"
 #include "lexer/lexer.h"
 #include "parser/parser.h"
@@ -24,7 +25,7 @@ int main(int argc, char** argv) {
 	printf("%s\n", filename);
 	
 	KarStream* file = kar_stream_create(filename);
-	KarProject* project = kar_project_create(filename);
+	KarProject* project = kar_project_create(kar_file_system_get_basename(filename));
 	
     if (!kar_lexer_run(file, project->module, project->errors)) {
 		fprintf(stderr, "Ошибка при парсинге файла в лексере.\n");

@@ -7,6 +7,7 @@ set(lib_generator_SRC
 
 	src/gen_expression.c
 	src/gen_algorithm.c
+	src/gen_root.c
 	src/generator.c
 
 )

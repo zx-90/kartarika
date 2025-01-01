@@ -95,7 +95,7 @@ static KarError* check_for_test_directory(KarTest* test, KarStringList* files) {
 	size_t i;
 	for (i = 0; i < kar_string_list_count(files); ++i) {
 		KarString* file = kar_string_list_get(files, i);
-		const KarString* filename = kar_file_system_get_basename(file);
+		const KarString* filename = kar_file_system_get_name(file);
 		if (kar_string_equal(filename, KAR_PROJECT_FILENAME)) {
 			error = check_file_object(file, true, &test->project_file);
 		} else if (kar_string_equal(filename, KAR_LEXER_ERROR_FILENAME)) {
@@ -239,7 +239,7 @@ KarError* kar_test_run(KarTest* test, const KarString* dir) {
 	
 	// TODO: "/" Получать через ОС, и вообще перенести в file_system или куда-то туда.
 	KarString* path2 = kar_string_create_concat(dir, KAR_FILE_SYSTEM_DELIMETER);
-	KarProject* project = kar_project_create(test->project_file.path);
+	KarProject* project = kar_project_create(kar_file_system_get_basename(test->project_file.path));
 	
 	{
 		KarStream* file = kar_stream_create(test->project_file.path);
@@ -254,7 +254,7 @@ KarError* kar_test_run(KarTest* test, const KarString* dir) {
 			}
 			
 			KarString* testResult = kar_token_create_print(project->module->token);
-			KarString* gold_path = kar_string_create_concat(path2, kar_file_system_get_basename(test->lexer_file.path));
+			KarString* gold_path = kar_string_create_concat(path2, kar_file_system_get_name(test->lexer_file.path));
 			KarString* gold = kar_file_load(gold_path);
 			KAR_FREE(gold_path);
 			
@@ -314,7 +314,7 @@ KarError* kar_test_run(KarTest* test, const KarString* dir) {
 			}
 			
 			KarString* testResult = kar_token_create_print(project->module->token);
-			KarString* gold_path = kar_string_create_concat(path2, kar_file_system_get_basename(test->parser_file.path));
+			KarString* gold_path = kar_string_create_concat(path2, kar_file_system_get_name(test->parser_file.path));
 			KarString* gold = kar_file_load(gold_path);
 			KAR_FREE(gold_path);
 			
@@ -397,7 +397,7 @@ KarError* kar_test_run(KarTest* test, const KarString* dir) {
 				system("a.exe > out.txt 2>&1");
 		#endif
 
-		KarString* gold_path = kar_string_create_concat(path2, kar_file_system_get_basename(test->out_file.path));
+		KarString* gold_path = kar_string_create_concat(path2, kar_file_system_get_name(test->out_file.path));
 		KarString* gold = kar_file_load(gold_path);
 		KAR_FREE(gold_path);
 		KarString* out = kar_file_load("out.txt");

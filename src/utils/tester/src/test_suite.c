@@ -21,7 +21,7 @@ static KarError* check_for_subdirs(KarStringList* files) {
 		if (kar_file_system_is_directory(filename)) {
 			continue;
 		} else {
-			if (kar_file_system_is_file(filename) && kar_string_equal(kar_file_system_get_basename(filename), KAR_COMMENT_FILENAME)) {
+			if (kar_file_system_is_file(filename) && kar_string_equal(kar_file_system_get_name(filename), KAR_COMMENT_FILENAME)) {
 				continue;
 			} else {
 				return kar_error_register(1, "Объект %s не является файлом.", filename);

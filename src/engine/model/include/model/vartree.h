@@ -12,6 +12,7 @@
 #include "core/string_list.h"
 
 #include "vartree_function_params.h"
+#include "vartree_var_params.h"
 
 typedef enum {
 	KAR_VARTYPE_UNKNOWN,
@@ -63,10 +64,19 @@ KarVartree* kar_vartree_create_package(const KarString* name);
 KarVartree* kar_vartree_create_class(const KarString* name);
 KarVartree* kar_vartree_create_class_link(const KarString* name, KarVartree* type);
 
+// TODO: добавить модификаторы.
 KarVartree* kar_vartree_create_function(const KarString* name, uint8_t modificators, const KarString* libName, KarVartree** args, size_t args_count, KarVartree* return_type);
+// TODO: обавить модификаторы
 KarVartree* kar_vartree_create_variable(const KarString* name, KarVartree* type);
 // TODO: Сделать функцию безопасной для поля void. Скорее надо будет разбить на несколько функций.
-KarVartree* kar_vartree_create_const(const KarString* name, KarVartree* type, void* value);
+// TODO: обавить модификаторы
+typedef struct {
+	uint8_t modificators;
+	KarVartree* type;
+	void* value;
+} KarVartreeConstValue;
+
+KarVartree* kar_vartree_create_const(const KarString* name, uint8_t modificators, KarVartree* type, void* value);
 
 KarVartree* kar_vartree_create_unclean(const KarString* name);
 KarVartree* kar_vartree_create_unclean_class(KarVartree* type);

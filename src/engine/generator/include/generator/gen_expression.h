@@ -23,7 +23,7 @@ LLVMTypeRef kar_expression_get_type_by_vartype(KarVars* vars, KarVartree* type);
 
 bool kar_expression_cast_type(KarExpressionResult* varFrom, KarExpressionResult* varTo, KarLLVMData *llvmData, KarVars *vars);
 
-KarExpressionResult kar_generate_calc_expression(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors);
-bool kar_generate_expression(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors);
+KarExpressionResult kar_generate_calc_expression(KarToken* token, KarLLVMData* llvmData, KarVartree* module, KarVars* vars, KarProjectErrorList* errors);
+bool kar_generate_expression(KarToken* token, KarLLVMData* llvmData, KarVartree* module, KarVars* vars, KarProjectErrorList* errors);
 
 #endif // KAR_GEN_EXPRESSION_H

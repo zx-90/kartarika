@@ -17,7 +17,7 @@ typedef struct {
     KarProjectErrorList* errors;
 } KarProject;
 
-KarProject* kar_project_create(KarString* filename);
+KarProject* kar_project_create(KarString* moduleName);
 void kar_project_free(KarProject* project);
 
 #endif // KAR_PROJECT_H

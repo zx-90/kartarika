@@ -19,6 +19,7 @@ extern const KarString* KAR_FILE_SYSTEM_DELIMETER;
 bool kar_file_system_is_file(const KarString* path);
 bool kar_file_system_is_directory(const KarString* path);
 
+KarString* kar_file_system_get_name(KarString* path);
 KarString* kar_file_system_get_basename(KarString* path);
 
 KarStringList* kar_file_create_absolute_directory_list(const KarString* path);

@@ -74,14 +74,10 @@ KarVartree* kar_vartree_create_variable(const KarString* name, KarVartree* type)
 //-----------------------------------------------------------------------------
 
 // TODO: Для разных типов констант необходимы разные структуры, а не просто (void* value).
-typedef struct {
-    KarVartree* type;
-    void* value;
-} KarVartreeConstValue;
-
-KarVartreeConstValue* kar_vartree_const_value_create(KarVartree* type, void* const_value) {
+KarVartreeConstValue* kar_vartree_const_value_create(uint8_t modificators, KarVartree* type, void* const_value) {
     KAR_CREATE(value, KarVartreeConstValue);
 
+	value->modificators = modificators;
     value->type = type;
     value->value = const_value;
 
@@ -93,9 +89,9 @@ void kar_vartree_const_value_free(void* ptr) {
     KAR_FREE(value);
 }
 
-KarVartree* kar_vartree_create_const(const KarString* name, KarVartree* type, void* value) {
+KarVartree* kar_vartree_create_const(const KarString* name, uint8_t modificators, KarVartree* type, void* value) {
 	KarVartree* result = vartree_create_name(KAR_VARTYPE_CONST, name);
-    result->params = kar_vartree_const_value_create(type, value);
+	result->params = kar_vartree_const_value_create(modificators, type, value);
     result->freeParams = &kar_vartree_const_value_free;
 	return result;
 }
@@ -219,7 +215,7 @@ static KarString* create_full_name(KarVartree* var) {
 
 KarString* kar_vartree_create_full_path(KarVartree* var) {
 	if (var == NULL) {
-		return "Неизвестный тип";
+		return kar_string_create("Неизвестный тип");
 	}
 	KarString* result = create_full_name(var);
 	while (kar_vartree_child_parent(var) != NULL) {

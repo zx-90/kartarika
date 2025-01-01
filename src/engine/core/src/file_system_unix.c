@@ -35,8 +35,24 @@ bool kar_file_system_is_directory(const KarString* path) {
 	return result;
 }
 
-KarString* kar_file_system_get_basename(KarString* path) {
+KarString* kar_file_system_get_name(KarString* path) {
+	// TODO: Эта функция может модифицировать исходную строку,
+	//       поэтому надо сделать копию и вызывать с копией.
 	return basename(path);
+}
+
+// TODO: В Windows и Linux будут одинаковыми. Надо в отдельный модуль вынести.
+KarString* kar_file_system_get_basename(KarString* path) {
+	KarString* name = kar_file_system_get_name(path);
+	KarString* dot = strrchr(name, '.');
+	if (dot == name) {
+		dot = name + strlen(name);
+	}
+	size_t basenameLen = (size_t)(dot - name);
+	KAR_CREATES(result, KarString, basenameLen + 1);
+	memcpy(result, name, basenameLen);
+	result[basenameLen] = 0;
+	return result;
 }
 
 KarStringList* kar_file_create_absolute_directory_list(const KarString* path) {

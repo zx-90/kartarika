@@ -8,10 +8,10 @@
 
 #include "core/alloc.h"
 
-KarProject* kar_project_create(KarString* filename) {
+KarProject* kar_project_create(KarString* moduleName) {
 	KAR_CREATE(project, KarProject);
 	
-	project->module = kar_module_create(filename);
+	project->module = kar_module_create(moduleName);
     project->vars = kar_vars_create();
     project->errors = kar_project_error_list_create();
 
