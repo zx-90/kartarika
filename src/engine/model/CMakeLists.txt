@@ -9,9 +9,12 @@ src/module.c
 src/project_error.c
 src/project_error_list.c
 
-src/vartree_function_params.c
-src/vartree_var_params.c
 src/vartree.c
+src/vartree_var.c
+src/vartree_function.c
+src/vartree_class.c
+src/vartree_template.c
+src/vartree_package.c
 
 src/local_vars.c
 

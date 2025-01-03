@@ -8,6 +8,8 @@
 
 #include <llvm-c/Core.h>
 
+#include "model/vartree_var.h"
+
 #include "generator/gen_expression.h"
 #include "generator/gen_algorithm.h"
 
@@ -110,7 +112,7 @@ bool kar_generate_const(KarToken* token, KarLLVMData* llvmData, KarVartree* modu
 		return false;
 	}
 
-	kar_vartree_child_add(module, kar_vartree_create_const(token->str, statMod | areaMod, result.type, (void*)result.value));
+	kar_vartree_create_const(module, token->str, statMod | areaMod, result.type, (void*)result.value);
 
 	//kar_project_error_list_create_add(errors, module->name, &token->cursor, 1, "Функция обработки констант не реализована.");
 	return true;

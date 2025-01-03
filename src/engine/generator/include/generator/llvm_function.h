@@ -10,7 +10,7 @@
 #include <llvm-c/BitWriter.h>
 
 #include "model/vars.h"
-#include "model/vartree_function_params.h"
+#include "model/vartree_function.h"
 
 typedef struct {
 	KarVartree* var;

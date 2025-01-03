@@ -11,13 +11,10 @@
 #include "core/array.h"
 #include "core/string_list.h"
 
-#include "vartree_function_params.h"
-#include "vartree_var_params.h"
-
 typedef enum {
 	KAR_VARTYPE_UNKNOWN,
 	
-	KAR_VARTYPE_BOOL,
+	/*KAR_VARTYPE_BOOL,
 	KAR_VARTYPE_0INTEGER,
 	KAR_VARTYPE_0HEX,
 	KAR_VARTYPE_0FLOAT,
@@ -31,7 +28,7 @@ typedef enum {
 	KAR_VARTYPE_UNSIGNED64,
 	KAR_VARTYPE_FLOAT32,
 	KAR_VARTYPE_FLOAT64,
-	KAR_VARTYPE_STRING,
+	KAR_VARTYPE_STRING,*/
 	
 	// TODO: Сделать различие между шаблоном класса и классом.
 	// TODO: Представить Неопределённость как шаблон класса.
@@ -45,7 +42,7 @@ typedef enum {
 	KAR_VARTYPE_CLASS_LINK,
 	KAR_VARTYPE_CLASS,
 	
-	KAR_VARTYPE_PACKET,
+	KAR_VARTYPE_PACKAGE,
 	KAR_VARTYPE_ROOT
 } KarVartypeElement;
 
@@ -56,46 +53,12 @@ typedef struct KarVartreeStruct {
 	KAR_TREE_SET_STRUCT(struct KarVartreeStruct) children;
     void* params;
     void (*freeParams)(void*);
+	void* generatorParams;
+	void (*freeGeneratorParams)(void*);
 } KarVartree;
 
-KarVartree* kar_vartree_create_root();
-KarVartree* kar_vartree_create_package(const KarString* name);
-
-KarVartree* kar_vartree_create_class(const KarString* name);
-KarVartree* kar_vartree_create_class_link(const KarString* name, KarVartree* type);
-
-// TODO: добавить модификаторы.
-KarVartree* kar_vartree_create_function(const KarString* name, uint8_t modificators, const KarString* libName, KarVartree** args, size_t args_count, KarVartree* return_type);
-// TODO: обавить модификаторы
-KarVartree* kar_vartree_create_variable(const KarString* name, KarVartree* type);
-// TODO: Сделать функцию безопасной для поля void. Скорее надо будет разбить на несколько функций.
-// TODO: обавить модификаторы
-typedef struct {
-	uint8_t modificators;
-	KarVartree* type;
-	void* value;
-} KarVartreeConstValue;
-
-KarVartree* kar_vartree_create_const(const KarString* name, uint8_t modificators, KarVartree* type, void* value);
-
-KarVartree* kar_vartree_create_unclean(const KarString* name);
-KarVartree* kar_vartree_create_unclean_class(KarVartree* type);
-
-KarVartree* kar_vartree_create_string(const KarString* name);
-KarVartree* kar_vartree_create_float64(const KarString* name);
-KarVartree* kar_vartree_create_float32(const KarString* name);
-KarVartree* kar_vartree_create_unsigned64(const KarString* name);
-KarVartree* kar_vartree_create_unsigned32(const KarString* name);
-KarVartree* kar_vartree_create_unsigned16(const KarString* name);
-KarVartree* kar_vartree_create_unsigned8(const KarString* name);
-KarVartree* kar_vartree_create_integer64(const KarString* name);
-KarVartree* kar_vartree_create_integer32(const KarString* name);
-KarVartree* kar_vartree_create_integer16(const KarString* name);
-KarVartree* kar_vartree_create_integer8(const KarString* name);
-KarVartree* kar_vartree_create_0float(const KarString* name);
-KarVartree* kar_vartree_create_0hex(const KarString* name);
-KarVartree* kar_vartree_create_0integer(const KarString* name);
-KarVartree* kar_vartree_create_bool(const KarString* name);
+KarVartree* kar_vartree_create(KarVartypeElement element);
+KarVartree* kar_vartree_create_name(KarVartypeElement element, const KarString* name);
 
 void kar_vartree_free(KarVartree* vartree);
 
@@ -112,7 +75,6 @@ KAR_ARRAY_HEADER(vartree_args, KarVartree, KarVartree)
 
 KAR_TREE_SET_HEADER(vartree_child, KarVartree)
 
-KarVartreeFunctionParams* kar_vartree_get_function_params(KarVartree* vartree);
 KarVartree* kar_vartree_get_unclean_class(KarVartree* vartree);
 
 #endif // KAR_VARTREE_H

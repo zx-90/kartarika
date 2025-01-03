@@ -10,6 +10,8 @@
 
 #include <llvm-c/Core.h>
 
+#include "model/vartree_class.h"
+
 typedef struct {
 	LLVMBasicBlockRef continueLabel;
 	LLVMBasicBlockRef breakLabel;
@@ -218,7 +220,7 @@ static bool generate_clean(KarToken* token, KarLLVMData* llvmData, KarVartree* m
 		return false;
 	}
 	KarVartree* cleanType = kar_vartree_args_get(uncleaned.type, 0);
-	LLVMValueRef cleanValue = LLVMBuildCall(llvmData->builder, kar_llvm_data_get_clean_function_by_type(llvmData, cleanType->type), (LLVMValueRef*)&uncleaned.value, 1, "");
+	LLVMValueRef cleanValue = LLVMBuildCall(llvmData->builder, kar_llvm_data_get_clean_function_by_type(llvmData, cleanType), (LLVMValueRef*)&uncleaned.value, 1, "");
 
 	kar_local_stack_block_insert(vars->locals, kar_local_block_create(), 0);
 	KarLocalBlock* subblock = kar_local_stack_block_get(vars->locals, 0);
@@ -252,7 +254,7 @@ static bool generate_one_if(KarToken* token, size_t i, KarLLVMData* llvmData, Ka
 	if (kar_expression_result_is_none(condition)) {
 		return false;
 	}
-	if (condition.type->type != KAR_VARTYPE_BOOL) {
+	if (kar_vartree_get_class_type(condition.type) != KAR_CLASS_TYPE_BOOL) {
 		kar_project_error_list_create_add(errors, module->name, &conditionToken->cursor, 1, "Условие должно содержать выражение, возврщающее тип \"Буль\".");
 		return false;
 	}
@@ -321,7 +323,7 @@ static bool generate_while(KarToken* token, KarLLVMData* llvmData, KarVartree* m
 	if (kar_expression_result_is_none(condition)) {
 		return false;
 	}
-	if (condition.type->type != KAR_VARTYPE_BOOL) {
+	if (kar_vartree_get_class_type(condition.type) != KAR_CLASS_TYPE_BOOL) {
 		kar_project_error_list_create_add(errors, module->name, &conditionToken->cursor, 1, "Условие должно содержать выражение, возврщающее тип \"Буль\".");
 		return false;
 	}

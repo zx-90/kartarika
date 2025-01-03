@@ -11,9 +11,12 @@
 #include <limits.h>
 #include <math.h>
 
+#include <llvm-c/Core.h>
+
 #include "core/unicode.h"
 
-#include <llvm-c/Core.h>
+#include "model/vartree_var.h"
+#include "model/vartree_class.h"
 
 // TODO: Перенести в core. Создать отдельный файл для математики.
 #define DNAN (INFINITY * 0.0)
@@ -572,7 +575,7 @@ static KarExpressionResult get_call_method(KarToken* token, KarLLVMData* llvmDat
 		KAR_FREE(argsLLVM);
 		return kar_expression_result_none();
 	}
-	KarVartreeFunctionParams* params = kar_vartree_get_function_params(function);
+	KarVartreeFunction* params = kar_vartree_get_function_params(function);
 	if (kar_vartree_function_is_dynamic(params->modificators)) {
 		if (cont.value == NULL) {
 			kar_project_error_list_create_add(errors, module->name, &token->cursor, 1, "Не могу найти класс-источник для динамической функции.");
@@ -599,20 +602,21 @@ static KarExpressionResult get_call_method(KarToken* token, KarLLVMData* llvmDat
 	return result;
 }
 
-static KarVartree* getUncleanVarByType(KarVartypeElement type, KarVars* vars) {
+static KarVartree* getUncleanVarByType(KarVartree* var, KarVars* vars) {
+	KarClassType type = kar_vartree_get_class_type(var);
 	switch (type) {
-		case KAR_VARTYPE_BOOL: return vars->standard.uncleanBool;
-		case KAR_VARTYPE_INTEGER8: return vars->standard.uncleanInt8;
-		case KAR_VARTYPE_INTEGER16: return vars->standard.uncleanInt16;
-		case KAR_VARTYPE_INTEGER32: return vars->standard.uncleanInt32;
-		case KAR_VARTYPE_INTEGER64: return vars->standard.uncleanInt64;
-		case KAR_VARTYPE_UNSIGNED8: return vars->standard.uncleanUnsigned8;
-		case KAR_VARTYPE_UNSIGNED16: return vars->standard.uncleanUnsigned16;
-		case KAR_VARTYPE_UNSIGNED32: return vars->standard.uncleanUnsigned32;
-		case KAR_VARTYPE_UNSIGNED64: return vars->standard.uncleanUnsigned64;
-		case KAR_VARTYPE_FLOAT32: return vars->standard.uncleanFloat32;
-		case KAR_VARTYPE_FLOAT64: return vars->standard.uncleanFloat64;
-		case KAR_VARTYPE_STRING: return vars->standard.uncleanString;
+		case KAR_CLASS_TYPE_BOOL: return vars->standard.uncleanBool;
+		case KAR_CLASS_TYPE_INTEGER8: return vars->standard.uncleanInt8;
+		case KAR_CLASS_TYPE_INTEGER16: return vars->standard.uncleanInt16;
+		case KAR_CLASS_TYPE_INTEGER32: return vars->standard.uncleanInt32;
+		case KAR_CLASS_TYPE_INTEGER64: return vars->standard.uncleanInt64;
+		case KAR_CLASS_TYPE_UNSIGNED8: return vars->standard.uncleanUnsigned8;
+		case KAR_CLASS_TYPE_UNSIGNED16: return vars->standard.uncleanUnsigned16;
+		case KAR_CLASS_TYPE_UNSIGNED32: return vars->standard.uncleanUnsigned32;
+		case KAR_CLASS_TYPE_UNSIGNED64: return vars->standard.uncleanUnsigned64;
+		case KAR_CLASS_TYPE_FLOAT32: return vars->standard.uncleanFloat32;
+		case KAR_CLASS_TYPE_FLOAT64: return vars->standard.uncleanFloat64;
+		case KAR_CLASS_TYPE_STRING: return vars->standard.uncleanString;
 		default: return NULL;
 	}
 	return NULL;
@@ -680,7 +684,7 @@ static KarExpressionResult get_sign_unclean(KarToken* token, KarLLVMData* llvmDa
 		kar_project_error_list_create_add(errors, module->name, &leftToken->cursor, 1, "Невозможно определить левую часть неопределённости.");
 		return kar_expression_result_none();
 	}
-	LLVMValueRef func = kar_llvm_data_get_clean_function_by_type(llvmData, kar_expression_get_reduced_type(varType, vars)->type);
+	LLVMValueRef func = kar_llvm_data_get_clean_function_by_type(llvmData, kar_expression_get_reduced_type(varType, vars));
 	if (func == NULL) {
 		kar_project_error_list_create_add(errors, module->name, &token->cursor, 1, "Левая часть операции неопределённости не является классом.");
 		return kar_expression_result_none();
@@ -719,7 +723,7 @@ static KarExpressionResult get_sign_unclean(KarToken* token, KarLLVMData* llvmDa
 		return getCleanValue(res_clean, token, llvmData, module, vars, errors);
 	}
 	KarExpressionResult result;
-	result.type = getUncleanVarByType(res_clean.type->type, vars);
+	result.type = getUncleanVarByType(res_clean.type, vars);
 	result.value = res_clean.value;
 	return result;
 }
@@ -762,8 +766,8 @@ static KarExpressionResult get_sign_clean(KarToken* token, KarLLVMData* llvmData
 	thenBlock = LLVMGetInsertBlock(llvmData->builder);
 
 	LLVMPositionBuilderAtEnd(llvmData->builder, elseBlock);
-	KarVartreeFunctionParams* params = kar_vartree_get_function_params(function);
-	LLVMValueRef cleanLeftValue = LLVMBuildCall(llvmData->builder, kar_llvm_data_get_clean_function_by_type(llvmData, cleanLeft.type->type), &left.value, 1, params->issueName);
+	KarVartreeFunction* params = kar_vartree_get_function_params(function);
+	LLVMValueRef cleanLeftValue = LLVMBuildCall(llvmData->builder, kar_llvm_data_get_clean_function_by_type(llvmData, cleanLeft.type), &left.value, 1, params->issueName);
 	LLVMBuildBr(llvmData->builder, mergeBlock);
 	elseBlock = LLVMGetInsertBlock(llvmData->builder);
 

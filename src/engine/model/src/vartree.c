@@ -12,11 +12,9 @@
 #include "core/string_list.h"
 #include "core/string_builder.h"
 
-#include "model/vartree_function_params.h"
-
 static void(*nullFree)(KarVartree* item) = NULL;
 
-static KarVartree* vartree_create(KarVartypeElement element) {
+KarVartree* kar_vartree_create(KarVartypeElement element) {
 	KAR_CREATE(vartree, KarVartree);
 	
 	vartree->name = NULL;
@@ -25,149 +23,16 @@ static KarVartree* vartree_create(KarVartypeElement element) {
     kar_vartree_child_init(vartree);
     vartree->params = NULL;
     vartree->freeParams = NULL;
+	vartree->generatorParams = NULL;
+	vartree->freeGeneratorParams = NULL;
 
 	return vartree;
 }
 
-static KarVartree* vartree_create_name(KarVartypeElement element, const KarString* name) {
-	KarVartree* result = vartree_create(element);
+KarVartree* kar_vartree_create_name(KarVartypeElement element, const KarString* name) {
+	KarVartree* result = kar_vartree_create(element);
 	result->name = kar_string_create(name);
 	return result;
-}
-
-KarVartree* kar_vartree_create_root() {
-	return vartree_create(KAR_VARTYPE_ROOT);
-}
-
-KarVartree* kar_vartree_create_package(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_PACKET, name);
-}
-
-KarVartree* kar_vartree_create_class(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_CLASS, name);
-}
-
-KarVartree* kar_vartree_create_class_link(const KarString* name, KarVartree* type) {
-	KarVartree* result = vartree_create_name(KAR_VARTYPE_CLASS_LINK, name);
-    result->params = type;
-	return result;
-}
-
-KarVartree* kar_vartree_create_function(const KarString* name, uint8_t modificators, const KarString* issueName, KarVartree** args, size_t args_count, KarVartree* return_type) {
-	KarVartree* result = vartree_create_name(KAR_VARTYPE_FUNCTION, name);
-	for (size_t i = 0; i < args_count; i++) {
-		kar_vartree_args_add(result, args[i]);
-	}
-	result->params = kar_vartree_function_create(modificators, issueName, return_type);
-    result->freeParams = &kar_vartree_function_free;
-	return result;
-}
-
-KarVartree* kar_vartree_create_variable(const KarString* name, KarVartree* type) {
-	KarVartree* result = vartree_create_name(KAR_VARTYPE_VARIABLE, name);
-    result->params = type;
-	return result;
-}
-
-//-----------------------------------------------------------------------------
-// Описание констант.
-//-----------------------------------------------------------------------------
-
-// TODO: Для разных типов констант необходимы разные структуры, а не просто (void* value).
-KarVartreeConstValue* kar_vartree_const_value_create(uint8_t modificators, KarVartree* type, void* const_value) {
-    KAR_CREATE(value, KarVartreeConstValue);
-
-	value->modificators = modificators;
-    value->type = type;
-    value->value = const_value;
-
-    return value;
-}
-
-void kar_vartree_const_value_free(void* ptr) {
-    KarVartreeConstValue* value = (KarVartreeConstValue*)ptr;
-    KAR_FREE(value);
-}
-
-KarVartree* kar_vartree_create_const(const KarString* name, uint8_t modificators, KarVartree* type, void* value) {
-	KarVartree* result = vartree_create_name(KAR_VARTYPE_CONST, name);
-	result->params = kar_vartree_const_value_create(modificators, type, value);
-    result->freeParams = &kar_vartree_const_value_free;
-	return result;
-}
-
-//-----------------------------------------------------------------------------
-// Описание констант закончено.
-//-----------------------------------------------------------------------------
-
-KarVartree* kar_vartree_create_unclean(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_UNCLEAN, name);
-}
-
-KarVartree* kar_vartree_create_unclean_class(KarVartree* type) {
-	KarVartree* result = vartree_create_name(KAR_VARTYPE_UNCLEAN_CLASS, "Неопределённость");
-	kar_vartree_args_add(result, type);
-	return result;
-}
-
-KarVartree* kar_vartree_create_string(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_STRING, name);
-}
-
-KarVartree* kar_vartree_create_float64(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_FLOAT64, name);
-}
-
-KarVartree* kar_vartree_create_float32(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_FLOAT32, name);
-}
-
-KarVartree* kar_vartree_create_unsigned64(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_UNSIGNED64, name);
-}
-
-KarVartree* kar_vartree_create_unsigned32(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_UNSIGNED32, name);
-}
-
-KarVartree* kar_vartree_create_unsigned16(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_UNSIGNED16, name);
-}
-
-KarVartree* kar_vartree_create_unsigned8(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_UNSIGNED8, name);
-}
-
-KarVartree* kar_vartree_create_integer64(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_INTEGER64, name);
-}
-
-KarVartree* kar_vartree_create_integer32(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_INTEGER32, name);
-}
-
-KarVartree* kar_vartree_create_integer16(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_INTEGER16, name);
-}
-
-KarVartree* kar_vartree_create_integer8(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_INTEGER8, name);
-}
-
-KarVartree* kar_vartree_create_0float(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_0FLOAT, name);
-}
-
-KarVartree* kar_vartree_create_0hex(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_0HEX, name);
-}
-
-KarVartree* kar_vartree_create_0integer(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_0INTEGER, name);
-}
-
-KarVartree* kar_vartree_create_bool(const KarString* name) {
-	return vartree_create_name(KAR_VARTYPE_BOOL, name);
 }
 
 void kar_vartree_free(KarVartree* vartree) {
@@ -179,6 +44,9 @@ void kar_vartree_free(KarVartree* vartree) {
     if (vartree->freeParams != NULL) {
         vartree->freeParams(vartree->params);
     }
+	if (vartree->freeGeneratorParams != NULL) {
+		vartree->freeGeneratorParams(vartree->generatorParams);
+	}
 }
 
 KarString* kar_vartree_create_full_name_args(const KarString* name, KarVartree** args, size_t args_count) {
@@ -330,13 +198,6 @@ KarVartree* kar_vartree_find_args(KarVartree *parent, const KarString* name, Kar
 KAR_ARRAY_CODE(vartree_args, KarVartree, KarVartree, args, nullFree)
 
 KAR_TREE_SET_CODE(vartree_child, KarVartree, children, kar_vartree_less, kar_vartree_equal, kar_vartree_free)
-
-KarVartreeFunctionParams* kar_vartree_get_function_params(KarVartree* vartree) {
-	if (vartree->type != KAR_VARTYPE_FUNCTION) {
-		return NULL;
-	}
-	return (KarVartreeFunctionParams*)vartree->params;
-}
 
 KarVartree* kar_vartree_get_unclean_class(KarVartree* vartree) {
 	if (vartree->type != KAR_VARTYPE_UNCLEAN_CLASS) {

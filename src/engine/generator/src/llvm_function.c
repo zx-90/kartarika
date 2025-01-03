@@ -56,7 +56,7 @@ void kar_llvm_function_init(KarLLVMFunction* func, LLVMModuleRef module, KarVars
     if (func->value != NULL) {
         return;
     }
-	KarVartreeFunctionParams* params = kar_vartree_get_function_params(func->var);
+	KarVartreeFunction* params = kar_vartree_get_function_params(func->var);
 	LLVMTypeRef returnType = get_llvm_type(params->returnType, vars);
 	size_t arg_count = kar_vartree_args_count(func->var);
     KAR_CREATES(args, LLVMTypeRef, arg_count);

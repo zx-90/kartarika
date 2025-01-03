@@ -8,6 +8,8 @@
 
 #include <llvm-c/Core.h>
 
+#include "model/vartree_class.h"
+
 KarLLVMData* kar_llvm_data_create(LLVMContextRef context, LLVMModuleRef module, LLVMBuilderRef builder) {
     KAR_CREATE(result, KarLLVMData);
 
@@ -143,11 +145,11 @@ KarLLVMFunction* kar_llvm_data_get_function(KarLLVMData* llvmData, KarVartree* f
 	size_t num = kar_llvm_data_functions_add(llvmData, llvmFunc);
 	if (num == (size_t)-1) {
 		kar_llvm_function_free(llvmFunc);
-		KarVartreeFunctionParams* params = kar_vartree_get_function_params(func);
+		KarVartreeFunction* params = kar_vartree_get_function_params(func);
 		// TODO: Здесь надо искать быстрее, не просты перебором, так как массив отсортирован.
 		for (size_t i = 0; i < kar_llvm_data_functions_count(llvmData); i++) {
 			KarLLVMFunction* child = kar_llvm_data_functions_get(llvmData, i);
-			KarVartreeFunctionParams* child_params = kar_vartree_get_function_params(child->var);
+			KarVartreeFunction* child_params = kar_vartree_get_function_params(child->var);
 			if (kar_string_equal(params->issueName, child_params->issueName)) {
 				return child;
 			}
@@ -158,23 +160,24 @@ KarLLVMFunction* kar_llvm_data_get_function(KarLLVMData* llvmData, KarVartree* f
 	return llvmFunc;
 }
 
-LLVMValueRef kar_llvm_data_get_clean_function_by_type(KarLLVMData* llvmData, KarVartypeElement type) {
+LLVMValueRef kar_llvm_data_get_clean_function_by_type(KarLLVMData* llvmData, KarVartree* var) {
+	KarClassType type = kar_vartree_get_class_type(var);
 	switch (type) {
-		case KAR_VARTYPE_BOOL: return llvmData->uncleanBool;
-		case KAR_VARTYPE_0INTEGER: return llvmData->uncleanInteger64;
-		case KAR_VARTYPE_0HEX: return llvmData->uncleanUnsigned64;
-		case KAR_VARTYPE_0FLOAT: return llvmData->uncleanFloat64;
-		case KAR_VARTYPE_INTEGER8: return llvmData->uncleanInteger8;
-		case KAR_VARTYPE_INTEGER16: return llvmData->uncleanInteger16;
-		case KAR_VARTYPE_INTEGER32: return llvmData->uncleanInteger32;
-		case KAR_VARTYPE_INTEGER64: return llvmData->uncleanInteger64;
-		case KAR_VARTYPE_UNSIGNED8: return llvmData->uncleanUnsigned8;
-		case KAR_VARTYPE_UNSIGNED16: return llvmData->uncleanUnsigned16;
-		case KAR_VARTYPE_UNSIGNED32: return llvmData->uncleanUnsigned32;
-		case KAR_VARTYPE_UNSIGNED64: return llvmData->uncleanUnsigned64;
-		case KAR_VARTYPE_FLOAT32: return llvmData->uncleanFloat32;
-		case KAR_VARTYPE_FLOAT64: return llvmData->uncleanFloat64;
-		case KAR_VARTYPE_STRING: return llvmData->uncleanString;
+		case KAR_CLASS_TYPE_BOOL: return llvmData->uncleanBool;
+		case KAR_CLASS_TYPE_0INTEGER: return llvmData->uncleanInteger64;
+		case KAR_CLASS_TYPE_0HEX: return llvmData->uncleanUnsigned64;
+		case KAR_CLASS_TYPE_0FLOAT: return llvmData->uncleanFloat64;
+		case KAR_CLASS_TYPE_INTEGER8: return llvmData->uncleanInteger8;
+		case KAR_CLASS_TYPE_INTEGER16: return llvmData->uncleanInteger16;
+		case KAR_CLASS_TYPE_INTEGER32: return llvmData->uncleanInteger32;
+		case KAR_CLASS_TYPE_INTEGER64: return llvmData->uncleanInteger64;
+		case KAR_CLASS_TYPE_UNSIGNED8: return llvmData->uncleanUnsigned8;
+		case KAR_CLASS_TYPE_UNSIGNED16: return llvmData->uncleanUnsigned16;
+		case KAR_CLASS_TYPE_UNSIGNED32: return llvmData->uncleanUnsigned32;
+		case KAR_CLASS_TYPE_UNSIGNED64: return llvmData->uncleanUnsigned64;
+		case KAR_CLASS_TYPE_FLOAT32: return llvmData->uncleanFloat32;
+		case KAR_CLASS_TYPE_FLOAT64: return llvmData->uncleanFloat64;
+		case KAR_CLASS_TYPE_STRING: return llvmData->uncleanString;
 		default: return NULL;
 	}
 	return NULL;

@@ -19,13 +19,12 @@
 
 #include "core/string.h"
 #include "core/alloc.h"
-#include "model/vartree_function_params.h"
+#include "model/vartree_class.h"
 #include "generator/llvm_data.h"
 #include "generator/gen_root.h"
 
 static bool generate_module(KarToken* token, KarLLVMData* llvmData, KarString* moduleName, KarVars* vars, KarProjectErrorList* errors) {
-	KarVartree* module = kar_vartree_create_class(moduleName);
-	kar_vartree_child_add(vars->standard.projectModule, module);
+	KarVartree* module = kar_vartree_create_class(vars->standard.projectModule, moduleName);
 	if (token->type != KAR_TOKEN_MODULE) {
         kar_project_error_list_create_add(errors, moduleName, &token->cursor, 1, "Внутрення ошибка. Токен не является типом модуль.");
 		return false;
