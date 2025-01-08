@@ -13,6 +13,130 @@
 #include "generator/gen_expression.h"
 #include "generator/gen_algorithm.h"
 
+static uint8_t parse_var_modificators(KarToken* modificators, KarVartree* module, KarProjectErrorList* errors) {
+	uint8_t statMod = 0xFF;
+	uint8_t areaMod = 0xFF;
+	for (size_t i = 0; i < kar_token_child_count(modificators); i++) {
+		KarToken* modificatorToken = kar_token_child_get(modificators, i);
+		switch (modificatorToken->type) {
+		case KAR_TOKEN_MODIFIER_STAT: {
+			if (statMod != 0xFF) {
+				kar_project_error_list_create_add(errors, module->name, &modificatorToken->cursor, 1, "Двойной модификатор статичности.");
+				return 0xFF;
+			}
+			statMod = VAR_STATIC;
+			break;
+		}
+		case KAR_TOKEN_VAR_MODIFIER_DYNAMIC: {
+			if (statMod != 0xFF) {
+				kar_project_error_list_create_add(errors, module->name, &modificatorToken->cursor, 1, "Двойной модификатор статичности.");
+				return 0xFF;
+			}
+			statMod = VAR_DYNAMIC;
+			break;
+		}
+		case KAR_TOKEN_VAR_MODIFIER_PRIVATE: {
+			if (areaMod != 0xFF) {
+				kar_project_error_list_create_add(errors, module->name, &modificatorToken->cursor, 1, "Двойной модификатор области видимости.");
+				return 0xFF;
+			}
+			areaMod = VAR_PRIVATE;
+			break;
+		}
+		case KAR_TOKEN_VAR_MODIFIER_PROTECTED: {
+			if (areaMod != 0xFF) {
+				kar_project_error_list_create_add(errors, module->name, &modificatorToken->cursor, 1, "Двойной модификатор области видимости.");
+				return 0xFF;
+			}
+			areaMod = VAR_PROTECTED;
+			break;
+		}
+		case KAR_TOKEN_VAR_MODIFIER_PUBLIC: {
+			if (areaMod != 0xFF) {
+				kar_project_error_list_create_add(errors, module->name, &modificatorToken->cursor, 1, "Двойной модификатор области видимости.");
+				return 0xFF;
+			}
+			areaMod = VAR_PUBLIC;
+			break;
+		}
+		default: {
+			kar_project_error_list_create_add(errors, module->name, &modificatorToken->cursor, 1, "Неизвестный модификатор константы.");
+			return 0xFF;
+		}
+		}
+	}
+	if (statMod == 0xFF) {
+		statMod = VAR_DYNAMIC;
+	}
+	if (areaMod == 0xFF) {
+		areaMod = VAR_PRIVATE;
+	}
+
+	if (statMod != VAR_STATIC) {
+		kar_project_error_list_create_add(errors, module->name, &modificators->cursor, 1, "Корневые элементы должны быть только статическими.");
+		return 0xFF;
+	}
+
+	return statMod | areaMod;
+}
+
+bool kar_generate_const(KarToken* token, KarLLVMData* llvmData, KarVartree* module, KarVars* vars, KarProjectErrorList* errors) {
+	// TODO: Нужны ли динамические константы? может быть лучше отменить стат/динамическое для констант.
+	KarToken* modificatorsToken = kar_token_child_get(token, 0);
+	uint8_t modificators = parse_var_modificators(modificatorsToken, module, errors);
+	if (modificators == 0xFF) {
+		return false;
+	}
+	KarToken* valueToken = kar_token_child_get(token, 1);
+	KarToken* expressionToken = kar_token_child_get(valueToken, 0);
+	KarExpressionResult result = kar_generate_calc_expression(expressionToken, llvmData, module, vars, errors);
+	if (kar_expression_result_is_none(result)) {
+		return false;
+	}
+
+	KarVartree* constVar = kar_vartree_create_const(module, token->str, modificators, result.type, NULL);
+	if (constVar == NULL) {
+		kar_project_error_list_create_add(errors, module->name, &token->cursor, 1, "Не могу создать корневую константу. возможно она уже создана.");
+		return false;
+	}
+	constVar->generatorParams = (void*)result.value;
+
+	return true;
+}
+
+bool kar_generate_var(KarToken* token, KarLLVMData* llvmData, KarVartree* module, KarVars* vars, KarProjectErrorList* errors) {
+	// TODO: Нужны ли динамические константы? может быть лучше отменить стат/динамическое для констант.
+	KarToken* modificatorsToken = kar_token_child_get(token, 0);
+	uint8_t modificators = parse_var_modificators(modificatorsToken, module, errors);
+	if (modificators == 0xFF) {
+		return false;
+	}
+
+	KarToken* valueToken = kar_token_child_get(token, 1);
+	KarToken* expressionToken = kar_token_child_get(valueToken, 0);
+	KarExpressionResult result = kar_generate_calc_expression(expressionToken, llvmData, module, vars, errors);
+	if (kar_expression_result_is_none(result)) {
+		return false;
+	}
+	LLVMTypeRef type = kar_expression_get_type_by_vartype(vars, result.type);
+	if (type == NULL) {
+		kar_project_error_list_create_add(errors, module->name, &expressionToken->cursor, 1, "Неизвестный тип для присваивания переменной.");
+		return false;
+	}
+	LLVMValueRef varAlloc = LLVMAddGlobal(llvmData->module, type, token->str);
+	LLVMSetInitializer(varAlloc, result.value);
+	LLVMSetGlobalConstant(varAlloc, false);
+	//LLVMBuildStore(llvmData->builder, kar_expression_get_reduced_value(result.type, result.value, llvmData, vars), varAlloc);
+	KarVartree* constVar = kar_vartree_create_variable(module, token->str, modificators, result.type, NULL);
+	if (constVar == NULL) {
+		kar_project_error_list_create_add(errors, module->name, &token->cursor, 1, "Не могу создать корневую константу. возможно она уже создана.");
+		return false;
+	}
+	constVar->generatorParams = (void*)varAlloc;
+
+	return true;
+}
+
 bool kar_generate_function(KarToken* token, KarLLVMData* llvmData, KarVartree* module, KarVars* vars, KarProjectErrorList* errors) {
 	if (token->type != KAR_TOKEN_METHOD) {
 		return false;
@@ -36,89 +160,5 @@ bool kar_generate_function(KarToken* token, KarLLVMData* llvmData, KarVartree* m
 		kar_project_error_list_create_add(errors, module->name, &token->cursor, 1, "Методы не поддерживаются. Поддерживается только метод \"Запустить\".");
 		return false;
 	}
-	return true;
-}
-
-bool kar_generate_const(KarToken* token, KarLLVMData* llvmData, KarVartree* module, KarVars* vars, KarProjectErrorList* errors) {
-	// TODO: Нужны ли динамические константы? может быть лучше отменить стат/динамическое для констант.
-	uint8_t statMod = 0xFF;
-	uint8_t areaMod = 0xFF;
-	KarToken* modificators = kar_token_child_get(token, 0);
-	for (size_t i = 0; i < kar_token_child_count(modificators); i++) {
-		KarToken* modificatorToken = kar_token_child_get(modificators, i);
-		switch (modificatorToken->type) {
-		case KAR_TOKEN_MODIFIER_STAT: {
-			if (statMod != 0xFF) {
-				kar_project_error_list_create_add(errors, module->name, &modificatorToken->cursor, 1, "Двойной модификатор статичности.");
-				return false;
-			}
-			statMod = VAR_STATIC;
-			break;
-		}
-		case KAR_TOKEN_VAR_MODIFIER_DYNAMIC: {
-			if (statMod != 0xFF) {
-				kar_project_error_list_create_add(errors, module->name, &modificatorToken->cursor, 1, "Двойной модификатор статичности.");
-				return false;
-			}
-			statMod = VAR_DYNAMIC;
-			break;
-		}
-		case KAR_TOKEN_VAR_MODIFIER_PRIVATE: {
-			if (areaMod != 0xFF) {
-				kar_project_error_list_create_add(errors, module->name, &modificatorToken->cursor, 1, "Двойной модификатор области видимости.");
-				return false;
-			}
-			areaMod = VAR_PRIVATE;
-			break;
-		}
-		case KAR_TOKEN_VAR_MODIFIER_PROTECTED: {
-			if (areaMod != 0xFF) {
-				kar_project_error_list_create_add(errors, module->name, &modificatorToken->cursor, 1, "Двойной модификатор области видимости.");
-				return false;
-			}
-			areaMod = VAR_PROTECTED;
-			break;
-		}
-		case KAR_TOKEN_VAR_MODIFIER_PUBLIC: {
-			if (areaMod != 0xFF) {
-				kar_project_error_list_create_add(errors, module->name, &modificatorToken->cursor, 1, "Двойной модификатор области видимости.");
-				return false;
-			}
-			areaMod = VAR_PUBLIC;
-			break;
-		}
-		default: {
-			kar_project_error_list_create_add(errors, module->name, &modificatorToken->cursor, 1, "Неизвестный модификатор константы.");
-			return false;
-		}
-		}
-	}
-	if (statMod == 0xFF) {
-		statMod = VAR_DYNAMIC;
-	}
-	if (areaMod == 0xFF) {
-		areaMod = VAR_PRIVATE;
-	}
-
-	if (statMod != VAR_STATIC) {
-		kar_project_error_list_create_add(errors, module->name, &token->cursor, 1, "Корневые константы должны быть только статическими.");
-		return false;
-	}
-
-	KarToken* valueToken = kar_token_child_get(token, 1);
-	KarToken* expressionToken = kar_token_child_get(valueToken, 0);
-	KarExpressionResult result = kar_generate_calc_expression(expressionToken, llvmData, module, vars, errors);
-	if (kar_expression_result_is_none(result)) {
-		return false;
-	}
-
-	KarVartree* constVar = kar_vartree_create_const(module, token->str, statMod | areaMod, result.type, NULL /*(void*)result.value*/);
-	if (constVar == NULL) {
-		kar_project_error_list_create_add(errors, module->name, &token->cursor, 1, "Не могу создать корневую константу. возможно она уже создана.");
-		return false;
-	}
-	constVar->generatorParams = (void*)result.value;
-
-	//kar_project_error_list_create_add(errors, module->name, &token->cursor, 1, "Функция обработки констант не реализована.");
 	return true;
 }

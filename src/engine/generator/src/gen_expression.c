@@ -317,7 +317,17 @@ static KarExpressionResult get_identifier(KarToken* token, KarLLVMData* llvmData
 	if (rootVar != NULL) {
 		KarExpressionResult res = kar_expression_result_none();
 		res.type = ((KarVartreeConstValue*)rootVar->params)->type;
-		res.value = (LLVMValueRef)rootVar->generatorParams;
+		if (rootVar->type == KAR_VARTYPE_CONST) {
+			res.value = (LLVMValueRef)rootVar->generatorParams;
+		} else if (rootVar->type == KAR_VARTYPE_VARIABLE) {
+			//res.value = LLVMGetInitializer((LLVMValueRef)rootVar->generatorParams);
+			res.value = LLVMBuildLoad(llvmData->builder, (LLVMValueRef)rootVar->generatorParams, token->str);
+		} else {
+			KarString* error_text = kar_string_create_format("Идентификатор \"%s\" не является константой или переменной.", token->str);
+			kar_project_error_list_create_add(errors, module->name, &token->cursor, 1, error_text);
+			KAR_FREE(error_text);
+			return kar_expression_result_none();
+		}
 		return res;
 	}
 	// TODO: Тут ещё надо будет дописывать. Как минимум значение.

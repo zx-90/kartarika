@@ -39,6 +39,10 @@ static bool generate_module(KarToken* token, KarLLVMData* llvmData, KarString* m
 			if (!kar_generate_const(child, llvmData, module, vars, errors)) {
 				return false;
 			}
+		} else if (child->type == KAR_TOKEN_FIELD_VAR) {
+			if (!kar_generate_var(child, llvmData, module, vars, errors)) {
+				return false;
+			}
 		} else {
 			kar_project_error_list_create_add(errors, module->name, &child->cursor, 1, "Внутрення ошибка. Токен не является корневым элементом.");
             return false;

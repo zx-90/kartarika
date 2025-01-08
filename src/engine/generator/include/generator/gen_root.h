@@ -11,7 +11,8 @@
 #include "model/project_error_list.h"
 #include "llvm_data.h"
 
-bool kar_generate_function(KarToken* token, KarLLVMData* llvmData, KarVartree* module, KarVars* vars, KarProjectErrorList* errors);
 bool kar_generate_const(KarToken* token, KarLLVMData* llvmData, KarVartree* module, KarVars* vars, KarProjectErrorList* errors);
+bool kar_generate_var(KarToken* token, KarLLVMData* llvmData, KarVartree* module, KarVars* vars, KarProjectErrorList* errors);
+bool kar_generate_function(KarToken* token, KarLLVMData* llvmData, KarVartree* module, KarVars* vars, KarProjectErrorList* errors);
 
 #endif // KAR_GEN_ROOT_H

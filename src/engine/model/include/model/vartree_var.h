@@ -21,7 +21,7 @@ typedef struct {
 } KarVartreeConstValue;
 
 // TODO: обавить модификаторы
-KarVartree* kar_vartree_create_variable(KarVartree* parent, const KarString* name, KarVartree* type);
+KarVartree* kar_vartree_create_variable(KarVartree* parent, const KarString* name, uint8_t modificators, KarVartree* type, void* value);
 // TODO: Сделать функцию безопасной для поля void. Скорее надо будет разбить на несколько функций.
 
 KarVartree* kar_vartree_create_const(KarVartree* parent, const KarString* name, uint8_t modificators, KarVartree* type, void* value);

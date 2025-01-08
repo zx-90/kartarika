@@ -6,11 +6,12 @@
 
 #include "generator/gen_algorithm.h"
 
-#include "generator/gen_expression.h"
-
 #include <llvm-c/Core.h>
 
 #include "model/vartree_class.h"
+#include "model/vartree_var.h"
+
+#include "generator/gen_expression.h"
 
 typedef struct {
 	LLVMBasicBlockRef continueLabel;
@@ -104,33 +105,54 @@ static bool generate_assign(KarToken* token, KarLLVMData* llvmData, KarVartree* 
 	}
 	KarLocalVar* var = kar_vars_local_find(vars, varNameToken->str);
 	if (var == NULL) {
-		kar_project_error_list_create_add(errors, module->name, &varNameToken->cursor, 1, "Переменной с таким именем не существует.");
-		return false;
+		KarVartree* rootVar = kar_vartree_find(module, varNameToken->str);
+		if (rootVar != NULL) {
+			if (rootVar->type != KAR_VARTYPE_VARIABLE) {
+				kar_project_error_list_create_add(errors, module->name, &varNameToken->cursor, 1, "Присваивание можно производит только для переменной.");
+				return false;
+			}
+			KarToken* expressionToken = kar_token_child_get(token, 1);
+			KarExpressionResult result = kar_generate_calc_expression(expressionToken, llvmData, module, vars, errors);
+			if (kar_expression_result_is_none(result)) {
+				return false;
+			}
+			KarVartreeConstValue* params = (KarVartreeConstValue*)rootVar->params;
+			if (result.type != params->type) {
+				kar_project_error_list_create_add(errors, module->name, &expressionToken->cursor, 1, "Тип переменной и тип выражения не совпадают.");
+				return false;
+			}
+			LLVMBuildStore(llvmData->builder, kar_expression_get_reduced_value(result.type, result.value, llvmData, vars), (LLVMValueRef)rootVar->generatorParams);
+			return true;
+		} else {
+			kar_project_error_list_create_add(errors, module->name, &varNameToken->cursor, 1, "Переменной с таким именем не существует.");
+			return false;
+		}
+	} else {
+		if (var->is_const) {
+			kar_project_error_list_create_add(errors, module->name, &varNameToken->cursor, 1, "Попытка присвоения константе нового значения.");
+			return false;
+		}
+		KarToken* expressionToken = kar_token_child_get(token, 1);
+		KarExpressionResult result = kar_generate_calc_expression(expressionToken, llvmData, module, vars, errors);
+		if (kar_expression_result_is_none(result)) {
+			return false;
+		}
+		KarExpressionResult varExpr = {var->type, var->value};
+		if (var->type != result.type && !kar_expression_cast_type(&result, &varExpr, llvmData, vars)) {
+			KarString* varType = kar_vartree_create_full_path(var->type);
+			KarString* expressionType = kar_vartree_create_full_path(result.type);
+			KarString* errorStr = kar_string_create_format(
+				"Попытка присвоить переменной %s с типом %s несовместимый с ним тип %s",
+				var->name, varType, expressionType
+			);
+			KAR_FREE(expressionType);
+			KAR_FREE(varType);
+			kar_project_error_list_create_add(errors, module->name, &expressionToken->cursor, 1, errorStr);
+			KAR_FREE(errorStr);
+			return false;
+		}
+		LLVMBuildStore(llvmData->builder, result.value, var->value);
 	}
-	if (var->is_const) {
-		kar_project_error_list_create_add(errors, module->name, &varNameToken->cursor, 1, "Попытка присвоения константе нового значения.");
-		return false;
-	}
-	KarToken* expressionToken = kar_token_child_get(token, 1);
-	KarExpressionResult result = kar_generate_calc_expression(expressionToken, llvmData, module, vars, errors);
-	if (kar_expression_result_is_none(result)) {
-		return false;
-	}
-	KarExpressionResult varExpr = {var->type, var->value};
-	if (var->type != result.type && !kar_expression_cast_type(&result, &varExpr, llvmData, vars)) {
-		KarString* varType = kar_vartree_create_full_path(var->type);
-		KarString* expressionType = kar_vartree_create_full_path(result.type);
-		KarString* errorStr = kar_string_create_format(
-			"Попытка присвоить переменной %s с типом %s несовместимый с ним тип %s",
-			var->name, varType, expressionType
-		);
-		KAR_FREE(expressionType);
-		KAR_FREE(varType);
-		kar_project_error_list_create_add(errors, module->name, &expressionToken->cursor, 1, errorStr);
-		KAR_FREE(errorStr);
-		return false;
-	}
-	LLVMBuildStore(llvmData->builder, result.value, var->value);
 	return true;
 }
 
