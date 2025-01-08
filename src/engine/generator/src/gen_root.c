@@ -112,7 +112,12 @@ bool kar_generate_const(KarToken* token, KarLLVMData* llvmData, KarVartree* modu
 		return false;
 	}
 
-	kar_vartree_create_const(module, token->str, statMod | areaMod, result.type, (void*)result.value);
+	KarVartree* constVar = kar_vartree_create_const(module, token->str, statMod | areaMod, result.type, NULL /*(void*)result.value*/);
+	if (constVar == NULL) {
+		kar_project_error_list_create_add(errors, module->name, &token->cursor, 1, "Не могу создать корневую константу. возможно она уже создана.");
+		return false;
+	}
+	constVar->generatorParams = (void*)result.value;
 
 	//kar_project_error_list_create_add(errors, module->name, &token->cursor, 1, "Функция обработки констант не реализована.");
 	return true;

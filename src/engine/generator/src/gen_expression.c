@@ -317,9 +317,10 @@ static KarExpressionResult get_identifier(KarToken* token, KarLLVMData* llvmData
 	if (rootVar != NULL) {
 		KarExpressionResult res = kar_expression_result_none();
 		res.type = ((KarVartreeConstValue*)rootVar->params)->type;
-		res.value = ((KarVartreeConstValue*)rootVar->params)->value;
+		res.value = (LLVMValueRef)rootVar->generatorParams;
 		return res;
 	}
+	// TODO: Тут ещё надо будет дописывать. Как минимум значение.
 	KarExpressionResult res = kar_expression_result_none();
 	res.type = kar_vars_find_root(vars, token->str);
 	if (kar_expression_result_is_none(res)) {
