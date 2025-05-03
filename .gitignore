@@ -1,6 +1,6 @@
 # For internal use
-_build
-build
+_build*
+build*
 sandbox
 *.old
 *.kdev*

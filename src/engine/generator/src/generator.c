@@ -108,7 +108,7 @@ bool kar_generator_run(KarProject* project) {
 	}
 
 	LLVMCodeGenOptLevel opt = LLVMCodeGenLevelNone;
-	LLVMRelocMode rm = LLVMRelocDefault;
+    LLVMRelocMode rm = LLVMRelocPIC;
 	
 	LLVMTargetMachineRef the_target_machine =
 		LLVMCreateTargetMachine(target, target_triple, "generic", "", opt, rm, LLVMCodeModelDefault);
@@ -116,7 +116,7 @@ bool kar_generator_run(KarProject* project) {
 	LLVMTargetDataRef target_data = LLVMCreateTargetDataLayout(the_target_machine);
 	LLVMSetModuleDataLayout(module, target_data);
 
-	/*if (LLVMPrintModuleToFile(module, "b.out", &error)) {
+    /*if (LLVMPrintModuleToFile(module, "b.out", &error)) {
 		printf("%s\n", error);
 		LLVMDisposeMessage(error);
 		LLVMDisposeTargetData(target_data);
@@ -125,7 +125,7 @@ bool kar_generator_run(KarProject* project) {
 		LLVMDisposeModule(module);
 		LLVMContextDispose(context);
 		return false;
-	}*/
+    }*/
 
 	if (LLVMTargetMachineEmitToFile(the_target_machine, module, "asdf.o", LLVMObjectFile, &error)) {
 		printf("%s\n", error);
@@ -146,7 +146,7 @@ bool kar_generator_run(KarProject* project) {
 	
 	// TODO: Разобраться можно ли это как-то без clang делать. Только с помощью llvm.
 #ifdef __linux__
-	bool result = system("clang-9 asdf.o library.o -o a.out") == 0;
+    bool result = system("clang asdf.o library.o -o a.out") == 0;
 #elif _WIN32
     bool result = system("clang.exe asdf.o library.o -o a.exe") == 0;
 	/*system("B:\\llvmexe\\LLVM\\bin\\clang.exe link.exe /ENTRY:main asdf.o");*/

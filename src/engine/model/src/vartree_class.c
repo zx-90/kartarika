@@ -7,7 +7,7 @@
 #include "model/vartree_class.h"
 
 KarVartree* kar_vartree_create_class(KarVartree*parent, const KarString* name) {
-	return kar_vartree_create_predefined_class(parent, KAR_VARTYPE_CLASS, name);
+    return kar_vartree_create_predefined_class(parent, KAR_CLASS_TYPE_CLASS, name);
 }
 
 KarVartree* kar_vartree_create_predefined_class(KarVartree *parent, KarClassType type, const KarString* name) {

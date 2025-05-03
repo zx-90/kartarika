@@ -19,7 +19,8 @@ if(MSVC)
 	# TODO: Добавить опции компилятора для более строгой проверки кода.
 	add_compile_options(/Y-)
 else()
-	add_compile_options(-Werror -Wall -Wextra -Wpedantic -Wcast-align -Wcast-qual -Wconversion -Wenum-compare -Wfloat-equal -Wredundant-decls -Wsign-conversion)
+	# TODO: Убрать вызов устаревших функций из LLVM и убрать в параметрах компиляции -Wno-error=deprecated-declarations
+	add_compile_options(-Werror -Wno-error=deprecated-declarations -Wall -Wextra -Wpedantic -Wcast-align -Wcast-qual -Wconversion -Wenum-compare -Wfloat-equal -Wredundant-decls -Wsign-conversion)
 endif()
 
 add_subdirectory(src/engine/core)

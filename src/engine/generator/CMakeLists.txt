@@ -16,8 +16,9 @@ add_library(generator STATIC ${lib_generator_SRC})
 
 # Здесь надо подключить библиотеку LLVM и для Windows тоже.
 if (UNIX)
-find_package(LLVM 9.0 REQUIRED)
+find_package(LLVM 14.0 REQUIRED)
 target_link_libraries(generator LLVM) 
+target_include_directories(generator PRIVATE "${LLVM_INCLUDE_DIR}")
 endif()
 if (WIN32)
 target_include_directories(generator PUBLIC ${ROOT_DIR}/third_party/include)
